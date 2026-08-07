@@ -5,7 +5,11 @@ data class EndpointSnapshot(
     val findings: List<FindingResponse> = emptyList(),
     val lastSuccessAtMillis: Long? = null,
     val error: String? = null,
+    val service: String? = null,
 )
+
+fun EndpointSnapshot.forService(service: String): EndpointSnapshot =
+    if (this.service == service) this else EndpointSnapshot(endpoint = endpoint, service = service)
 
 fun EndpointSnapshot.updated(result: Result<List<FindingResponse>>, nowMillis: Long): EndpointSnapshot =
     result.fold(

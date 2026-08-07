@@ -9,6 +9,7 @@ import io.github.robintra.perfsentinel.core.DaemonClient
 import io.github.robintra.perfsentinel.core.EndpointSnapshot
 import io.github.robintra.perfsentinel.core.Finding
 import io.github.robintra.perfsentinel.core.RefreshState
+import io.github.robintra.perfsentinel.core.forService
 import io.github.robintra.perfsentinel.core.resolveServiceName
 import io.github.robintra.perfsentinel.core.updated
 import io.github.robintra.perfsentinel.settings.PerfSentinelSettings
@@ -43,10 +44,13 @@ class PerfSentinelProjectService(
             val settings = project.service<PerfSentinelSettings>().snapshot()
             val service = resolveServiceName(project.name, project.basePath, settings.serviceOverride)
             val previous = state.endpoints.associateBy(EndpointSnapshot::endpoint)
+            val current = settings.endpoints.associateWith { endpoint ->
+                previous[endpoint]?.forService(service) ?: EndpointSnapshot(endpoint, service = service)
+            }
             publish(
                 RefreshState(
                     refreshing = true,
-                    endpoints = settings.endpoints.map { previous[it] ?: EndpointSnapshot(it) },
+                    endpoints = current.values.toList(),
                 ),
             )
 
@@ -57,7 +61,7 @@ class PerfSentinelProjectService(
             publish(
                 RefreshState(
                     endpoints = results.map { (endpoint, result) ->
-                        (previous[endpoint] ?: EndpointSnapshot(endpoint)).updated(result, now)
+                        current.getValue(endpoint).updated(result, now)
                     },
                 ),
             )

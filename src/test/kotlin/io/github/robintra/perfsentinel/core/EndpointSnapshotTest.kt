@@ -43,4 +43,22 @@ class EndpointSnapshotTest {
         assertEquals("offline", state.endpoints.single { it.endpoint == "http://failed" }.error)
         assertNull(state.endpoints.single { it.endpoint == "http://healthy" }.error)
     }
+
+    @Test
+    fun `changing service discards findings cached for the previous service`() {
+        val finding = parseFindings(DaemonClientTest.MINIMAL_FINDING_FOR_REUSE).single()
+        val previous = EndpointSnapshot(
+            endpoint = "http://daemon",
+            findings = listOf(finding),
+            lastSuccessAtMillis = 100,
+            service = "order-service",
+        )
+
+        val current = previous.forService("billing-service")
+
+        assertEquals("billing-service", current.service)
+        assertEquals(emptyList<FindingResponse>(), current.findings)
+        assertNull(current.lastSuccessAtMillis)
+        assertNull(current.error)
+    }
 }

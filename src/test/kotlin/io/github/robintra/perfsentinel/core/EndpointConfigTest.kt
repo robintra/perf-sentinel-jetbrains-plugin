@@ -8,12 +8,14 @@ class EndpointConfigTest {
     @Test
     fun `normalizes and deduplicates valid endpoints`() {
         assertEquals(
-            listOf("http://127.0.0.1:4318", "https://sentinel.example.test"),
+            listOf("http://127.0.0.1:4318", "https://sentinel.example.test", "http://localhost"),
             normalizeEndpoints(
                 listOf(
                     " http://127.0.0.1:4318/ ",
                     "http://127.0.0.1:4318",
                     "https://sentinel.example.test/",
+                    "HTTP://LOCALHOST:80/",
+                    "http://localhost",
                 ),
             ),
         )
@@ -36,5 +38,12 @@ class EndpointConfigTest {
     @Test
     fun `uses the loopback daemon when no endpoint is configured`() {
         assertEquals(listOf(DEFAULT_ENDPOINT), normalizeEndpoints(listOf(" ", "")))
+    }
+
+    @Test
+    fun `reports malformed endpoint syntax as a validation error`() {
+        assertThrows(IllegalArgumentException::class.java) {
+            normalizeEndpoints(listOf("http://bad host:4318"))
+        }
     }
 }
