@@ -1,0 +1,46 @@
+<!-- Plugin Configuration File. Read more: https://plugins.jetbrains.com/docs/intellij/plugin-configuration-file.html -->
+<idea-plugin>
+    <!-- Unique identifier of the plugin. It should be FQN. It cannot be changed between the plugin versions. -->
+    <id>io.github.robintra.perfsentinel</id>
+
+    <!-- Public plugin name should be written in Title Case.
+     Guidelines: https://plugins.jetbrains.com/docs/marketplace/best-practices-for-listing.html#plugin-name -->
+    <name>Perf Sentinel</name>
+
+    <!-- A displayed Vendor name or Organization ID displayed on the Plugins Page. -->
+    <vendor url="https://github.com/robintra">Robin Trassard</vendor>
+
+    <!-- Description of the plugin displayed on the Plugin Page and IDE Plugin Manager.
+         Guidelines: https://plugins.jetbrains.com/docs/marketplace/best-practices-for-listing.html#plugin-description -->
+    <description><![CDATA[
+        Displays findings produced by a Perf Sentinel daemon directly in JetBrains IDEs.
+        Review current findings, inspect their evidence, and navigate to reported source locations.
+        ]]></description>
+
+    <!-- Product and plugin compatibility requirements.
+         Read more: https://plugins.jetbrains.com/docs/intellij/plugin-compatibility.html -->
+    <depends>com.intellij.modules.platform</depends>
+    <depends optional="true" config-file="perf-sentinel-java.xml">com.intellij.java</depends>
+
+    <resource-bundle>messages.PerfSentinelBundle</resource-bundle>
+
+    <extensionPoints>
+        <extensionPoint name="anchorResolver"
+                        interface="io.github.robintra.perfsentinel.navigation.AnchorResolver"
+                        dynamic="true"/>
+    </extensionPoints>
+
+    <!-- Extensions defined by the plugin.
+         Read more: https://plugins.jetbrains.com/docs/intellij/plugin-extension-points.html -->
+    <extensions defaultExtensionNs="com.intellij">
+        <toolWindow id="Perf Sentinel"
+                    anchor="bottom"
+                    factoryClass="io.github.robintra.perfsentinel.ui.PerfSentinelToolWindowFactory"/>
+        <projectConfigurable id="io.github.robintra.perfsentinel.settings"
+                             parentId="tools"
+                             key="settings.title"
+                             instance="io.github.robintra.perfsentinel.settings.PerfSentinelConfigurable"/>
+        <postStartupActivity implementation="io.github.robintra.perfsentinel.service.PerfSentinelStartupActivity"/>
+    </extensions>
+
+</idea-plugin>
