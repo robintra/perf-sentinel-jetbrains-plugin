@@ -10,15 +10,31 @@ import java.nio.file.Paths
 import kotlinx.coroutines.runBlocking
 
 class DirectAnchorResolverTest : BasePlatformTestCase() {
-    fun testNavigatesToAnExistingInProjectLine() {
-        val file = Paths.get(project.basePath!!).resolve("service-invalid.rb")
+    fun testNavigatesToAnExistingInProjectCSharpLine() {
+        val file = Paths.get(project.basePath!!).resolve("Program.cs")
         Files.createDirectories(file.parent)
         Files.writeString(file, "first\nsecond\nthird")
 
-        val result = runBlocking { DirectAnchorResolver.resolve(project, finding(file.toString(), 2)) }
+        val result = runBlocking {
+            DirectAnchorResolver.resolve(
+                project,
+                finding(file.toString(), 2, "SlowPath", "PerfSentinel.RiderSmoke.Program"),
+            )
+        }
 
         assertInstanceOf(result, OpenFileDescriptor::class.java)
         assertTrue(result!!.canNavigate())
+    }
+
+    fun testDoesNotInventATargetForASymbolOnlyCSharpFinding() {
+        val result = runBlocking {
+            DirectAnchorResolver.resolve(
+                project,
+                finding(null, null, "SlowPath", "PerfSentinel.RiderSmoke.Program"),
+            )
+        }
+
+        assertNull(result)
     }
 
     fun testRejectsALineOutsideTheFile() {
@@ -29,7 +45,12 @@ class DirectAnchorResolverTest : BasePlatformTestCase() {
         assertNull(runBlocking { DirectAnchorResolver.resolve(project, finding(file.toString(), 4)) })
     }
 
-    private fun finding(filepath: String, lineNumber: Int) = Finding(
+    private fun finding(
+        filepath: String?,
+        lineNumber: Int?,
+        function: String? = null,
+        namespace: String? = null,
+    ) = Finding(
         type = "slow_http",
         severity = "warning",
         traceId = "trace",
@@ -41,7 +62,7 @@ class DirectAnchorResolverTest : BasePlatformTestCase() {
         firstTimestamp = "2026-08-07T12:00:00Z",
         lastTimestamp = "2026-08-07T12:00:01Z",
         confidence = "daemon_staging",
-        codeLocation = CodeLocation(null, filepath, lineNumber, null),
+        codeLocation = CodeLocation(function, filepath, lineNumber, namespace),
         signature = "slow_http:service",
     )
 }

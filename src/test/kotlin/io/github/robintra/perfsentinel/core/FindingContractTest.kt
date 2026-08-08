@@ -63,6 +63,22 @@ class FindingContractTest {
     }
 
     @Test
+    fun `decodes a Rider C sharp finding and points at the smoke source`() {
+        val response = parseFindings(fixture("rider-smoke/file-line.json")).single()
+        val location = requireNotNull(response.finding.codeLocation)
+
+        assertEquals("rider-smoke", response.finding.service)
+        assertEquals("Program.cs", location.filepath)
+        assertEquals(12, location.lineNumber)
+        assertEquals("PerfSentinel.RiderSmoke.Program", location.namespace)
+        assertEquals("SlowPath", location.function)
+        assertEquals(
+            "Thread.Sleep(25);",
+            fixture("rider-smoke/Program.cs").lineSequence().elementAt(location.lineNumber!! - 1).trim(),
+        )
+    }
+
+    @Test
     fun `maps confidence to editor signal strength`() {
         assertEquals(HighlightLevel.HINT, highlightLevel("local_batch"))
         assertEquals(HighlightLevel.HINT, highlightLevel("ci_batch"))
@@ -90,4 +106,7 @@ class FindingContractTest {
         assertEquals(null, zeroBasedLine(0, 100))
         assertEquals(null, zeroBasedLine(101, 100))
     }
+
+    private fun fixture(path: String): String =
+        requireNotNull(javaClass.classLoader.getResource(path)) { "Missing test fixture: $path" }.readText()
 }
