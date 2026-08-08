@@ -27,6 +27,12 @@ dependencies {
     }
 }
 
+val runRider by intellijPlatformTesting.runIde.registering {
+    type = IntelliJPlatformType.Rider
+    version = "2025.3.4.1"
+    splitMode = false
+}
+
 kotlin {
     jvmToolchain(21)
     compilerOptions {
@@ -46,6 +52,8 @@ intellijPlatform {
         ides {
             create(IntelliJPlatformType.IntellijIdea, "2025.3.5")
             create(IntelliJPlatformType.IntellijIdea, "2026.2")
+            create(IntelliJPlatformType.Rider, "2025.3.4.1")
+            create(IntelliJPlatformType.Rider, "2026.2")
         }
     }
 }
