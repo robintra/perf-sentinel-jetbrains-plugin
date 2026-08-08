@@ -30,6 +30,7 @@ dependencies {
 val runRider by intellijPlatformTesting.runIde.registering {
     type = IntelliJPlatformType.Rider
     version = "2025.3.4.1"
+    useInstaller = false
     splitMode = false
 }
 
