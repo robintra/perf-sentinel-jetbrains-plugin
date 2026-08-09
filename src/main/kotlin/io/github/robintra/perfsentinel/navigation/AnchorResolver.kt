@@ -13,3 +13,9 @@ interface AnchorResolver {
             ExtensionPointName.create("io.github.robintra.perfsentinel.anchorResolver")
     }
 }
+
+internal fun Finding.symbolName(): String? = codeLocation?.function
+    ?.substringBefore('(')
+    ?.substringAfterLast('.')
+    ?.trim()
+    ?.takeIf(String::isNotEmpty)

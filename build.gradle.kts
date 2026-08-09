@@ -17,10 +17,11 @@ dependencies {
 
     // IntelliJ Platform Gradle Plugin Dependencies Extension - read more: https://plugins.jetbrains.com/docs/intellij/tools-intellij-platform-gradle-plugin-dependencies-extension.html
     intellijPlatform {
-        intellijIdea("2025.3.5")
+        intellijIdea("2025.3.6.1")
         testFramework(TestFrameworkType.Platform)
         testFramework(TestFrameworkType.Plugin.Java)
         bundledPlugin("com.intellij.java")
+        bundledPlugin("org.jetbrains.kotlin")
 
         // Add plugin dependencies for compilation here, for example:
         // bundledPlugin("com.intellij.java")
@@ -29,7 +30,7 @@ dependencies {
 
 val runRider by intellijPlatformTesting.runIde.registering {
     type = IntelliJPlatformType.Rider
-    version = "2025.3.4.1"
+    version = "2025.3.5"
     useInstaller = false
     splitMode = false
 }
@@ -51,10 +52,10 @@ intellijPlatform {
     }
     pluginVerification {
         ides {
-            create(IntelliJPlatformType.IntellijIdea, "2025.3.5")
-            create(IntelliJPlatformType.IntellijIdea, "2026.2")
-            create(IntelliJPlatformType.Rider, "2025.3.4.1")
-            create(IntelliJPlatformType.Rider, "2026.2")
+            create(IntelliJPlatformType.IntellijIdea, "2025.3.6.1")
+            create(IntelliJPlatformType.IntellijIdea, "2026.2.0.1")
+            create(IntelliJPlatformType.Rider, "2025.3.5")
+            create(IntelliJPlatformType.Rider, "2026.2.0.2")
         }
     }
 }
