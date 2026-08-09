@@ -1,0 +1,5 @@
+<idea-plugin>
+    <extensions defaultExtensionNs="io.github.robintra.perfsentinel">
+        <anchorResolver implementation="io.github.robintra.perfsentinel.ruby.RubyAnchorResolver"/>
+    </extensions>
+</idea-plugin>

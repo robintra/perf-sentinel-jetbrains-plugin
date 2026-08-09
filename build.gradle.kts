@@ -90,16 +90,30 @@ intellijPlatformTesting.testIde.register("testRustRover262") {
     }
 }
 
+intellijPlatformTesting.testIde.register("testRubyMine253") {
+    type = IntelliJPlatformType.RubyMine
+    version = "2025.3.6.1"
+    useInstaller = false
+    testFramework(TestFrameworkType.Platform)
+    task {
+        classpath += files(ideaTestRuntime)
+        filter {
+            includeTestsMatching("*RubyAnchorResolverTest")
+        }
+    }
+}
+
 tasks.test {
     filter {
         excludeTestsMatching("io.github.robintra.perfsentinel.python.*")
         excludeTestsMatching("io.github.robintra.perfsentinel.php.*")
         excludeTestsMatching("io.github.robintra.perfsentinel.rust.*")
+        excludeTestsMatching("io.github.robintra.perfsentinel.ruby.*")
     }
 }
 
 tasks.check {
-    dependsOn("testPyCharm253", "testPhpStorm253", "testRustRover253", "testRustRover262")
+    dependsOn("testPyCharm253", "testPhpStorm253", "testRustRover253", "testRustRover262", "testRubyMine253")
 }
 
 kotlin {
@@ -129,6 +143,8 @@ intellijPlatform {
             create(IntelliJPlatformType.PhpStorm, "2026.2.0.1")
             create(IntelliJPlatformType.RustRover, "2025.3.7")
             create(IntelliJPlatformType.RustRover, "2026.2.1")
+            create(IntelliJPlatformType.RubyMine, "2025.3.6.1")
+            create(IntelliJPlatformType.RubyMine, "2026.2")
         }
     }
 }
