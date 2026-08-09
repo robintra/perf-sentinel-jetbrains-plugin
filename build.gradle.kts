@@ -47,14 +47,27 @@ intellijPlatformTesting.testIde.register("testPyCharm253") {
     }
 }
 
+intellijPlatformTesting.testIde.register("testPhpStorm253") {
+    type = IntelliJPlatformType.PhpStorm
+    version = "2025.3.6.1"
+    useInstaller = false
+    testFramework(TestFrameworkType.Platform)
+    task {
+        filter {
+            includeTestsMatching("*PhpAnchorResolverTest")
+        }
+    }
+}
+
 tasks.test {
     filter {
         excludeTestsMatching("io.github.robintra.perfsentinel.python.*")
+        excludeTestsMatching("io.github.robintra.perfsentinel.php.*")
     }
 }
 
 tasks.check {
-    dependsOn("testPyCharm253")
+    dependsOn("testPyCharm253", "testPhpStorm253")
 }
 
 kotlin {
@@ -78,6 +91,10 @@ intellijPlatform {
             create(IntelliJPlatformType.IntellijIdea, "2026.2.0.1")
             create(IntelliJPlatformType.Rider, "2025.3.5")
             create(IntelliJPlatformType.Rider, "2026.2.0.2")
+            create(IntelliJPlatformType.PyCharmProfessional, "2025.3.6.1")
+            create(IntelliJPlatformType.PyCharm, "2026.2.0.1")
+            create(IntelliJPlatformType.PhpStorm, "2025.3.6.1")
+            create(IntelliJPlatformType.PhpStorm, "2026.2.0.1")
         }
     }
 }
