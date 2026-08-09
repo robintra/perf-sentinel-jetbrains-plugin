@@ -35,6 +35,28 @@ val runRider by intellijPlatformTesting.runIde.registering {
     splitMode = false
 }
 
+intellijPlatformTesting.testIde.register("testPyCharm253") {
+    type = IntelliJPlatformType.PyCharmProfessional
+    version = "2025.3.6.1"
+    useInstaller = false
+    testFramework(TestFrameworkType.Platform)
+    task {
+        filter {
+            includeTestsMatching("*PythonAnchorResolverTest")
+        }
+    }
+}
+
+tasks.test {
+    filter {
+        excludeTestsMatching("io.github.robintra.perfsentinel.python.*")
+    }
+}
+
+tasks.check {
+    dependsOn("testPyCharm253")
+}
+
 kotlin {
     jvmToolchain(21)
     compilerOptions {

@@ -22,6 +22,7 @@
     <depends>com.intellij.modules.platform</depends>
     <depends optional="true" config-file="perf-sentinel-java.xml">com.intellij.java</depends>
     <depends optional="true" config-file="perf-sentinel-kotlin.xml">org.jetbrains.kotlin</depends>
+    <depends optional="true" config-file="perf-sentinel-python.xml">Pythonid</depends>
 
     <resource-bundle>messages.PerfSentinelBundle</resource-bundle>
 
