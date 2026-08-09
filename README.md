@@ -2,7 +2,7 @@
 
 ## Overview
 
-Perf Sentinel displays performance findings from a running `perf-sentinel` daemon directly in JetBrains IDEs. This first increment provides a read-only findings tool window, project-local daemon settings, generic `filepath:lineno` navigation and highlighting, optional Java symbol resolution, and verified direct file/line correlation for C# projects in Rider.
+Perf Sentinel displays performance findings from a running `perf-sentinel` daemon directly in JetBrains IDEs. This first increment provides a read-only findings tool window, project-local daemon settings, generic `filepath:lineno` navigation and highlighting, optional Java and Kotlin symbol resolution, and verified direct file/line correlation for C# projects in Rider.
 
 The plugin calls:
 
@@ -15,7 +15,7 @@ Open **Settings | Tools | Perf Sentinel** to configure more daemon endpoints or 
 ## Development
 
 - JDK 21
-- IntelliJ Platform 2025.3.5 with `since-build` 253
+- IntelliJ Platform 2025.3.6.1 with `since-build` 253
 - Kotlin with the IDE-bundled standard library and coroutines
 - Qodana JVM Community
 
@@ -40,7 +40,7 @@ The installable ZIP is generated in `build/distributions/` by `buildPlugin`.
 ## Current limits
 
 - Findings are read-only. Acknowledgements are displayed but cannot be edited.
-- Java is the first optional PSI adapter. Other languages use direct file and line locations.
+- Java and Kotlin have optional PSI adapters. Python, PHP, Rust, Ruby, JavaScript, TypeScript, and Go still use direct file and line locations.
 - Rider supports direct C# `filepath:lineno` correlation through the shared IntelliJ frontend. C# `namespace:function` and semantic workspace correlation remain deferred to a ReSharper backend.
 - Split Mode, signing, and Marketplace publishing are deferred.
 
