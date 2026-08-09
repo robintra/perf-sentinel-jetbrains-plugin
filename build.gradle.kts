@@ -103,17 +103,42 @@ intellijPlatformTesting.testIde.register("testRubyMine253") {
     }
 }
 
+intellijPlatformTesting.testIde.register("testWebStorm253") {
+    type = IntelliJPlatformType.WebStorm
+    version = "2025.3.6.1"
+    useInstaller = false
+    testFramework(TestFrameworkType.Platform)
+    plugins {
+        // The 2025.3 test fixture misidentifies Vue's lib/modules directory as the plugin lib root.
+        disablePlugin("org.jetbrains.plugins.vue")
+    }
+    task {
+        classpath += files(ideaTestRuntime)
+        filter {
+            includeTestsMatching("*JavaScriptAnchorResolverTest")
+        }
+    }
+}
+
 tasks.test {
     filter {
         excludeTestsMatching("io.github.robintra.perfsentinel.python.*")
         excludeTestsMatching("io.github.robintra.perfsentinel.php.*")
         excludeTestsMatching("io.github.robintra.perfsentinel.rust.*")
         excludeTestsMatching("io.github.robintra.perfsentinel.ruby.*")
+        excludeTestsMatching("io.github.robintra.perfsentinel.javascript.*")
     }
 }
 
 tasks.check {
-    dependsOn("testPyCharm253", "testPhpStorm253", "testRustRover253", "testRustRover262", "testRubyMine253")
+    dependsOn(
+        "testPyCharm253",
+        "testPhpStorm253",
+        "testRustRover253",
+        "testRustRover262",
+        "testRubyMine253",
+        "testWebStorm253",
+    )
 }
 
 kotlin {
@@ -145,6 +170,8 @@ intellijPlatform {
             create(IntelliJPlatformType.RustRover, "2026.2.1")
             create(IntelliJPlatformType.RubyMine, "2025.3.6.1")
             create(IntelliJPlatformType.RubyMine, "2026.2")
+            create(IntelliJPlatformType.WebStorm, "2025.3.6.1")
+            create(IntelliJPlatformType.WebStorm, "2026.2.1")
         }
     }
 }
