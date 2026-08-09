@@ -12,6 +12,7 @@ exclude:
   - name: All
     paths:
       - .qodana
+      - .worktrees
   # The Community image lacks optional product plugins; Plugin Verifier covers this file.
   - name: PluginXmlValidity
     paths:
