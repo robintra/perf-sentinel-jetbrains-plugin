@@ -2,6 +2,7 @@ package io.github.robintra.perfsentinel.navigation
 
 import com.intellij.ide.actions.QualifiedNameProviderUtil
 import com.intellij.navigation.ChooseByNameRegistry
+import com.intellij.navigation.GotoClassContributor
 import com.intellij.openapi.application.readAction
 import com.intellij.openapi.project.IndexNotReadyException
 import com.intellij.openapi.project.Project
@@ -15,6 +16,7 @@ object PlatformSymbolAnchorResolver {
         project: Project,
         finding: Finding,
         languageIds: Set<String>,
+        qualifiedNameFallback: (PsiElement) -> String? = { null },
     ): Navigatable? {
         val namespace = finding.codeLocation?.namespace?.trim()?.takeIf(String::isNotEmpty) ?: return null
         val function = finding.symbolName() ?: return null
@@ -22,15 +24,25 @@ object PlatformSymbolAnchorResolver {
         return try {
             readAction {
                 val fileIndex = ProjectFileIndex.getInstance(project)
-                ChooseByNameRegistry.getInstance().symbolModelContributors
-                    .asSequence()
-                    .flatMap { it.getItemsByName(function, function, project, false).asSequence() }
-                    .mapNotNull { item ->
+                   ChooseByNameRegistry.getInstance().symbolModelContributors
+                       .asSequence()
+                       .flatMap { contributor ->
+                           contributor.getItemsByName(function, function, project, false)
+                               .asSequence()
+                               .map { contributor to it }
+                       }
+                       .mapNotNull { (contributor, item) ->
                         val element = (item as? PsiElement)?.navigationElement ?: return@mapNotNull null
                         val file = element.containingFile?.virtualFile ?: return@mapNotNull null
                         if (!fileIndex.isInContent(file) || !element.matchesLanguage(languageIds)) return@mapNotNull null
-                        val qualifiedName = QualifiedNameProviderUtil.getQualifiedName(element) ?: return@mapNotNull null
-                        if (normalizeQualifiedName(qualifiedName) != expectedName) return@mapNotNull null
+                           val qualifiedNames = sequenceOf(
+                               (contributor as? GotoClassContributor)?.getQualifiedName(item),
+                               QualifiedNameProviderUtil.getQualifiedName(element),
+                               qualifiedNameFallback(element),
+                           )
+                           if (qualifiedNames.filterNotNull().none { normalizeQualifiedName(it) == expectedName }) {
+                               return@mapNotNull null
+                           }
                         Triple(file.path, element.textOffset, item)
                     }
                     .distinctBy { (path, offset) -> path to offset }

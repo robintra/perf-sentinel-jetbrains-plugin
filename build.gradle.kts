@@ -1,5 +1,6 @@
 import org.jetbrains.intellij.platform.gradle.TestFrameworkType
 import org.jetbrains.intellij.platform.gradle.IntelliJPlatformType
+import org.jetbrains.intellij.platform.gradle.extensions.IntelliJPlatformExtension
 import org.jetbrains.kotlin.gradle.dsl.JvmTarget
 import org.jetbrains.kotlin.gradle.dsl.JvmDefaultMode
 
@@ -8,6 +9,10 @@ plugins {
     id("org.jetbrains.changelog")
     id("org.jetbrains.qodana")
     id("org.jetbrains.intellij.platform")
+}
+
+val ideaTestRuntime = providers.provider {
+    extensions.getByType<IntelliJPlatformExtension>().platformPath.resolve("lib/idea_rt.jar").toFile()
 }
 
 // Read more: https://plugins.jetbrains.com/docs/intellij/tools-intellij-platform-gradle-plugin.html
@@ -59,15 +64,42 @@ intellijPlatformTesting.testIde.register("testPhpStorm253") {
     }
 }
 
+intellijPlatformTesting.testIde.register("testRustRover253") {
+    type = IntelliJPlatformType.RustRover
+    version = "2025.3.7"
+    useInstaller = false
+    testFramework(TestFrameworkType.Platform, "253.33813.55")
+    task {
+        classpath += files(ideaTestRuntime)
+        filter {
+            includeTestsMatching("*RustAnchorResolverTest")
+        }
+    }
+}
+
+intellijPlatformTesting.testIde.register("testRustRover262") {
+    type = IntelliJPlatformType.RustRover
+    version = "2026.2.1"
+    useInstaller = false
+    testFramework(TestFrameworkType.Platform, "262.8665.337")
+    task {
+        classpath += files(ideaTestRuntime)
+        filter {
+            includeTestsMatching("*RustAnchorResolverTest")
+        }
+    }
+}
+
 tasks.test {
     filter {
         excludeTestsMatching("io.github.robintra.perfsentinel.python.*")
         excludeTestsMatching("io.github.robintra.perfsentinel.php.*")
+        excludeTestsMatching("io.github.robintra.perfsentinel.rust.*")
     }
 }
 
 tasks.check {
-    dependsOn("testPyCharm253", "testPhpStorm253")
+    dependsOn("testPyCharm253", "testPhpStorm253", "testRustRover253", "testRustRover262")
 }
 
 kotlin {
@@ -95,6 +127,8 @@ intellijPlatform {
             create(IntelliJPlatformType.PyCharm, "2026.2.0.1")
             create(IntelliJPlatformType.PhpStorm, "2025.3.6.1")
             create(IntelliJPlatformType.PhpStorm, "2026.2.0.1")
+            create(IntelliJPlatformType.RustRover, "2025.3.7")
+            create(IntelliJPlatformType.RustRover, "2026.2.1")
         }
     }
 }
