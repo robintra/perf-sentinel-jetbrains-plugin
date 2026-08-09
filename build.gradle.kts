@@ -120,6 +120,19 @@ intellijPlatformTesting.testIde.register("testWebStorm253") {
     }
 }
 
+intellijPlatformTesting.testIde.register("testGoLand253") {
+    type = IntelliJPlatformType.GoLand
+    version = "2025.3.5.1"
+    useInstaller = false
+    testFramework(TestFrameworkType.Platform)
+    task {
+        classpath += files(ideaTestRuntime)
+        filter {
+            includeTestsMatching("*GoAnchorResolverTest")
+        }
+    }
+}
+
 tasks.test {
     filter {
         excludeTestsMatching("io.github.robintra.perfsentinel.python.*")
@@ -127,6 +140,7 @@ tasks.test {
         excludeTestsMatching("io.github.robintra.perfsentinel.rust.*")
         excludeTestsMatching("io.github.robintra.perfsentinel.ruby.*")
         excludeTestsMatching("io.github.robintra.perfsentinel.javascript.*")
+        excludeTestsMatching("io.github.robintra.perfsentinel.go.*")
     }
 }
 
@@ -138,6 +152,7 @@ tasks.check {
         "testRustRover262",
         "testRubyMine253",
         "testWebStorm253",
+        "testGoLand253",
     )
 }
 
@@ -172,6 +187,8 @@ intellijPlatform {
             create(IntelliJPlatformType.RubyMine, "2026.2")
             create(IntelliJPlatformType.WebStorm, "2025.3.6.1")
             create(IntelliJPlatformType.WebStorm, "2026.2.1")
+            create(IntelliJPlatformType.GoLand, "2025.3.5.1")
+            create(IntelliJPlatformType.GoLand, "2026.2.0.1")
         }
     }
 }
