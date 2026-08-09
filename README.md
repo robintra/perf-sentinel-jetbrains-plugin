@@ -2,7 +2,7 @@
 
 ## Overview
 
-Perf Sentinel displays performance findings from a running `perf-sentinel` daemon directly in JetBrains IDEs. This first increment provides a read-only findings tool window, project-local daemon settings, generic `filepath:lineno` navigation and highlighting, optional Java and Kotlin symbol resolution, and verified direct file/line correlation for C# projects in Rider.
+Perf Sentinel displays performance findings from a running `perf-sentinel` daemon directly in JetBrains IDEs. It provides a read-only findings tool window, project-local daemon settings, generic `filepath:lineno` navigation and highlighting, and optional semantic symbol resolution for Java, Kotlin, Python, PHP, Rust, Ruby, JavaScript, TypeScript, Node.js, and Go. Rider supports direct file and line correlation for C# projects.
 
 The plugin calls:
 
@@ -18,6 +18,8 @@ Open **Settings | Tools | Perf Sentinel** to configure more daemon endpoints or 
 - IntelliJ Platform 2025.3.6.1 with `since-build` 253
 - Kotlin with the IDE-bundled standard library and coroutines
 - Qodana JVM Community
+
+Product compatibility is verified against the stable 2025.3 and 2026.2 releases of IntelliJ IDEA, Rider, PyCharm, PhpStorm, RustRover, RubyMine, WebStorm, and GoLand. Language integrations are optional. The generated ZIP contains only Perf Sentinel code and loads without unavailable language plugins.
 
 Run the complete local verification:
 
@@ -40,7 +42,6 @@ The installable ZIP is generated in `build/distributions/` by `buildPlugin`.
 ## Current limits
 
 - Findings are read-only. Acknowledgements are displayed but cannot be edited.
-- Java and Kotlin have optional PSI adapters. Python, PHP, Rust, Ruby, JavaScript, TypeScript, and Go still use direct file and line locations.
 - Rider supports direct C# `filepath:lineno` correlation through the shared IntelliJ frontend. C# `namespace:function` and semantic workspace correlation remain deferred to a ReSharper backend.
 - Split Mode, signing, and Marketplace publishing are deferred.
 

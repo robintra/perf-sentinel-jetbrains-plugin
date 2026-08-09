@@ -19,12 +19,10 @@ class KotlinAnchorResolver : AnchorResolver {
         return try {
             readAction {
                 val scope = GlobalSearchScope.projectScope(project)
-                val members = KotlinFullClassNameIndex.Helper
-                    .get(namespace, project, scope)
+                val members = KotlinFullClassNameIndex[namespace, project, scope]
                     .flatMap { owner -> owner.declarations.filterIsInstance<KtNamedFunction>() }
                     .filter { it.name == function }
-                val topLevel = KotlinFunctionShortNameIndex.Helper
-                    .get(function, project, scope)
+                val topLevel = KotlinFunctionShortNameIndex[function, project, scope]
                     .filter { it.fqName?.asString() == "$namespace.$function" }
                 (members + topLevel).distinct().singleOrNull()
             }

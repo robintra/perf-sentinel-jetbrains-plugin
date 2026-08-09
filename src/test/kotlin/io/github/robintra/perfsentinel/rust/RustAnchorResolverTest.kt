@@ -43,6 +43,11 @@ class RustAnchorResolverTest : BasePlatformTestCase() {
 
     fun testRejectsDuplicateDeclarations() {
         myFixture.configureByText("one.rs", "mod orders { pub fn load_items() {} }")
+        assertNotNull(
+            runBlocking {
+                RustAnchorResolver().resolve(project, finding("orders", "load_items"))
+            },
+        )
         myFixture.configureByText("two.rs", "mod orders { pub fn load_items() {} }")
 
         assertNull(

@@ -14,7 +14,6 @@ plugins {
 val ideaTestRuntime = providers.provider {
     extensions.getByType<IntelliJPlatformExtension>().platformPath.resolve("lib/idea_rt.jar").toFile()
 }
-
 // Read more: https://plugins.jetbrains.com/docs/intellij/tools-intellij-platform-gradle-plugin.html
 dependencies {
     compileOnly(libs.gson)
@@ -175,8 +174,8 @@ intellijPlatform {
         ides {
             create(IntelliJPlatformType.IntellijIdea, "2025.3.6.1")
             create(IntelliJPlatformType.IntellijIdea, "2026.2.0.1")
-            create(IntelliJPlatformType.Rider, "2025.3.5")
-            create(IntelliJPlatformType.Rider, "2026.2.0.2")
+            create(IntelliJPlatformType.Rider, "2025.3.5") { useInstaller = false }
+            create(IntelliJPlatformType.Rider, "2026.2.0.2") { useInstaller = false }
             create(IntelliJPlatformType.PyCharmProfessional, "2025.3.6.1")
             create(IntelliJPlatformType.PyCharm, "2026.2.0.1")
             create(IntelliJPlatformType.PhpStorm, "2025.3.6.1")
