@@ -109,33 +109,78 @@ class JavaAnchorResolverTest : LightJavaCodeInsightFixtureTestCase() {
         assertEquals("com.example.OrderEntity", (result as PsiClass).qualifiedName)
     }
 
-    fun testRejectsJpaFallbackWithoutPositiveJavaProvenance() {
+    fun testRejectsJpaFallbackForANonJavaFilepathEvenWhenTheNamespaceResolves() {
         addJpaTable("jakarta.persistence")
         addJava(
             "com/example/OrderEntity.java",
             "package com.example; @jakarta.persistence.Table(name=\"orders\") public class OrderEntity {}",
         )
+        addJava("com/example/OrderService.java", "package com.example; public class OrderService {}")
 
-        assertNull(resolveFallback(finding(null, null, "SELECT * FROM orders")))
-    }
-
-    fun testRejectsSchemaQualifiedSqlForAnEntityWithoutAnExplicitSchema() {
-        addJpaTable("jakarta.persistence")
-        addJava(
-            "com/example/OrderEntity.java",
-            "package com.example; @jakarta.persistence.Table(name=\"orders\") public class OrderEntity {}",
-        )
-
+        // The reported path is the strongest signal: a resolvable namespace must not rescue it,
+        // or a Kotlin or Node service jumps into an unrelated Java entity.
         assertNull(
             resolveFallback(
                 finding(
+                    "com.example.OrderService",
                     null,
-                    null,
-                    "SELECT * FROM audit.orders",
-                    filepath = "src/main/java/com/example/OrderService.java",
+                    "SELECT * FROM orders",
+                    filepath = "src/main/kotlin/com/example/OrderService.kt",
                 ),
             ),
         )
+    }
+
+    fun testRejectsJpaFallbackWhenTheOnlyNamespaceDoesNotResolveToJava() {
+        addJpaTable("jakarta.persistence")
+        addJava(
+            "com/example/OrderEntity.java",
+            "package com.example; @jakarta.persistence.Table(name=\"orders\") public class OrderEntity {}",
+        )
+
+        assertNull(resolveFallback(finding("app.services.orders", null, "SELECT * FROM orders")))
+    }
+
+    fun testAcceptsJpaFallbackWhenTheFindingCarriesNoCodeLocation() {
+        addJpaTable("jakarta.persistence")
+        addJava(
+            "com/example/OrderEntity.java",
+            "package com.example; @jakarta.persistence.Table(name=\"orders\") public class OrderEntity {}",
+        )
+
+        // Spans with no code.* attributes are exactly what this fallback exists for.
+        assertInstanceOf(
+            resolveFallback(finding(null, null, "SELECT * FROM orders")),
+            PsiClass::class.java,
+        )
+    }
+
+    fun testAcceptsSchemaQualifiedSqlForAnEntityInheritingItsSchemaFromConfiguration() {
+        addJpaTable("jakarta.persistence")
+        addJava(
+            "com/example/OrderEntity.java",
+            "package com.example; @jakarta.persistence.Table(name=\"orders\") public class OrderEntity {}",
+        )
+
+        // hibernate.default_schema and search_path live outside the annotation.
+        assertInstanceOf(
+            resolveSql("SELECT * FROM audit.orders"),
+            PsiClass::class.java,
+        )
+    }
+
+    fun testRefusesSchemaQualifiedSqlWhenTwoSchemaLessEntitiesShareTheBareName() {
+        addJpaTable("jakarta.persistence")
+        addJava(
+            "com/example/OrderEntity.java",
+            "package com.example; @jakarta.persistence.Table(name=\"orders\") public class OrderEntity {}",
+        )
+        addJava(
+            "com/example/LegacyOrderEntity.java",
+            "package com.example; @jakarta.persistence.Table(name=\"orders\") public class LegacyOrderEntity {}",
+        )
+
+        assertNull(resolveSql("SELECT * FROM audit.orders"))
     }
 
     fun testAcceptsJpaFallbackWhenNamespaceResolvesToJava() {
@@ -227,10 +272,19 @@ class JavaAnchorResolverTest : LightJavaCodeInsightFixtureTestCase() {
             "com/example/OrderEntity.java",
             "package com.example; @jakarta.persistence.Table(name=\"orders\") public class OrderEntity {}",
         )
-        assertNull(resolveFallback(finding(null, null, "SELECT * FROM orders", type = "slow_http")))
+        // Java provenance on purpose: this pins the type and dumb-mode guards, not the gate.
+        val java = "src/main/java/com/example/OrderService.java"
+        assertNull(
+            resolveFallback(finding(null, null, "SELECT * FROM orders", type = "slow_http", filepath = java)),
+        )
 
         val result = DumbModeTestUtils.computeInDumbModeSynchronously(project) {
-            runBlocking { JavaAnchorResolver().resolveFallback(project, finding(null, null, "SELECT * FROM orders")) }
+            runBlocking {
+                JavaAnchorResolver().resolveFallback(
+                    project,
+                    finding(null, null, "SELECT * FROM orders", filepath = java),
+                )
+            }
         }
         assertNull(result)
     }
