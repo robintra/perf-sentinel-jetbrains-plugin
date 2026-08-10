@@ -1,6 +1,7 @@
 package io.github.robintra.perfsentinel.java
 
 import com.intellij.openapi.application.readAction
+import com.intellij.openapi.project.IndexNotReadyException
 import com.intellij.openapi.project.Project
 import com.intellij.pom.Navigatable
 import com.intellij.psi.JavaPsiFacade
@@ -14,15 +15,19 @@ class JavaAnchorResolver : AnchorResolver {
         val location = finding.codeLocation ?: return null
         val namespace = location.namespace ?: return null
         val function = finding.symbolName() ?: return null
-        return readAction {
-            val owner = JavaPsiFacade.getInstance(project)
-                .findClass(namespace, GlobalSearchScope.projectScope(project))
-                ?: return@readAction null
-            // Own declarations first so an override does not read as ambiguity against the
-            // method it overrides; base classes only when the class declares nothing by that name.
-            val declared = owner.findMethodsByName(function, false)
-            val candidates = if (declared.isNotEmpty()) declared else owner.findMethodsByName(function, true)
-            candidates.singleOrNull()
+        return try {
+            readAction {
+                val owner = JavaPsiFacade.getInstance(project)
+                    .findClass(namespace, GlobalSearchScope.projectScope(project))
+                    ?: return@readAction null
+                // Own declarations first so an override does not read as ambiguity against the
+                // method it overrides; base classes only when the class declares nothing by that name.
+                val declared = owner.findMethodsByName(function, false)
+                val candidates = if (declared.isNotEmpty()) declared else owner.findMethodsByName(function, true)
+                candidates.singleOrNull()
+            }
+        } catch (_: IndexNotReadyException) {
+            null
         }
     }
 }
