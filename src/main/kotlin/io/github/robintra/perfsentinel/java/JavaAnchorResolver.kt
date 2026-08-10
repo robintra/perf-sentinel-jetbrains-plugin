@@ -1,6 +1,7 @@
 package io.github.robintra.perfsentinel.java
 
 import com.intellij.openapi.application.readAction
+import com.intellij.openapi.project.DumbService
 import com.intellij.openapi.project.IndexNotReadyException
 import com.intellij.openapi.project.Project
 import com.intellij.pom.Navigatable
@@ -12,22 +13,26 @@ import io.github.robintra.perfsentinel.navigation.symbolName
 
 class JavaAnchorResolver : AnchorResolver {
     override suspend fun resolve(project: Project, finding: Finding): Navigatable? {
-        val location = finding.codeLocation ?: return null
-        val namespace = location.namespace ?: return null
-        val function = finding.symbolName() ?: return null
+        if (DumbService.isDumb(project)) return null
         return try {
             readAction {
-                val owner = JavaPsiFacade.getInstance(project)
-                    .findClass(namespace, GlobalSearchScope.projectScope(project))
-                    ?: return@readAction null
-                // Own declarations first so an override does not read as ambiguity against the
-                // method it overrides; base classes only when the class declares nothing by that name.
-                val declared = owner.findMethodsByName(function, false)
-                val candidates = if (declared.isNotEmpty()) declared else owner.findMethodsByName(function, true)
-                candidates.singleOrNull()
+                resolveMethod(project, finding) ?: JpaTableAnchorResolver.resolve(project, finding)
             }
         } catch (_: IndexNotReadyException) {
             null
         }
+    }
+
+    private fun resolveMethod(project: Project, finding: Finding): Navigatable? {
+        val namespace = finding.codeLocation?.namespace ?: return null
+        val function = finding.symbolName() ?: return null
+        val owner = JavaPsiFacade.getInstance(project)
+            .findClass(namespace, GlobalSearchScope.projectScope(project))
+            ?: return null
+        // Own declarations first so an override does not read as ambiguity against the
+        // method it overrides; base classes only when the class declares nothing by that name.
+        val declared = owner.findMethodsByName(function, false)
+        val candidates = if (declared.isNotEmpty()) declared else owner.findMethodsByName(function, true)
+        return candidates.singleOrNull()
     }
 }
