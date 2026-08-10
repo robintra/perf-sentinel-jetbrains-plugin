@@ -20,7 +20,7 @@
       "code_location": {
         "function": "SlowPath",
         "filepath": "Program.cs",
-        "lineno": 12,
+        "lineno": 18,
         "namespace": "PerfSentinel.RiderSmoke.Program"
       },
       "instrumentation_scopes": ["OpenTelemetry.Instrumentation.AspNetCore"],

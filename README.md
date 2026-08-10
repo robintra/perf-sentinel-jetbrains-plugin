@@ -2,7 +2,7 @@
 
 ## Overview
 
-Perf Sentinel displays performance findings from a running `perf-sentinel` daemon directly in JetBrains IDEs. It provides a read-only findings tool window, project-local daemon settings, generic `filepath:lineno` navigation and highlighting, and optional semantic symbol resolution for Java, Kotlin, Python, PHP, Rust, Ruby, JavaScript, TypeScript, Node.js, and Go. Rider supports direct file and line correlation for C# projects.
+Perf Sentinel displays performance findings from a running `perf-sentinel` daemon directly in JetBrains IDEs. It provides a read-only findings tool window, project-local daemon settings, generic `filepath:lineno` navigation and highlighting, and optional semantic symbol resolution for Java, Kotlin, Python, PHP, Rust, Ruby, JavaScript, TypeScript, Node.js, Go, and C# in Rider.
 
 The plugin calls:
 
@@ -11,6 +11,8 @@ GET http://127.0.0.1:4318/api/findings?service=<project>&limit=1000&include_acke
 ```
 
 Open **Settings | Tools | Perf Sentinel** to configure more daemon endpoints or override the service name. Findings are fetched once when a project opens and whenever **Refresh** is selected. There is no background polling.
+
+Perf Sentinel defines no default keyboard shortcut; open it from the tool window bar or **Find Action** and assign a shortcut only if desired.
 
 ## Development
 
@@ -35,14 +37,14 @@ python3 tools/rider-fixture-daemon.py
 ./gradlew runRider
 ```
 
-Open `src/test/resources/rider-smoke` in that instance. The default fixture targets `Program.cs:12`. Pass `src/test/resources/rider-smoke/symbol-only.json` to the fixture daemon to verify that unresolved C# symbols remain visible without a false diagnostic.
+Open `src/test/resources/rider-smoke` in that instance. The default fixture targets `Program.cs:18`. Pass `src/test/resources/rider-smoke/semantic-symbols.json` to verify semantic C# navigation for methods, constructors, property accessors, and local functions. Overloads without an argument signature remain visible but intentionally unresolved.
 
 The installable ZIP is generated in `build/distributions/` by `buildPlugin`.
 
 ## Current limits
 
 - Findings are read-only. Acknowledgements are displayed but cannot be edited.
-- Rider supports direct C# `filepath:lineno` correlation through the shared IntelliJ frontend. C# `namespace:function` and semantic workspace correlation remain deferred to a ReSharper backend.
+- Rider resolves C# `namespace:function` locations through ReSharper when direct `filepath:lineno` data is unavailable. Metadata symbols and overloads without an argument signature are intentionally unresolved.
 - Split Mode, signing, and Marketplace publishing are deferred.
 
 ## License

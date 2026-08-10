@@ -1,0 +1,158 @@
+[
+  {
+    "finding": {
+      "type": "csharp_method",
+      "severity": "warning",
+      "trace_id": "rider-trace-method",
+      "service": "rider-smoke",
+      "grouping": [],
+      "source_endpoint": "POST /method",
+      "pattern": { "template": "SlowPath", "occurrences": 1, "window_ms": 1000, "distinct_params": 1 },
+      "suggestion": "Open the method",
+      "first_timestamp": "2026-08-10T10:00:00Z",
+      "last_timestamp": "2026-08-10T10:00:01Z",
+      "confidence": "daemon_staging",
+      "code_location": {
+        "function": "PerfSentinel.RiderSmoke.Program.SlowPath",
+        "filepath": null,
+        "lineno": null,
+        "namespace": "PerfSentinel.RiderSmoke.Program"
+      },
+      "signature": "csharp_method:rider-smoke"
+    },
+    "stored_at_ms": 1786356001000,
+    "first_seen_ms": 1786356000000,
+    "seen_count": 1,
+    "acknowledged_by": null
+  },
+  {
+    "finding": {
+      "type": "csharp_constructor",
+      "severity": "warning",
+      "trace_id": "rider-trace-constructor",
+      "service": "rider-smoke",
+      "grouping": [],
+      "source_endpoint": "POST /constructor",
+      "pattern": { "template": ".ctor", "occurrences": 1, "window_ms": 1000, "distinct_params": 1 },
+      "suggestion": "Open the constructor",
+      "first_timestamp": "2026-08-10T10:00:00Z",
+      "last_timestamp": "2026-08-10T10:00:01Z",
+      "confidence": "daemon_staging",
+      "code_location": {
+        "function": "PerfSentinel.RiderSmoke.Program..ctor",
+        "filepath": null,
+        "lineno": null,
+        "namespace": "PerfSentinel.RiderSmoke.Program"
+      },
+      "signature": "csharp_constructor:rider-smoke"
+    },
+    "stored_at_ms": 1786356001000,
+    "first_seen_ms": 1786356000000,
+    "seen_count": 1,
+    "acknowledged_by": null
+  },
+  {
+    "finding": {
+      "type": "csharp_getter",
+      "severity": "warning",
+      "trace_id": "rider-trace-getter",
+      "service": "rider-smoke",
+      "grouping": [],
+      "source_endpoint": "POST /getter",
+      "pattern": { "template": "get_SampleValue", "occurrences": 1, "window_ms": 1000, "distinct_params": 1 },
+      "suggestion": "Open the getter",
+      "first_timestamp": "2026-08-10T10:00:00Z",
+      "last_timestamp": "2026-08-10T10:00:01Z",
+      "confidence": "daemon_staging",
+      "code_location": {
+        "function": "PerfSentinel.RiderSmoke.Program.get_SampleValue",
+        "filepath": null,
+        "lineno": null,
+        "namespace": "PerfSentinel.RiderSmoke.Program"
+      },
+      "signature": "csharp_getter:rider-smoke"
+    },
+    "stored_at_ms": 1786356001000,
+    "first_seen_ms": 1786356000000,
+    "seen_count": 1,
+    "acknowledged_by": null
+  },
+  {
+    "finding": {
+      "type": "csharp_setter",
+      "severity": "warning",
+      "trace_id": "rider-trace-setter",
+      "service": "rider-smoke",
+      "grouping": [],
+      "source_endpoint": "POST /setter",
+      "pattern": { "template": "set_SampleValue", "occurrences": 1, "window_ms": 1000, "distinct_params": 1 },
+      "suggestion": "Open the setter",
+      "first_timestamp": "2026-08-10T10:00:00Z",
+      "last_timestamp": "2026-08-10T10:00:01Z",
+      "confidence": "daemon_staging",
+      "code_location": {
+        "function": "PerfSentinel.RiderSmoke.Program.set_SampleValue",
+        "filepath": null,
+        "lineno": null,
+        "namespace": "PerfSentinel.RiderSmoke.Program"
+      },
+      "signature": "csharp_setter:rider-smoke"
+    },
+    "stored_at_ms": 1786356001000,
+    "first_seen_ms": 1786356000000,
+    "seen_count": 1,
+    "acknowledged_by": null
+  },
+  {
+    "finding": {
+      "type": "csharp_local_function",
+      "severity": "warning",
+      "trace_id": "rider-trace-local-function",
+      "service": "rider-smoke",
+      "grouping": [],
+      "source_endpoint": "POST /local-function",
+      "pattern": { "template": "LocalWork", "occurrences": 1, "window_ms": 1000, "distinct_params": 1 },
+      "suggestion": "Open the local function",
+      "first_timestamp": "2026-08-10T10:00:00Z",
+      "last_timestamp": "2026-08-10T10:00:01Z",
+      "confidence": "daemon_staging",
+      "code_location": {
+        "function": "PerfSentinel.RiderSmoke.Program.<Outer>g__LocalWork|0_0",
+        "filepath": null,
+        "lineno": null,
+        "namespace": "PerfSentinel.RiderSmoke.Program"
+      },
+      "signature": "csharp_local_function:rider-smoke"
+    },
+    "stored_at_ms": 1786356001000,
+    "first_seen_ms": 1786356000000,
+    "seen_count": 1,
+    "acknowledged_by": null
+  },
+  {
+    "finding": {
+      "type": "csharp_ambiguous_overload",
+      "severity": "warning",
+      "trace_id": "rider-trace-ambiguous",
+      "service": "rider-smoke",
+      "grouping": [],
+      "source_endpoint": "POST /ambiguous",
+      "pattern": { "template": "Ambiguous", "occurrences": 1, "window_ms": 1000, "distinct_params": 1 },
+      "suggestion": "Keep the unresolved finding visible",
+      "first_timestamp": "2026-08-10T10:00:00Z",
+      "last_timestamp": "2026-08-10T10:00:01Z",
+      "confidence": "daemon_staging",
+      "code_location": {
+        "function": "PerfSentinel.RiderSmoke.Program.Ambiguous",
+        "filepath": null,
+        "lineno": null,
+        "namespace": "PerfSentinel.RiderSmoke.Program"
+      },
+      "signature": "csharp_ambiguous_overload:rider-smoke"
+    },
+    "stored_at_ms": 1786356001000,
+    "first_seen_ms": 1786356000000,
+    "seen_count": 1,
+    "acknowledged_by": null
+  }
+]

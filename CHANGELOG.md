@@ -16,5 +16,5 @@
 - Optional Ruby module, instance method, and singleton method correlation.
 - Optional JavaScript and TypeScript correlation for CommonJS, ESM, classes, and NestJS controllers.
 - Optional Go package function and receiver method correlation.
-- Rider compatibility verification and direct C# file/line correlation smoke coverage.
+- Rider C# file/line and semantic navigation for methods, constructors, property accessors, and local functions.
 - Compatibility verification for the stable 2025.3 and 2026.2 releases of all supported JetBrains products.

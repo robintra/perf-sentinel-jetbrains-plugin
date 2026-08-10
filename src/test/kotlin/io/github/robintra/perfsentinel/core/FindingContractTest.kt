@@ -112,7 +112,7 @@ class FindingContractTest {
 
         assertEquals("rider-smoke", response.finding.service)
         assertEquals("Program.cs", location.filepath)
-        assertEquals(12, location.lineNumber)
+        assertEquals(18, location.lineNumber)
         assertEquals("PerfSentinel.RiderSmoke.Program", location.namespace)
         assertEquals("SlowPath", location.function)
         assertEquals(

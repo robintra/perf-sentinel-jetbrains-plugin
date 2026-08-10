@@ -1,6 +1,7 @@
 import org.jetbrains.intellij.platform.gradle.TestFrameworkType
 import org.jetbrains.intellij.platform.gradle.IntelliJPlatformType
 import org.jetbrains.intellij.platform.gradle.extensions.IntelliJPlatformExtension
+import org.jetbrains.intellij.platform.gradle.tasks.PrepareSandboxTask
 import org.jetbrains.kotlin.gradle.dsl.JvmTarget
 import org.jetbrains.kotlin.gradle.dsl.JvmDefaultMode
 
@@ -35,6 +36,13 @@ dependencies {
 val runRider by intellijPlatformTesting.runIde.registering {
     type = IntelliJPlatformType.Rider
     version = "2025.3.5"
+    useInstaller = false
+    splitMode = false
+}
+
+val runRider262 by intellijPlatformTesting.runIde.registering {
+    type = IntelliJPlatformType.Rider
+    version = "2026.2.0.2"
     useInstaller = false
     splitMode = false
 }
@@ -185,7 +193,7 @@ tasks.check {
     )
 }
 
-tasks.prepareSandbox {
+tasks.withType<PrepareSandboxTask>().configureEach {
     dependsOn(compileRiderBackend, ":rider-frontend:jar")
     from(project(":rider-frontend").layout.buildDirectory.file("libs/perf-sentinel-rider-frontend.jar")) {
         into("${rootProject.name}/lib")
