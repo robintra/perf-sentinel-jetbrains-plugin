@@ -10,6 +10,7 @@ import com.intellij.testFramework.fixtures.LightJavaCodeInsightFixtureTestCase
 import io.github.robintra.perfsentinel.core.CodeLocation
 import io.github.robintra.perfsentinel.core.Finding
 import io.github.robintra.perfsentinel.core.FindingPattern
+import io.github.robintra.perfsentinel.navigation.AnchorNavigator
 import java.io.File
 import java.nio.file.Files
 import java.nio.file.Path
@@ -150,9 +151,31 @@ class JavaAnchorResolverTest : LightJavaCodeInsightFixtureTestCase() {
             "package com.example; public class OrderService { public void loadItems() {} }",
         )
 
-        val result = resolve(finding("com.example.OrderService", "loadItems", "SELECT * FROM orders"))
+        // Through the dispatcher: calling the resolver directly never reaches resolveFallback, so the
+        // ordering this test is named for would hold no matter how the two tiers were wired.
+        val result = navigate(finding("com.example.OrderService", "loadItems", "SELECT * FROM orders"))
 
         assertInstanceOf(result, PsiMethod::class.java)
+    }
+
+    fun testRefusesTheJpaGuessWhenTheMethodItselfIsAmbiguous() {
+        addJpaTable("jakarta.persistence")
+        addJava(
+            "com/example/OrderEntity.java",
+            "package com.example; @jakarta.persistence.Table(name=\"orders\") public class OrderEntity {}",
+        )
+        addJava(
+            "com/example/OrderService.java",
+            """
+            package com.example;
+            public class OrderService {
+                public void loadItems() {}
+                public void loadItems(int page) {}
+            }
+            """.trimIndent(),
+        )
+
+        assertNull(navigate(finding("com.example.OrderService", "loadItems", "SELECT * FROM orders")))
     }
 
     fun testDoesNotUseSqlFallbackForNonSqlFindingsOrDuringDumbMode() {
@@ -223,6 +246,10 @@ class JavaAnchorResolverTest : LightJavaCodeInsightFixtureTestCase() {
     }
 
     private fun resolve(finding: Finding) = runBlocking { JavaAnchorResolver().resolve(project, finding) }
+
+    private fun navigate(finding: Finding) = runBlocking {
+        AnchorNavigator.resolve(project, finding, listOf(JavaAnchorResolver()))
+    }
 
     private fun resolveSql(sql: String) = resolveFallback(finding(null, null, sql))
 
