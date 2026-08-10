@@ -12,6 +12,7 @@ import com.intellij.openapi.fileEditor.FileEditorManager
 import com.intellij.openapi.fileEditor.FileEditorManagerListener
 import com.intellij.openapi.fileEditor.TextEditor
 import com.intellij.openapi.project.Project
+import com.intellij.openapi.vfs.LocalFileSystem
 import com.intellij.openapi.vfs.VirtualFile
 import io.github.robintra.perfsentinel.core.FindingResponse
 import io.github.robintra.perfsentinel.core.HighlightLevel
@@ -20,7 +21,6 @@ import io.github.robintra.perfsentinel.core.resolveProjectFile
 import io.github.robintra.perfsentinel.core.zeroBasedLine
 import io.github.robintra.perfsentinel.service.FINDINGS_TOPIC
 import io.github.robintra.perfsentinel.service.FindingsListener
-import java.nio.file.Path
 import java.nio.file.Paths
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -58,6 +58,9 @@ class FindingHighlighter(
                 snapshot.mapNotNull { response ->
                     response.finding.codeLocation?.filepath
                         ?.let { resolveProjectFile(root, it) }
+                        // Go through the VFS like DirectAnchorResolver does: a nio path string never
+                        // matches VirtualFile.path on Windows, nor under a symlinked project root.
+                        ?.let { LocalFileSystem.getInstance().refreshAndFindFileByNioFile(it) }
                         ?.let { ResolvedHighlight(it, response) }
                 }
             }
@@ -72,7 +75,7 @@ class FindingHighlighter(
             resolved.forEach { resolvedFinding ->
                 val response = resolvedFinding.response
                 val location = response.finding.codeLocation ?: return@forEach
-                if (resolvedFinding.path.toString() != textEditor.file.path) return@forEach
+                if (resolvedFinding.file != textEditor.file) return@forEach
                 val line = zeroBasedLine(location.lineNumber, editor.document.lineCount) ?: return@forEach
                 val attributesKey = when (highlightLevel(response.finding.confidence)) {
                     HighlightLevel.HINT -> CodeInsightColors.INFORMATION_ATTRIBUTES
@@ -99,5 +102,5 @@ class FindingHighlighter(
         clearHighlights()
     }
 
-    private data class ResolvedHighlight(val path: Path, val response: FindingResponse)
+    private data class ResolvedHighlight(val file: VirtualFile, val response: FindingResponse)
 }
