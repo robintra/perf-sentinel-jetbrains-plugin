@@ -32,5 +32,8 @@ object DirectAnchorResolver {
 object AnchorNavigator {
     suspend fun resolve(project: Project, finding: Finding): Navigatable? =
         DirectAnchorResolver.resolve(project, finding)
-            ?: AnchorResolver.EP_NAME.extensionList.firstNotNullOfOrNull { it.resolve(project, finding) }
+        // Every candidate, not the first: in a polyglot IDE the same qualified name can exist in two
+        // languages, and taking whichever extension is registered first defeats the unique-match rule
+        // each resolver enforces internally.
+            ?: AnchorResolver.EP_NAME.extensionList.mapNotNull { it.resolve(project, finding) }.singleOrNull()
 }
