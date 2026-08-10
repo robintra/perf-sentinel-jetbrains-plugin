@@ -4,7 +4,7 @@
 
 Perf Sentinel displays performance findings from a running `perf-sentinel` daemon directly in JetBrains IDEs. It provides a read-only findings tool window, project-local daemon settings, generic `filepath:lineno` navigation and highlighting, and optional semantic symbol resolution for Java, Kotlin, Python, PHP, Rust, Ruby, JavaScript, TypeScript, Node.js, Go, and C# in Rider.
 
-For Java SQL findings without a resolvable code location, navigation can use the primary SQL table to find a unique project entity with an explicit JPA `@Table` annotation. If that entity belongs to a dependency, the plugin can instead navigate to a unique project Spring Data repository bound to it.
+For SQL findings with positive Java provenance (a `.java` path or a namespace resolving to a Java class), navigation can use the primary SQL table to find a unique project entity with an explicit JPA `@Table` annotation. Schema-qualified SQL additionally requires an explicit matching JPA schema. If that entity belongs to a dependency, the plugin can instead navigate to a unique project Spring Data repository bound to it.
 
 The plugin calls:
 

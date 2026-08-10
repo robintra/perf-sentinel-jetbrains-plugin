@@ -109,6 +109,49 @@ class JavaAnchorResolverTest : LightJavaCodeInsightFixtureTestCase() {
         assertEquals("com.example.OrderEntity", (result as PsiClass).qualifiedName)
     }
 
+    fun testRejectsJpaFallbackWithoutPositiveJavaProvenance() {
+        addJpaTable("jakarta.persistence")
+        addJava(
+            "com/example/OrderEntity.java",
+            "package com.example; @jakarta.persistence.Table(name=\"orders\") public class OrderEntity {}",
+        )
+
+        assertNull(resolveFallback(finding(null, null, "SELECT * FROM orders")))
+    }
+
+    fun testRejectsSchemaQualifiedSqlForAnEntityWithoutAnExplicitSchema() {
+        addJpaTable("jakarta.persistence")
+        addJava(
+            "com/example/OrderEntity.java",
+            "package com.example; @jakarta.persistence.Table(name=\"orders\") public class OrderEntity {}",
+        )
+
+        assertNull(
+            resolveFallback(
+                finding(
+                    null,
+                    null,
+                    "SELECT * FROM audit.orders",
+                    filepath = "src/main/java/com/example/OrderService.java",
+                ),
+            ),
+        )
+    }
+
+    fun testAcceptsJpaFallbackWhenNamespaceResolvesToJava() {
+        addJpaTable("jakarta.persistence")
+        addJava(
+            "com/example/OrderEntity.java",
+            "package com.example; @jakarta.persistence.Table(name=\"orders\") public class OrderEntity {}",
+        )
+        addJava("com/example/OrderService.java", "package com.example; public class OrderService {}")
+
+        assertInstanceOf(
+            resolveFallback(finding("com.example.OrderService", null, "SELECT * FROM orders")),
+            PsiClass::class.java,
+        )
+    }
+
     fun testSupportsJavaxConstantNamesAndExactSchemas() {
         addJpaTable("javax.persistence")
         addJava(
@@ -251,7 +294,9 @@ class JavaAnchorResolverTest : LightJavaCodeInsightFixtureTestCase() {
         AnchorNavigator.resolve(project, finding, listOf(JavaAnchorResolver()))
     }
 
-    private fun resolveSql(sql: String) = resolveFallback(finding(null, null, sql))
+    private fun resolveSql(sql: String) = resolveFallback(
+        finding(null, null, sql, filepath = "src/main/java/com/example/OrderService.java"),
+    )
 
     private fun resolveFallback(finding: Finding) =
         runBlocking { JavaAnchorResolver().resolveFallback(project, finding) }
@@ -321,6 +366,7 @@ class JavaAnchorResolverTest : LightJavaCodeInsightFixtureTestCase() {
         function: String?,
         sql: String = "SELECT 1",
         type: String = "n_plus_one_sql",
+        filepath: String? = null,
     ) = Finding(
         type = type,
         severity = "warning",
@@ -333,7 +379,11 @@ class JavaAnchorResolverTest : LightJavaCodeInsightFixtureTestCase() {
         firstTimestamp = "2026-08-07T12:00:00Z",
         lastTimestamp = "2026-08-07T12:00:01Z",
         confidence = "daemon_staging",
-        codeLocation = namespace?.let { CodeLocation(function, null, null, it) },
+        codeLocation = if (namespace != null || filepath != null) {
+            CodeLocation(function, filepath, null, namespace)
+        } else {
+            null
+        },
         signature = "n_plus_one_sql:order",
     )
 }

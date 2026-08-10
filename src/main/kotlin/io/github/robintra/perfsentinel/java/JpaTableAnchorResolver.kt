@@ -25,12 +25,14 @@ internal object JpaTableAnchorResolver {
 
     fun resolve(project: Project, finding: Finding): Navigatable? {
         if (!finding.type.endsWith("_sql")) return null
-        // A finding carries no language. Its reported path is the only signal, and without this gate a
-        // SQL finding from a Node or Python service lands in an unrelated Java entity.
-        val filepath = finding.codeLocation?.filepath
-        if (filepath != null && !filepath.endsWith(".java", ignoreCase = true)) return null
-        val table = SqlTableExtractor.extract(finding.pattern.template) ?: return null
         val facade = JavaPsiFacade.getInstance(project)
+        val location = finding.codeLocation ?: return null
+        val isJava = location.filepath?.endsWith(".java", ignoreCase = true) == true ||
+            location.namespace?.let {
+                facade.findClass(it, GlobalSearchScope.allScope(project)) != null
+            } == true
+        if (!isJava) return null
+        val table = SqlTableExtractor.extract(finding.pattern.template) ?: return null
         val fileIndex = ProjectFileIndex.getInstance(project)
         // Project sources first: the common case answers without enumerating every annotated class in
         // every library jar, twice.
@@ -83,10 +85,7 @@ internal object JpaTableAnchorResolver {
         val name = annotation.stringValue("name", facade)?.toSqlIdentifier() ?: return false
         if (!table.table.matches(name)) return false
         val expectedSchema = table.schema ?: return true
-        // An entity that declares no schema takes it from configuration (hibernate.default_schema,
-        // search_path), so it stays a candidate for schema-qualified SQL. Two entities matching the
-        // bare name then read as ambiguous and refuse navigation, which is the safe outcome.
-        val schema = annotation.stringValue("schema", facade)?.toSqlIdentifier() ?: return true
+        val schema = annotation.stringValue("schema", facade)?.toSqlIdentifier() ?: return false
         return expectedSchema.matches(schema)
     }
 
