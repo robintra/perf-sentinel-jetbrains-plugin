@@ -108,6 +108,13 @@ class RiderAnchorResolverTest : TestCase() {
         assertNull(resolve { _, _, _ -> null })
     }
 
+    fun testRiderSolutionBridgeMatchesSupportedApi() {
+        val method = Class.forName("com.jetbrains.rider.projectView.SolutionHostExtensionsKt")
+            .getMethod("getSolution", Project::class.java)
+
+        assertEquals("com.jetbrains.rd.ide.model.Solution", method.returnType.name)
+    }
+
     private fun resolve(
         file: LightVirtualFile? = null,
         namespace: String? = "Shop.Orders",

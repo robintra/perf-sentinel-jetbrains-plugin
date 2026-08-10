@@ -5,7 +5,7 @@ import com.intellij.openapi.project.Project
 import com.intellij.openapi.vfs.LocalFileSystem
 import com.intellij.openapi.vfs.VirtualFile
 import com.intellij.pom.Navigatable
-import com.jetbrains.rider.projectView.solution
+import com.jetbrains.rd.ide.model.Solution
 import io.github.robintra.perfsentinel.core.Finding
 import io.github.robintra.perfsentinel.navigation.AnchorResolver
 import io.github.robintra.perfsentinel.rider.model.CSharpSymbolRequest
@@ -34,9 +34,17 @@ class RiderAnchorResolver internal constructor(
 }
 
 private suspend fun resolveCSharpSymbol(project: Project, namespace: String, function: String): SourceAnchor? =
-    project.solution.perfSentinelModel.resolveCSharpSymbol.startSuspending(
+    riderSolution(project).perfSentinelModel.resolveCSharpSymbol.startSuspending(
         CSharpSymbolRequest(namespace, function),
     )
+
+private val riderSolutionGetter by lazy {
+    Class.forName("com.jetbrains.rider.projectView.SolutionHostExtensionsKt")
+        .getMethod("getSolution", Project::class.java)
+}
+
+private fun riderSolution(project: Project): Solution =
+    Solution::class.java.cast(riderSolutionGetter.invoke(null, project))
 
 private suspend fun findLocalFile(path: String): VirtualFile? = withContext(Dispatchers.IO) {
     LocalFileSystem.getInstance().refreshAndFindFileByPath(path)
