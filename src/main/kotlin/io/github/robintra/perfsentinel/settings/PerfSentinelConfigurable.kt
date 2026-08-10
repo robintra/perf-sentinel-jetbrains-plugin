@@ -45,7 +45,11 @@ class PerfSentinelConfigurable(private val project: Project) : Configurable {
 
     override fun isModified(): Boolean {
         val current = project.service<PerfSentinelSettings>().snapshot()
-        return endpointLines() != current.endpoints || serviceField?.text.orEmpty().trim() != current.serviceOverride
+        // Normalized against normalized: apply() stores the normalized form, so comparing raw lines
+        // leaves the dialog dirty forever after a trailing newline or any other rewritten input.
+        // Unparseable text counts as modified — apply() is where the user gets the error.
+        val edited = runCatching { normalizeEndpoints(endpointLines()) }.getOrNull()
+        return edited != current.endpoints || serviceField?.text.orEmpty().trim() != current.serviceOverride
     }
 
     override fun apply() {
