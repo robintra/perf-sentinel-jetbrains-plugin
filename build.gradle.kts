@@ -55,6 +55,19 @@ val compileRiderBackend by tasks.registering(Exec::class) {
     )
 }
 
+val testRiderBackend by tasks.registering(Exec::class) {
+    dependsOn(":protocol:rdgen")
+    // JetBrains' ReSharper SDK test host is supported on Windows; macOS falls back to Mono and cannot restore fixtures.
+    onlyIf { System.getProperty("os.name").startsWith("Windows") }
+    commandLine(
+        dotnetExecutable,
+        "test",
+        "src/dotnet/PerfSentinel.Rider.Tests/PerfSentinel.Rider.Tests.csproj",
+        "--configuration",
+        "Debug",
+    )
+}
+
 intellijPlatformTesting.testIde.register("testPyCharm253") {
     type = IntelliJPlatformType.PyCharmProfessional
     version = "2025.3.6.1"
@@ -160,7 +173,7 @@ tasks.test {
 }
 
 tasks.check {
-    dependsOn(compileRiderBackend)
+    dependsOn(compileRiderBackend, testRiderBackend)
     dependsOn(
         "testPyCharm253",
         "testPhpStorm253",
