@@ -2,6 +2,7 @@ package io.github.robintra.perfsentinel.core
 
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertNotNull
+import org.junit.Assert.assertNull
 import org.junit.Test
 import java.nio.file.Files
 
@@ -20,6 +21,48 @@ class FindingContractTest {
         assertEquals("order-service", resolveServiceName("fallback", "/work/order-service", "  "))
         assertEquals("fallback", resolveServiceName("fallback", null, null))
     }
+
+    @Test
+    fun `tolerates explicit nulls in every optional field`() {
+        val row = parseFindings("[${finding(nulls = true)}]").single()
+
+        assertEquals("ci_batch", row.finding.confidence)
+        assertEquals("", row.finding.signature)
+        assertEquals(emptyList<GroupingAttribute>(), row.finding.grouping)
+        assertEquals(0, row.firstSeenMs)
+        assertEquals(1, row.seenCount)
+        assertNull(row.finding.codeLocation)
+    }
+
+    @Test
+    fun `drops only the malformed finding and keeps the rest of the endpoint`() {
+        val response = parseFindings("[${finding()}, {\"finding\": {\"type\": \"broken\"}}, ${finding()}]")
+
+        assertEquals(2, response.size)
+    }
+
+    private fun finding(nulls: Boolean = false) = """
+        {
+          "finding": {
+            "type": "n_plus_one_sql",
+            "severity": "warning",
+            "trace_id": "abc123",
+            "service": "order-service",
+            "grouping": ${if (nulls) "null" else """[{"key":"env","value":"prod"}]"""},
+            "source_endpoint": "POST /orders",
+            "pattern": {"template":"SELECT 1","occurrences":2,"window_ms":10,"distinct_params":2},
+            "suggestion": "Batch the lookup",
+            "first_timestamp": "2026-08-07T12:00:00Z",
+            "last_timestamp": "2026-08-07T12:00:01Z",
+            "confidence": ${if (nulls) "null" else "\"daemon_staging\""},
+            "code_location": null,
+            "signature": ${if (nulls) "null" else "\"sig\""}
+          },
+          "stored_at_ms": 1250,
+          "first_seen_ms": ${if (nulls) "null" else "1000"},
+          "seen_count": ${if (nulls) "null" else "3"}
+        }
+    """.trimIndent()
 
     @Test
     fun `decodes daemon findings and ignores future fields`() {
