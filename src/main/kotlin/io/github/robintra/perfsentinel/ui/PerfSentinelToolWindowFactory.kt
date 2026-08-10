@@ -195,6 +195,14 @@ private class FindingsTableModel : AbstractTableModel() {
     override fun getColumnCount(): Int = columns.size
     override fun getColumnName(column: Int): String = PerfSentinelBundle.message(columns[column])
 
+    // Without this the auto-created row sorter compares every column as text, so "Seen" orders
+    // 10, 100, 2 and "Age" interleaves minutes, hours and days alphabetically.
+    override fun getColumnClass(columnIndex: Int): Class<*> = when (columnIndex) {
+        5 -> Age::class.java
+        7 -> java.lang.Long::class.java
+        else -> String::class.java
+    }
+
     override fun getValueAt(rowIndex: Int, columnIndex: Int): Any {
         val response = rows[rowIndex]
         val finding = response.finding
@@ -204,7 +212,7 @@ private class FindingsTableModel : AbstractTableModel() {
             2 -> finding.type
             3 -> locationText(finding.codeLocation)
             4 -> finding.service
-            5 -> ageText(finding.lastTimestamp)
+            5 -> Age(finding.lastTimestamp)
             6 -> response.source
             else -> response.seenCount
         }
@@ -220,6 +228,18 @@ private fun locationText(location: io.github.robintra.perfsentinel.core.CodeLoca
         location.lineNumber?.let { "$path:$it" } ?: path
     }.orEmpty()
     return listOf(symbol, file).filter(String::isNotEmpty).joinToString(" · ").ifEmpty { "—" }
+}
+
+// Renders as the localized age text but sorts on the instant behind it, newest first.
+private class Age(private val timestamp: String) : Comparable<Age> {
+    private val instant: Instant? = try {
+        Instant.parse(timestamp)
+    } catch (_: RuntimeException) {
+        null
+    }
+
+    override fun compareTo(other: Age): Int = compareValues(other.instant, instant)
+    override fun toString(): String = ageText(timestamp)
 }
 
 private fun ageText(timestamp: String): String = try {
