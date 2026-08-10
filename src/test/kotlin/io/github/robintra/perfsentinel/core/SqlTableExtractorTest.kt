@@ -33,6 +33,7 @@ class SqlTableExtractorTest : TestCase() {
             "",
             "SELECT 1",
             "SELECT * FROM (SELECT * FROM orders) nested",
+            "SELECT * FROM generate_series(1, 10)",
             "WITH recent AS (SELECT * FROM orders) SELECT * FROM recent",
             "SELECT * FROM orders, customers",
             "SELECT * FROM \${dynamic_table}",

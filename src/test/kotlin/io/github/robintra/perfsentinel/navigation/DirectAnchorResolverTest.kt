@@ -1,6 +1,7 @@
 package io.github.robintra.perfsentinel.navigation
 
 import com.intellij.openapi.fileEditor.OpenFileDescriptor
+import com.intellij.pom.Navigatable
 import com.intellij.testFramework.fixtures.BasePlatformTestCase
 import io.github.robintra.perfsentinel.core.CodeLocation
 import io.github.robintra.perfsentinel.core.Finding
@@ -45,6 +46,42 @@ class DirectAnchorResolverTest : BasePlatformTestCase() {
         assertNull(runBlocking { DirectAnchorResolver.resolve(project, finding(file.toString(), 4)) })
     }
 
+    fun testUsesFallbackOnlyWhenNoSemanticResolverMatches() {
+        val semantic = StubNavigatable()
+        val fallback = StubNavigatable()
+
+        assertSame(
+            semantic,
+            runBlocking {
+                AnchorNavigator.resolve(
+                    project,
+                    finding(null, null),
+                    listOf(StubResolver(semantic, fallback), StubResolver(null, fallback)),
+                )
+            },
+        )
+        assertSame(
+            fallback,
+            runBlocking {
+                AnchorNavigator.resolve(project, finding(null, null), listOf(StubResolver(null, fallback)))
+            },
+        )
+    }
+
+    fun testDoesNotFallBackWhenSemanticResolutionIsAmbiguous() {
+        val fallback = StubNavigatable()
+
+        assertNull(
+            runBlocking {
+                AnchorNavigator.resolve(
+                    project,
+                    finding(null, null),
+                    listOf(StubResolver(StubNavigatable(), fallback), StubResolver(StubNavigatable(), null)),
+                )
+            },
+        )
+    }
+
     private fun finding(
         filepath: String?,
         lineNumber: Int?,
@@ -65,4 +102,19 @@ class DirectAnchorResolverTest : BasePlatformTestCase() {
         codeLocation = CodeLocation(function, filepath, lineNumber, namespace),
         signature = "slow_http:service",
     )
+
+    private class StubResolver(
+        private val semantic: Navigatable?,
+        private val fallback: Navigatable?,
+    ) : AnchorResolver {
+        override suspend fun resolve(project: com.intellij.openapi.project.Project, finding: Finding) = semantic
+
+        override suspend fun resolveFallback(project: com.intellij.openapi.project.Project, finding: Finding) = fallback
+    }
+
+    private class StubNavigatable : Navigatable {
+        override fun navigate(requestFocus: Boolean) = Unit
+        override fun canNavigate() = true
+        override fun canNavigateToSource() = true
+    }
 }

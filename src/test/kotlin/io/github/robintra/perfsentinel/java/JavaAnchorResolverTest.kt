@@ -161,10 +161,10 @@ class JavaAnchorResolverTest : LightJavaCodeInsightFixtureTestCase() {
             "com/example/OrderEntity.java",
             "package com.example; @jakarta.persistence.Table(name=\"orders\") public class OrderEntity {}",
         )
-        assertNull(resolve(finding(null, null, "SELECT * FROM orders", type = "slow_http")))
+        assertNull(resolveFallback(finding(null, null, "SELECT * FROM orders", type = "slow_http")))
 
         val result = DumbModeTestUtils.computeInDumbModeSynchronously(project) {
-            runBlocking { JavaAnchorResolver().resolve(project, finding(null, null, "SELECT * FROM orders")) }
+            runBlocking { JavaAnchorResolver().resolveFallback(project, finding(null, null, "SELECT * FROM orders")) }
         }
         assertNull(result)
     }
@@ -184,6 +184,19 @@ class JavaAnchorResolverTest : LightJavaCodeInsightFixtureTestCase() {
 
         assertInstanceOf(result, PsiClass::class.java)
         assertEquals("com.example.OrderRepository", (result as PsiClass).qualifiedName)
+    }
+
+    fun testRejectsAmbiguousExternalEntitiesEvenWithOneRepository() {
+        addExternalJpaLibrary(
+            "external/OtherOrder.java" to
+                "package external; @jakarta.persistence.Table(name=\"orders\") public class OtherOrder {}",
+        )
+        addJava(
+            "com/example/OrderRepository.java",
+            "package com.example; public interface OrderRepository extends org.springframework.data.jpa.repository.JpaRepository<external.ExternalOrder, Long> {}",
+        )
+
+        assertNull(resolveSql("SELECT * FROM orders"))
     }
 
     fun testRejectsRawOrMultipleRepositories() {
@@ -211,7 +224,10 @@ class JavaAnchorResolverTest : LightJavaCodeInsightFixtureTestCase() {
 
     private fun resolve(finding: Finding) = runBlocking { JavaAnchorResolver().resolve(project, finding) }
 
-    private fun resolveSql(sql: String) = resolve(finding(null, null, sql))
+    private fun resolveSql(sql: String) = resolveFallback(finding(null, null, sql))
+
+    private fun resolveFallback(finding: Finding) =
+        runBlocking { JavaAnchorResolver().resolveFallback(project, finding) }
 
     private fun addJpaTable(packageName: String) {
         addJava(
@@ -225,11 +241,11 @@ class JavaAnchorResolverTest : LightJavaCodeInsightFixtureTestCase() {
         myFixture.configureFromExistingVirtualFile(file.virtualFile)
     }
 
-    private fun addExternalJpaLibrary() {
+    private fun addExternalJpaLibrary(vararg extraSources: Pair<String, String>) {
         val root = Files.createTempDirectory("perf-sentinel-external-jpa")
         val sourceRoot = Files.createDirectories(root.resolve("src"))
         val classes = Files.createDirectories(root.resolve("classes"))
-        val sources = mapOf(
+        val sources = (mapOf(
             "jakarta/persistence/Table.java" to
                 "package jakarta.persistence; public @interface Table { String name(); String schema() default \"\"; }",
             "external/ExternalOrder.java" to
@@ -238,7 +254,7 @@ class JavaAnchorResolverTest : LightJavaCodeInsightFixtureTestCase() {
                 "package org.springframework.data.repository; public interface Repository<T, ID> {}",
             "org/springframework/data/jpa/repository/JpaRepository.java" to
                 "package org.springframework.data.jpa.repository; public interface JpaRepository<T, ID> extends org.springframework.data.repository.Repository<T, ID> {}",
-        ).map { (relative, content) ->
+        ) + extraSources).map { (relative, content) ->
             sourceRoot.resolve(relative).also { file ->
                 Files.createDirectories(file.parent)
                 Files.writeString(file, content)

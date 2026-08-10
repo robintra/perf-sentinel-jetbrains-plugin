@@ -39,38 +39,36 @@ internal object JpaTableAnchorResolver {
             .filter { it.containingFile?.virtualFile?.let(fileIndex::isInSourceContent) == true }
         if (projectEntities.size > 1) return null
         projectEntities.singleOrNull()?.let { return it }
-        val libraryEntities = candidates
+        val libraryEntity = candidates
             .filter { it.containingFile?.virtualFile?.let(fileIndex::isInLibraryClasses) == true }
-        return resolveRepository(project, facade, libraryEntities)
+            .singleOrNull()
+            ?: return null
+        return resolveRepository(project, facade, libraryEntity)
     }
 
     private fun resolveRepository(
         project: Project,
         facade: JavaPsiFacade,
-        entities: List<PsiClass>,
+        entity: PsiClass,
     ): PsiClass? {
-        if (entities.isEmpty()) return null
         val repositoryBase = facade.findClass(SPRING_REPOSITORY, GlobalSearchScope.allScope(project)) ?: return null
         val entityParameter = repositoryBase.typeParameters.firstOrNull() ?: return null
         return ClassInheritorsSearch.search(repositoryBase, GlobalSearchScope.projectScope(project), true)
             .findAll()
             .asSequence()
-            .flatMap { repository ->
+            .mapNotNull { repository ->
                 val substitutor = TypeConversionUtil.getClassSubstitutor(
                     repositoryBase,
                     repository,
                     PsiSubstitutor.EMPTY,
-                ) ?: return@flatMap emptySequence()
+                ) ?: return@mapNotNull null
                 val entityType = substitutor.substitute(entityParameter) as? PsiClassType
-                    ?: return@flatMap emptySequence()
-                val resolvedEntity = entityType.resolve() ?: return@flatMap emptySequence()
-                entities.asSequence()
-                    .filter { it.manager.areElementsEquivalent(it, resolvedEntity) }
-                    .map { repository to it }
+                    ?: return@mapNotNull null
+                val resolvedEntity = entityType.resolve() ?: return@mapNotNull null
+                repository.takeIf { entity.manager.areElementsEquivalent(entity, resolvedEntity) }
             }
-            .distinctBy { (repository, entity) -> repository.location() to entity.location() }
+            .distinctBy { it.location() }
             .singleOrNull()
-            ?.first
     }
 
     private fun PsiClass.matches(table: SqlTableReference, facade: JavaPsiFacade): Boolean {

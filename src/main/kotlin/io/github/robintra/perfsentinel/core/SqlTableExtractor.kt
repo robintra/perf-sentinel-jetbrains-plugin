@@ -23,7 +23,9 @@ internal object SqlTableExtractor {
         } ?: return null
         val parsed = parseQualifiedIdentifier(statement.tokens, target) ?: return null
         if (parsed.value.schema == null && parsed.value.table.normalized() in statement.cteNames) return null
-        if (statement.keyword() == "SELECT" && statement.hasCommaAfter(parsed.nextIndex)) return null
+        if (statement.keyword() == "SELECT" &&
+            (statement.tokens.getOrNull(parsed.nextIndex)?.kind == SqlTokenKind.GROUP || statement.hasCommaAfter(parsed.nextIndex))
+        ) return null
         return parsed.value
     }
 }

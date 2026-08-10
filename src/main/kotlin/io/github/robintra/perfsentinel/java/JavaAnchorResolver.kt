@@ -12,12 +12,16 @@ import io.github.robintra.perfsentinel.navigation.AnchorResolver
 import io.github.robintra.perfsentinel.navigation.symbolName
 
 class JavaAnchorResolver : AnchorResolver {
-    override suspend fun resolve(project: Project, finding: Finding): Navigatable? {
+    override suspend fun resolve(project: Project, finding: Finding): Navigatable? =
+        safelyResolve(project) { resolveMethod(project, finding) }
+
+    override suspend fun resolveFallback(project: Project, finding: Finding): Navigatable? =
+        safelyResolve(project) { JpaTableAnchorResolver.resolve(project, finding) }
+
+    private suspend fun safelyResolve(project: Project, resolver: () -> Navigatable?): Navigatable? {
         if (DumbService.isDumb(project)) return null
         return try {
-            readAction {
-                resolveMethod(project, finding) ?: JpaTableAnchorResolver.resolve(project, finding)
-            }
+            readAction { resolver() }
         } catch (_: IndexNotReadyException) {
             null
         }

@@ -8,6 +8,8 @@ import io.github.robintra.perfsentinel.core.Finding
 interface AnchorResolver {
     suspend fun resolve(project: Project, finding: Finding): Navigatable?
 
+    suspend fun resolveFallback(project: Project, finding: Finding): Navigatable? = null
+
     companion object {
         val EP_NAME: ExtensionPointName<AnchorResolver> =
             ExtensionPointName.create("io.github.robintra.perfsentinel.anchorResolver")

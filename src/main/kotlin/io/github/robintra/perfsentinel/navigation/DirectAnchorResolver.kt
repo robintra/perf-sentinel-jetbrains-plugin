@@ -32,8 +32,17 @@ object DirectAnchorResolver {
 object AnchorNavigator {
     suspend fun resolve(project: Project, finding: Finding): Navigatable? =
         DirectAnchorResolver.resolve(project, finding)
-        // Every candidate, not the first: in a polyglot IDE the same qualified name can exist in two
-        // languages, and taking whichever extension is registered first defeats the unique-match rule
-        // each resolver enforces internally.
-            ?: AnchorResolver.EP_NAME.extensionList.mapNotNull { it.resolve(project, finding) }.singleOrNull()
+            ?: resolve(project, finding, AnchorResolver.EP_NAME.extensionList)
+
+    internal suspend fun resolve(
+        project: Project,
+        finding: Finding,
+        resolvers: List<AnchorResolver>,
+    ): Navigatable? {
+        // Resolve every language before trying heuristic fallbacks: the same qualified name can exist
+        // in two languages, and registration order must not pick a winner.
+        val semantic = resolvers.mapNotNull { it.resolve(project, finding) }
+        if (semantic.isNotEmpty()) return semantic.singleOrNull()
+        return resolvers.mapNotNull { it.resolveFallback(project, finding) }.singleOrNull()
+    }
 }
