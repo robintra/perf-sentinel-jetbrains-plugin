@@ -10,6 +10,7 @@ import io.github.robintra.perfsentinel.core.Finding
 import io.github.robintra.perfsentinel.core.resolveProjectFile
 import io.github.robintra.perfsentinel.core.zeroBasedLine
 import java.nio.file.Paths
+import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 
@@ -41,8 +42,19 @@ object AnchorNavigator {
     ): Navigatable? {
         // Resolve every language before trying heuristic fallbacks: the same qualified name can exist
         // in two languages, and registration order must not pick a winner.
-        val semantic = resolvers.mapNotNull { it.resolve(project, finding) }
+        val semantic = resolvers.mapNotNull { resolver -> isolate { resolver.resolve(project, finding) } }
         if (semantic.isNotEmpty()) return semantic.singleOrNull()
-        return resolvers.mapNotNull { it.resolveFallback(project, finding) }.singleOrNull()
+        return resolvers.mapNotNull { resolver -> isolate { resolver.resolveFallback(project, finding) } }
+            .singleOrNull()
+    }
+
+    // One resolver reaching a bad reflective PSI edge must remove only itself from the candidate set,
+    // not abort the pass for every other language.
+    private suspend fun isolate(resolve: suspend () -> Navigatable?): Navigatable? = try {
+        resolve()
+    } catch (cancellation: CancellationException) {
+        throw cancellation
+    } catch (_: Exception) {
+        null
     }
 }
