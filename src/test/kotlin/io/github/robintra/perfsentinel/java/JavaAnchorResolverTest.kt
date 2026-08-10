@@ -19,16 +19,70 @@ class JavaAnchorResolverTest : LightJavaCodeInsightFixtureTestCase() {
             """.trimIndent(),
         )
 
-        val result = runBlocking {
-            JavaAnchorResolver().resolve(project, finding("com.example.OrderService", "loadItems"))
-        }
+        val result = resolve("com.example.OrderService", "loadItems")
 
         assertInstanceOf(result, PsiMethod::class.java)
         assertEquals("loadItems", (result as PsiMethod).name)
     }
 
+    fun testRejectsAmbiguousOverloads() {
+        myFixture.configureByText(
+            "OrderService.java",
+            """
+            package com.example;
+            class OrderService {
+                void loadItems() {}
+                void loadItems(int page) {}
+            }
+            """.trimIndent(),
+        )
+
+        assertNull(resolve("com.example.OrderService", "loadItems"))
+    }
+
+    fun testResolvesAnOverrideWithoutReadingTheBaseMethodAsAmbiguity() {
+        myFixture.configureByText(
+            "Overrider.java",
+            """
+            package com.example;
+            class OverriddenBase {
+                void loadItems() {}
+            }
+            class Overrider extends OverriddenBase {
+                @Override
+                void loadItems() {}
+            }
+            """.trimIndent(),
+        )
+
+        val result = resolve("com.example.Overrider", "loadItems")
+
+        assertEquals("Overrider", (result as PsiMethod).containingClass?.name)
+    }
+
+    fun testResolvesAnInheritedMethodThroughTheBaseClass() {
+        myFixture.configureByText(
+            "Inheritor.java",
+            """
+            package com.example;
+            class InheritedBase {
+                void loadItems() {}
+            }
+            class Inheritor extends InheritedBase {}
+            """.trimIndent(),
+        )
+
+        val result = resolve("com.example.Inheritor", "loadItems")
+
+        assertEquals("InheritedBase", (result as PsiMethod).containingClass?.name)
+    }
+
     fun testReturnsNullWhenTheJavaSymbolDoesNotExist() {
-        assertNull(runBlocking { JavaAnchorResolver().resolve(project, finding("com.example.Missing", "missingMethod")) })
+        assertNull(resolve("com.example.Missing", "missingMethod"))
+    }
+
+    private fun resolve(namespace: String, function: String) = runBlocking {
+        JavaAnchorResolver().resolve(project, finding(namespace, function))
     }
 
     private fun finding(namespace: String, function: String) = Finding(

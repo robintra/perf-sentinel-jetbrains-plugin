@@ -15,10 +15,14 @@ class JavaAnchorResolver : AnchorResolver {
         val namespace = location.namespace ?: return null
         val function = finding.symbolName() ?: return null
         return readAction {
-            JavaPsiFacade.getInstance(project)
+            val owner = JavaPsiFacade.getInstance(project)
                 .findClass(namespace, GlobalSearchScope.projectScope(project))
-                ?.findMethodsByName(function, true)
-                ?.firstOrNull()
+                ?: return@readAction null
+            // Own declarations first so an override does not read as ambiguity against the
+            // method it overrides; base classes only when the class declares nothing by that name.
+            val declared = owner.findMethodsByName(function, false)
+            val candidates = if (declared.isNotEmpty()) declared else owner.findMethodsByName(function, true)
+            candidates.singleOrNull()
         }
     }
 }
