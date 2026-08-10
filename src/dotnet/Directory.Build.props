@@ -1,0 +1,17 @@
+<Project>
+  <PropertyGroup>
+    <LangVersion>latest</LangVersion>
+    <NoWarn>MSB3277</NoWarn>
+    <NoPackageAnalysis>true</NoPackageAnalysis>
+    <AppendTargetFrameworkToOutputPath>false</AppendTargetFrameworkToOutputPath>
+    <ResolveAssemblyWarnOrErrorOnTargetArchitectureMismatch>None</ResolveAssemblyWarnOrErrorOnTargetArchitectureMismatch>
+    <BaseIntermediateOutputPath>$(MSBuildThisFileDirectory)..\..\build\dotnet\obj\$(MSBuildProjectName)\</BaseIntermediateOutputPath>
+    <OutputPath>$(MSBuildThisFileDirectory)..\..\build\dotnet\bin\$(MSBuildProjectName)\$(Configuration)\</OutputPath>
+  </PropertyGroup>
+
+  <Import Project="Plugin.props" />
+
+  <ItemGroup>
+    <PackageReference Include="Microsoft.NETFramework.ReferenceAssemblies" Version="1.0.3" PrivateAssets="All" />
+  </ItemGroup>
+</Project>

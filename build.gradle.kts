@@ -39,6 +39,22 @@ val runRider by intellijPlatformTesting.runIde.registering {
     splitMode = false
 }
 
+val dotnetExecutable = file("/usr/local/share/dotnet/dotnet")
+    .takeIf { it.isFile }
+    ?.absolutePath
+    ?: "dotnet"
+
+val compileRiderBackend by tasks.registering(Exec::class) {
+    dependsOn(":protocol:rdgen")
+    commandLine(
+        dotnetExecutable,
+        "build",
+        "src/dotnet/PerfSentinel.Rider/PerfSentinel.Rider.csproj",
+        "--configuration",
+        "Debug",
+    )
+}
+
 intellijPlatformTesting.testIde.register("testPyCharm253") {
     type = IntelliJPlatformType.PyCharmProfessional
     version = "2025.3.6.1"
@@ -144,6 +160,7 @@ tasks.test {
 }
 
 tasks.check {
+    dependsOn(compileRiderBackend)
     dependsOn(
         "testPyCharm253",
         "testPhpStorm253",
@@ -153,6 +170,17 @@ tasks.check {
         "testWebStorm253",
         "testGoLand253",
     )
+}
+
+tasks.prepareSandbox {
+    dependsOn(compileRiderBackend, ":rider-frontend:jar")
+    from(project(":rider-frontend").layout.buildDirectory.file("libs/perf-sentinel-rider-frontend.jar")) {
+        into("${rootProject.name}/lib")
+    }
+    from(layout.buildDirectory.dir("dotnet/bin/PerfSentinel.Rider/Debug")) {
+        include("PerfSentinel.Rider.dll", "PerfSentinel.Rider.pdb")
+        into("${rootProject.name}/dotnet")
+    }
 }
 
 kotlin {

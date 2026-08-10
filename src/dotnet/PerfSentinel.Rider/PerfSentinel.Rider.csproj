@@ -1,0 +1,15 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <TargetFramework>net472</TargetFramework>
+    <AssemblyName>PerfSentinel.Rider</AssemblyName>
+    <RootNamespace>PerfSentinel.Rider</RootNamespace>
+    <IsPackable>false</IsPackable>
+    <CopyLocalLockFileAssemblies>false</CopyLocalLockFileAssemblies>
+    <DefineConstants>$(DefineConstants);RIDER</DefineConstants>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="JetBrains.Rider.SDK" Version="$(SdkVersion)" />
+    <Compile Include="$(MSBuildThisFileDirectory)..\..\..\build\generated\rd\csharp\**\*.cs" />
+  </ItemGroup>
+</Project>
