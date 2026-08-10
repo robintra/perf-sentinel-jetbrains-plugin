@@ -1,12 +1,20 @@
 package io.github.robintra.perfsentinel.java
 
+import com.intellij.openapi.Disposable
+import com.intellij.openapi.util.Disposer
 import com.intellij.psi.PsiClass
 import com.intellij.psi.PsiMethod
 import com.intellij.testFramework.DumbModeTestUtils
+import com.intellij.testFramework.PsiTestUtil
 import com.intellij.testFramework.fixtures.LightJavaCodeInsightFixtureTestCase
 import io.github.robintra.perfsentinel.core.CodeLocation
 import io.github.robintra.perfsentinel.core.Finding
 import io.github.robintra.perfsentinel.core.FindingPattern
+import java.io.File
+import java.nio.file.Files
+import java.nio.file.Path
+import java.util.jar.JarEntry
+import java.util.jar.JarOutputStream
 import kotlinx.coroutines.runBlocking
 
 class JavaAnchorResolverTest : LightJavaCodeInsightFixtureTestCase() {
@@ -161,6 +169,42 @@ class JavaAnchorResolverTest : LightJavaCodeInsightFixtureTestCase() {
         assertNull(result)
     }
 
+    fun testFallsBackToUniqueRepositoryForAnExternalEntity() {
+        addExternalJpaLibrary()
+        addJava(
+            "com/example/OrderRepository.java",
+            """
+            package com.example;
+            public interface OrderRepository
+                extends org.springframework.data.jpa.repository.JpaRepository<external.ExternalOrder, Long> {}
+            """.trimIndent(),
+        )
+
+        val result = resolveSql("SELECT * FROM orders")
+
+        assertInstanceOf(result, PsiClass::class.java)
+        assertEquals("com.example.OrderRepository", (result as PsiClass).qualifiedName)
+    }
+
+    fun testRejectsRawOrMultipleRepositories() {
+        addExternalJpaLibrary()
+        addJava(
+            "com/example/RawRepository.java",
+            "package com.example; public interface RawRepository extends org.springframework.data.repository.Repository {}",
+        )
+        assertNull(resolveSql("SELECT * FROM orders"))
+
+        addJava(
+            "com/example/First.java",
+            "package com.example; public interface First extends org.springframework.data.jpa.repository.JpaRepository<external.ExternalOrder, Long> {}",
+        )
+        addJava(
+            "com/example/Second.java",
+            "package com.example; public interface Second extends org.springframework.data.jpa.repository.JpaRepository<external.ExternalOrder, Long> {}",
+        )
+        assertNull(resolveSql("SELECT * FROM orders"))
+    }
+
     private fun resolve(namespace: String, function: String) = runBlocking {
         JavaAnchorResolver().resolve(project, finding(namespace, function))
     }
@@ -179,6 +223,54 @@ class JavaAnchorResolverTest : LightJavaCodeInsightFixtureTestCase() {
     private fun addJava(path: String, source: String) {
         val file = myFixture.addFileToProject(path, source)
         myFixture.configureFromExistingVirtualFile(file.virtualFile)
+    }
+
+    private fun addExternalJpaLibrary() {
+        val root = Files.createTempDirectory("perf-sentinel-external-jpa")
+        val sourceRoot = Files.createDirectories(root.resolve("src"))
+        val classes = Files.createDirectories(root.resolve("classes"))
+        val sources = mapOf(
+            "jakarta/persistence/Table.java" to
+                "package jakarta.persistence; public @interface Table { String name(); String schema() default \"\"; }",
+            "external/ExternalOrder.java" to
+                "package external; @jakarta.persistence.Table(name=\"orders\") public class ExternalOrder {}",
+            "org/springframework/data/repository/Repository.java" to
+                "package org.springframework.data.repository; public interface Repository<T, ID> {}",
+            "org/springframework/data/jpa/repository/JpaRepository.java" to
+                "package org.springframework.data.jpa.repository; public interface JpaRepository<T, ID> extends org.springframework.data.repository.Repository<T, ID> {}",
+        ).map { (relative, content) ->
+            sourceRoot.resolve(relative).also { file ->
+                Files.createDirectories(file.parent)
+                Files.writeString(file, content)
+            }
+        }
+        val javac = listOfNotNull(System.getenv("JAVA_HOME"), System.getProperty("java.home"))
+            .map { Path.of(it, "bin", "javac") }
+            .firstOrNull(Files::isExecutable)
+            ?: error("No javac executable is available for the library fixture")
+        val compiler = ProcessBuilder(listOf(javac.toString(), "-d", classes.toString()) + sources.map(Path::toString))
+            .redirectErrorStream(true)
+            .start()
+        val compilerOutput = compiler.inputStream.bufferedReader().readText()
+        assertEquals(compilerOutput, 0, compiler.waitFor())
+        val jar = root.resolve("external-jpa.jar")
+        JarOutputStream(Files.newOutputStream(jar)).use { output ->
+            Files.walk(classes).use { files ->
+                files.filter(Files::isRegularFile).forEach { file ->
+                    output.putNextEntry(JarEntry(classes.relativize(file).toString().replace(File.separatorChar, '/')))
+                    Files.copy(file, output)
+                    output.closeEntry()
+                }
+            }
+        }
+        Disposer.register(testRootDisposable, Disposable { root.toFile().deleteRecursively() })
+        PsiTestUtil.addLibrary(
+            testRootDisposable,
+            module,
+            "external-jpa",
+            jar.parent.toString(),
+            jar.fileName.toString(),
+        )
     }
 
     private fun finding(
