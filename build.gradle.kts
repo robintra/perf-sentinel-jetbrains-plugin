@@ -171,7 +171,12 @@ intellijPlatformTesting.testIde.register("testGoLand253") {
 
 tasks.test {
     // The IDEA 2025.3 fixture cannot initialize Vue when project files are removed during teardown.
-    systemProperty("idea.load.plugins.id", "com.intellij.java,org.jetbrains.kotlin")
+    // The plugin under test has to stay listed, or its own plugin.xml never loads and the
+    // anchorResolver extension point the production entry reads is empty in every test.
+    systemProperty(
+        "idea.load.plugins.id",
+        "com.intellij.java,org.jetbrains.kotlin,io.github.robintra.perfsentinel",
+    )
     filter {
         excludeTestsMatching("io.github.robintra.perfsentinel.python.*")
         excludeTestsMatching("io.github.robintra.perfsentinel.php.*")
