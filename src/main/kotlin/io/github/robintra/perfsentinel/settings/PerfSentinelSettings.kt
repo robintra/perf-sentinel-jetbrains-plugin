@@ -20,7 +20,13 @@ class PerfSentinelSettings : PersistentStateComponent<PerfSentinelSettings.Setti
         XmlSerializerUtil.copyBean(state, settings)
     }
 
-    fun snapshot(): Snapshot = Snapshot(normalizeEndpoints(settings.endpoints), settings.serviceOverride.trim())
+    // Persisted state is never re-validated as a unit: one bad entry in the workspace file would
+    // otherwise throw out of both refresh() and the settings page that is the only way to fix it.
+    // Invalid entries are dropped; an empty result falls back to the default endpoint.
+    fun snapshot(): Snapshot =
+        Snapshot(normalizeEndpoints(settings.endpoints.filter(::isValid)), settings.serviceOverride.trim())
+
+    private fun isValid(endpoint: String): Boolean = runCatching { normalizeEndpoints(listOf(endpoint)) }.isSuccess
 
     fun update(endpoints: List<String>, serviceOverride: String) {
         settings.endpoints = normalizeEndpoints(endpoints).toMutableList()
