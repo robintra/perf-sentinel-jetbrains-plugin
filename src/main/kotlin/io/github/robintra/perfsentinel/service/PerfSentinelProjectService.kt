@@ -14,9 +14,12 @@ import io.github.robintra.perfsentinel.core.resolveServiceName
 import io.github.robintra.perfsentinel.core.updated
 import io.github.robintra.perfsentinel.settings.PerfSentinelSettings
 import io.github.robintra.perfsentinel.navigation.AnchorNavigator
+import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
+import kotlinx.coroutines.async
+import kotlinx.coroutines.awaitAll
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 
@@ -54,8 +57,12 @@ class PerfSentinelProjectService(
                 ),
             )
 
+            // Concurrently: sequential fetches make refresh latency the sum of every endpoint's
+            // timeout, so three unreachable daemons freeze the tool window for three timeouts.
             val results = withContext(Dispatchers.IO) {
-                settings.endpoints.map { endpoint -> endpoint to runCatching { client.fetch(endpoint, service) } }
+                settings.endpoints
+                    .map { endpoint -> async { endpoint to runCatching { client.fetch(endpoint, service) } } }
+                    .awaitAll()
             }
             val now = System.currentTimeMillis()
             publish(
@@ -70,7 +77,15 @@ class PerfSentinelProjectService(
 
     fun navigate(finding: Finding) {
         coroutineScope.launch {
-            val target = AnchorNavigator.resolve(project, finding) ?: return@launch
+            // A resolver that throws must stay a silent no-op, not an IDE internal-error balloon.
+            // Cancellation is rethrown so closing the project still tears the coroutine down.
+            val target = try {
+                AnchorNavigator.resolve(project, finding)
+            } catch (cancellation: CancellationException) {
+                throw cancellation
+            } catch (_: Exception) {
+                null
+            } ?: return@launch
             withContext(Dispatchers.EDT) {
                 if (target.canNavigate()) target.navigate(true)
             }
