@@ -25,26 +25,33 @@ internal object JpaTableAnchorResolver {
 
     fun resolve(project: Project, finding: Finding): Navigatable? {
         if (!finding.type.endsWith("_sql")) return null
+        // A finding carries no language. Its reported path is the only signal, and without this gate a
+        // SQL finding from a Node or Python service lands in an unrelated Java entity.
+        val filepath = finding.codeLocation?.filepath
+        if (filepath != null && !filepath.endsWith(".java", ignoreCase = true)) return null
         val table = SqlTableExtractor.extract(finding.pattern.template) ?: return null
         val facade = JavaPsiFacade.getInstance(project)
-        val scope = GlobalSearchScope.allScope(project)
         val fileIndex = ProjectFileIndex.getInstance(project)
-        val candidates = tableAnnotations.asSequence()
-            .mapNotNull { facade.findClass(it, scope) }
-            .flatMap { AnnotatedElementsSearch.searchPsiClasses(it, scope).findAll().asSequence() }
-            .filter { it.matches(table, facade) }
-            .distinctBy { it.location() }
-            .toList()
-        val projectEntities = candidates
+        // Project sources first: the common case answers without enumerating every annotated class in
+        // every library jar, twice.
+        val projectEntities = facade.entitiesMatching(table, GlobalSearchScope.projectScope(project))
             .filter { it.containingFile?.virtualFile?.let(fileIndex::isInSourceContent) == true }
         if (projectEntities.size > 1) return null
         projectEntities.singleOrNull()?.let { return it }
-        val libraryEntity = candidates
+        val libraryEntity = facade.entitiesMatching(table, GlobalSearchScope.allScope(project))
             .filter { it.containingFile?.virtualFile?.let(fileIndex::isInLibraryClasses) == true }
             .singleOrNull()
             ?: return null
         return resolveRepository(project, facade, libraryEntity)
     }
+
+    private fun JavaPsiFacade.entitiesMatching(table: SqlTableReference, scope: GlobalSearchScope): List<PsiClass> =
+        tableAnnotations.asSequence()
+            .mapNotNull { findClass(it, scope) }
+            .flatMap { AnnotatedElementsSearch.searchPsiClasses(it, scope).findAll().asSequence() }
+            .filter { it.matches(table, this) }
+            .distinctBy { it.location() }
+            .toList()
 
     private fun resolveRepository(
         project: Project,
@@ -76,7 +83,10 @@ internal object JpaTableAnchorResolver {
         val name = annotation.stringValue("name", facade)?.toSqlIdentifier() ?: return false
         if (!table.table.matches(name)) return false
         val expectedSchema = table.schema ?: return true
-        val schema = annotation.stringValue("schema", facade)?.toSqlIdentifier() ?: return false
+        // An entity that declares no schema takes it from configuration (hibernate.default_schema,
+        // search_path), so it stays a candidate for schema-qualified SQL. Two entities matching the
+        // bare name then read as ambiguous and refuse navigation, which is the safe outcome.
+        val schema = annotation.stringValue("schema", facade)?.toSqlIdentifier() ?: return true
         return expectedSchema.matches(schema)
     }
 
@@ -94,13 +104,17 @@ internal object JpaTableAnchorResolver {
     private fun String.toSqlIdentifier(): SqlIdentifier? {
         val value = trim()
         if (value.isEmpty()) return null
-        val quoted = when {
-            value.length >= 2 && value.first() == '"' && value.last() == '"' -> value.substring(1, value.lastIndex)
+        // Only ANSI double quotes make an identifier case-sensitive; MySQL backticks and T-SQL
+        // brackets are pure delimiters, so they must still compare case-insensitively.
+        if (value.length >= 2 && value.first() == '"' && value.last() == '"') {
+            return SqlIdentifier(value.substring(1, value.lastIndex), quoted = true)
+        }
+        val delimited = when {
             value.length >= 2 && value.first() == '`' && value.last() == '`' -> value.substring(1, value.lastIndex)
             value.length >= 2 && value.first() == '[' && value.last() == ']' -> value.substring(1, value.lastIndex)
-            else -> null
+            else -> value
         }
-        return SqlIdentifier(quoted ?: value, quoted != null)
+        return SqlIdentifier(delimited, quoted = false)
     }
 
     private fun SqlIdentifier.matches(other: SqlIdentifier): Boolean =
