@@ -10,6 +10,7 @@ plugins {
 
 dependencies {
     compileOnly(project(":"))
+    testImplementation(project(":"))
     testImplementation(libs.junit)
 
     intellijPlatform {

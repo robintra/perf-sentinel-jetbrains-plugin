@@ -32,29 +32,29 @@ public static class CSharpSymbolResolver
             var symbolCache = solution.GetComponent<ISymbolCache>();
             var anchors = new Dictionary<(string Path, int Offset), SourceAnchor>();
             foreach (var project in solution.GetAllProjects())
-            foreach (var module in project.GetPsiModules())
-            {
-                var type = symbolCache
-                    .GetSymbolScope(module, withReferences: false, caseSensitive: true)
-                    .GetTypeElementByCLRName(new ClrTypeName(symbol.Owner));
-                if (type == null)
-                    continue;
-
-                foreach (var typeDeclaration in type.GetDeclarations().OfType<IClassLikeDeclaration>())
-                foreach (var declaration in typeDeclaration.Descendants<ICSharpDeclaration>())
+                foreach (var module in project.GetPsiModules())
                 {
-                    if (!Matches(declaration, symbol))
+                    var type = symbolCache
+                        .GetSymbolScope(module, withReferences: false, caseSensitive: true)
+                        .GetTypeElementByCLRName(new ClrTypeName(symbol.Owner));
+                    if (type == null)
                         continue;
 
-                    var anchor = ToAnchor(declaration);
-                    if (anchor == null)
-                        continue;
+                    foreach (var typeDeclaration in type.GetDeclarations().OfType<IClassLikeDeclaration>())
+                        foreach (var declaration in typeDeclaration.Descendants<ICSharpDeclaration>())
+                        {
+                            if (!Matches(declaration, symbol))
+                                continue;
 
-                    anchors[(anchor.Path, anchor.Offset)] = anchor;
-                    if (anchors.Count > 1)
-                        return null;
+                            var anchor = ToAnchor(declaration);
+                            if (anchor == null)
+                                continue;
+
+                            anchors[(anchor.Path, anchor.Offset)] = anchor;
+                            if (anchors.Count > 1)
+                                return null;
+                        }
                 }
-            }
 
             return anchors.Count == 1 ? anchors.Values.Single() : null;
         }

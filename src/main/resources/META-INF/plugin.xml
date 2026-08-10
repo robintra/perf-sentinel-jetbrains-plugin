@@ -29,6 +29,7 @@
     <depends optional="true" config-file="perf-sentinel-ruby.xml">org.jetbrains.plugins.ruby</depends>
     <depends optional="true" config-file="perf-sentinel-javascript.xml">JavaScript</depends>
     <depends optional="true" config-file="perf-sentinel-go.xml">org.jetbrains.plugins.go</depends>
+    <depends optional="true" config-file="perf-sentinel-rider.xml">com.intellij.modules.rider</depends>
 
     <resource-bundle>messages.PerfSentinelBundle</resource-bundle>
 
