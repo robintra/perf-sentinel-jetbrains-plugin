@@ -1,7 +1,10 @@
 .gradle/
 .DS_Store
-qodana.sarif.json
-.idea/
+*.sarif.json
+.idea/*
+!.idea/dictionaries/
+.idea/dictionaries/*
+!.idea/dictionaries/perf_sentinel.xml
 .intellijPlatform/
 build/
 *.iml

@@ -3,15 +3,15 @@
     <!-- Unique identifier of the plugin. It should be FQN. It cannot be changed between the plugin versions. -->
     <id>io.github.robintra.perfsentinel</id>
 
-    <!-- Public plugin name should be written in Title Case.
+    <!-- Capitalize the public plugin name.
      Guidelines: https://plugins.jetbrains.com/docs/marketplace/best-practices-for-listing.html#plugin-name -->
     <name>Perf Sentinel</name>
 
-    <!-- A displayed Vendor name or Organization ID displayed on the Plugins Page. -->
+    <!-- The vendor name or organization ID displayed on the Plugins page. -->
     <!--suppress SpellCheckingInspection -->
     <vendor url="https://github.com/robintra">Robin Trassard</vendor>
 
-    <!-- Description of the plugin displayed on the Plugin Page and IDE Plugin Manager.
+    <!-- The plugin description displayed on the Plugin Page and IDE Plugin Manager.
          Guidelines: https://plugins.jetbrains.com/docs/marketplace/best-practices-for-listing.html#plugin-description -->
     <description><![CDATA[
         Displays findings produced by a Perf Sentinel daemon directly in JetBrains IDEs.
@@ -23,12 +23,19 @@
     <depends>com.intellij.modules.platform</depends>
     <depends optional="true" config-file="perf-sentinel-java.xml">com.intellij.java</depends>
     <depends optional="true" config-file="perf-sentinel-kotlin.xml">org.jetbrains.kotlin</depends>
+    <!--suppress PluginXmlValidity -->
     <depends optional="true" config-file="perf-sentinel-python.xml">Pythonid</depends>
+    <!--suppress PluginXmlValidity -->
     <depends optional="true" config-file="perf-sentinel-php.xml">com.jetbrains.php</depends>
+    <!--suppress PluginXmlValidity -->
     <depends optional="true" config-file="perf-sentinel-rust-legacy.xml">org.rust.lang</depends>
+    <!--suppress PluginXmlValidity -->
     <depends optional="true" config-file="perf-sentinel-rust.xml">com.jetbrains.rust</depends>
+    <!--suppress PluginXmlValidity -->
     <depends optional="true" config-file="perf-sentinel-ruby.xml">org.jetbrains.plugins.ruby</depends>
+    <!--suppress PluginXmlValidity -->
     <depends optional="true" config-file="perf-sentinel-javascript.xml">JavaScript</depends>
+    <!--suppress PluginXmlValidity -->
     <depends optional="true" config-file="perf-sentinel-go.xml">org.jetbrains.plugins.go</depends>
     <depends optional="true" config-file="perf-sentinel-rider.xml">com.intellij.modules.rider</depends>
 

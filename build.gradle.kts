@@ -6,6 +6,7 @@ import org.jetbrains.kotlin.gradle.dsl.JvmTarget
 import org.jetbrains.kotlin.gradle.dsl.JvmDefaultMode
 
 plugins {
+    id("idea")
     id("org.jetbrains.kotlin.jvm")
     id("org.jetbrains.changelog")
     id("org.jetbrains.qodana")
@@ -15,9 +16,10 @@ plugins {
 val ideaTestRuntime = providers.provider {
     extensions.getByType<IntelliJPlatformExtension>().platformPath.resolve("lib/idea_rt.jar").toFile()
 }
-// Read more: https://plugins.jetbrains.com/docs/intellij/tools-intellij-platform-gradle-plugin.html
+// IntelliJ Platform Gradle Plugin documentation: https://plugins.jetbrains.com/docs/intellij/tools-intellij-platform-gradle-plugin.html
 dependencies {
     compileOnly(libs.gson)
+    testImplementation(platform(libs.jackson.bom))
     testImplementation(libs.junit)
 
     // IntelliJ Platform Gradle Plugin Dependencies Extension - read more: https://plugins.jetbrains.com/docs/intellij/tools-intellij-platform-gradle-plugin-dependencies-extension.html
@@ -28,19 +30,23 @@ dependencies {
         bundledPlugin("com.intellij.java")
         bundledPlugin("org.jetbrains.kotlin")
 
-        // Add plugin dependencies for compilation here, for example:
-        // bundledPlugin("com.intellij.java")
     }
 }
 
-val runRider by intellijPlatformTesting.runIde.registering {
+idea {
+    module {
+        excludeDirs.addAll(listOf(file(".superpowers"), file("graphify-out")))
+    }
+}
+
+val runRider = intellijPlatformTesting.runIde.register("runRider") {
     type = IntelliJPlatformType.Rider
     version = "2025.3.5"
     useInstaller = false
     splitMode = false
 }
 
-val runRider262 by intellijPlatformTesting.runIde.registering {
+val runRider262 = intellijPlatformTesting.runIde.register("runRider262") {
     type = IntelliJPlatformType.Rider
     version = "2026.2.0.2"
     useInstaller = false
@@ -52,7 +58,7 @@ val dotnetExecutable = file("/usr/local/share/dotnet/dotnet")
     ?.absolutePath
     ?: "dotnet"
 
-val compileRiderBackend by tasks.registering(Exec::class) {
+val compileRiderBackend = tasks.register<Exec>("compileRiderBackend") {
     description = "Builds the Rider ReSharper backend."
     dependsOn(":protocol:rdgen")
     commandLine(
@@ -64,7 +70,7 @@ val compileRiderBackend by tasks.registering(Exec::class) {
     )
 }
 
-val testRiderBackend by tasks.registering(Exec::class) {
+val testRiderBackend = tasks.register<Exec>("testRiderBackend") {
     description = "Runs the Rider ReSharper backend tests on Windows."
     dependsOn(":protocol:rdgen")
     // JetBrains' ReSharper SDK test host is supported on Windows; macOS falls back to Mono and cannot restore fixtures.
@@ -173,8 +179,8 @@ intellijPlatformTesting.testIde.register("testGoLand253") {
 
 tasks.test {
     // The IDEA 2025.3 fixture cannot initialize Vue when project files are removed during teardown.
-    // The plugin under test has to stay listed, or its own plugin.xml never loads and the
-    // anchorResolver extension point the production entry reads is empty in every test.
+    // Keep the plugin under test listed so its plugin.xml loads.
+    // Otherwise, every test sees an empty anchorResolver extension point.
     systemProperty(
         "idea.load.plugins.id",
         "com.intellij.java,org.jetbrains.kotlin,io.github.robintra.perfsentinel",

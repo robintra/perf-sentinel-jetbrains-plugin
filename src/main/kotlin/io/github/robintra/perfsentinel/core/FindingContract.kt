@@ -91,7 +91,7 @@ private fun JsonObject.requiredObject(name: String): JsonObject = get(name).asJs
 private fun JsonObject.requiredString(name: String): String = get(name).asString
 private fun JsonObject.requiredInt(name: String): Int = get(name).asInt
 private fun JsonObject.requiredLong(name: String): Long = get(name).asLong
-// Gson hands back a JsonNull instance for an explicitly-null field, and every asX() on it throws,
+// Gson hands back a JsonNull instance for an explicit null field, and every asX() on it throws,
 // so every optional read goes through one of these.
 private fun JsonObject.optionalString(name: String): String? = get(name)?.takeUnless { it.isJsonNull }?.asString
 private fun JsonObject.optionalLong(name: String): Long? = get(name)?.takeUnless { it.isJsonNull }?.asLong

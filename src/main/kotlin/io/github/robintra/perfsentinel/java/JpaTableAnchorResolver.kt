@@ -29,8 +29,7 @@ internal object JpaTableAnchorResolver {
         if (!hasJavaProvenance(project, facade, finding)) return null
         val table = SqlTableExtractor.extract(finding.pattern.template) ?: return null
         val fileIndex = ProjectFileIndex.getInstance(project)
-        // Project sources first: the common case answers without enumerating every annotated class in
-        // every library jar, twice.
+        // Project sources first: the common case avoids scanning every annotated class in every library jar twice.
         val projectEntities = facade.entitiesMatching(table, GlobalSearchScope.projectScope(project))
             .filter { it.containingFile?.virtualFile?.let(fileIndex::isInSourceContent) == true }
         if (projectEntities.size > 1) return null

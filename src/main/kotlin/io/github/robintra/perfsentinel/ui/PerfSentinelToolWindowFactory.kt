@@ -39,11 +39,11 @@ import javax.swing.ListSelectionModel
 import javax.swing.table.AbstractTableModel
 
 class PerfSentinelToolWindowFactory : ToolWindowFactory {
+    @Suppress("UsePropertyAccessSyntax")
     override fun createToolWindowContent(project: Project, toolWindow: ToolWindow) {
         val panel = PerfSentinelPanel(project)
         val content = ContentFactory.getInstance().createContent(panel, "", false)
         // The Kotlin projection exposes disposer as a read-only property.
-        //noinspection UsePropertyAccessSyntax
         content.setDisposer(panel)
         toolWindow.contentManager.addContent(content)
     }
@@ -201,7 +201,7 @@ private class FindingsTableModel : AbstractTableModel() {
     // 10, 100, 2 and "Age" interleaves minutes, hours and days alphabetically.
     override fun getColumnClass(columnIndex: Int): Class<*> = when (columnIndex) {
         5 -> Age::class.java
-        7 -> java.lang.Long::class.java
+        7 -> Long::class.javaObjectType
         else -> String::class.java
     }
 

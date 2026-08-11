@@ -6,6 +6,7 @@ plugins {
 }
 
 dependencies {
+    compileOnly(kotlin("stdlib"))
     implementation(libs.rdGen)
     implementation(project(mapOf("path" to ":rider-frontend", "configuration" to "riderModel")))
 }
@@ -37,5 +38,5 @@ tasks.withType<RdGenTask>().configureEach {
     val classPath = sourceSets["main"].runtimeClasspath
     dependsOn(classPath)
     classpath(classPath)
-    notCompatibleWithConfigurationCache("RD generator 2025.3 retains Gradle project state")
+    notCompatibleWithConfigurationCache("RD generator retains Gradle project state")
 }

@@ -19,8 +19,8 @@ class JavaAnchorResolver : AnchorResolver {
 
     override suspend fun resolveFallback(project: Project, finding: Finding): Navigatable? =
         safelyResolve(project) {
-            // Candidates found but refused by singleOrNull() is a deliberate "no navigation on
-            // ambiguity", not a miss. Guessing a table here would override that on purpose.
+            // Refusing multiple candidates with singleOrNull() deliberately prevents navigation on
+            // ambiguity; it deliberately ends resolution. Guessing a table here would override that decision.
             if (methodCandidates(project, finding).isNotEmpty()) null
             else JpaTableAnchorResolver.resolve(project, finding)
         }
@@ -43,12 +43,10 @@ class JavaAnchorResolver : AnchorResolver {
         val owner = JavaPsiFacade.getInstance(project)
             .findClass(namespace, GlobalSearchScope.projectScope(project))
             ?: return emptyList()
-        // JavaPsiFacade also answers with light classes generated from Kotlin sources. Those belong to
-        // KotlinAnchorResolver; returning them here makes the dispatcher see one symbol as two hits
-        // and refuse to navigate at all.
+        // JavaPsiFacade also answers with light classes generated from Kotlin sources. KotlinAnchorResolver
+        // owns those classes; returning them here would make the dispatcher treat one symbol as two hits.
         if (owner.navigationElement.language.id != JavaLanguage.INSTANCE.id) return emptyList()
-        // Resolve own declarations first, so an override does not read as ambiguous with the
-        // method it overrides. Search base classes only when the class declares nothing by that name.
+        // Prefer the class's declarations, with base-class declarations as the fallback.
         val declared = owner.findMethodsByName(function, false)
         val candidates = if (declared.isNotEmpty()) declared else owner.findMethodsByName(function, true)
         return candidates.toList()

@@ -1,9 +1,11 @@
 [versions]
 gson = "2.13.1"
+jackson = "2.22.1"
 junit = "4.13.2"
-rdGen = "2025.3.1"
+rdGen = "2026.2.5"
 
 [libraries]
 gson = { module = "com.google.code.gson:gson", version.ref = "gson" }
+jackson-bom = { module = "com.fasterxml.jackson:jackson-bom", version.ref = "jackson" }
 junit = { module = "junit:junit", version.ref = "junit" }
 rdGen = { module = "com.jetbrains.rd:rd-gen", version.ref = "rdGen" }

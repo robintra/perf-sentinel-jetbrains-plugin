@@ -3,6 +3,7 @@ import org.jetbrains.intellij.platform.gradle.TestFrameworkType
 import org.jetbrains.kotlin.gradle.dsl.JvmTarget
 
 plugins {
+    id("idea")
     id("org.jetbrains.kotlin.jvm")
     id("org.jetbrains.intellij.platform.module")
 }
@@ -10,6 +11,7 @@ plugins {
 dependencies {
     compileOnly(project(":"))
     testImplementation(project(":"))
+    testImplementation(platform(libs.jackson.bom))
     testImplementation(libs.junit)
 
     intellijPlatform {
@@ -18,8 +20,16 @@ dependencies {
     }
 }
 
+val generatedRdKotlin = layout.buildDirectory.dir("generated/rd/kotlin")
+
 sourceSets.main {
-    kotlin.srcDir(layout.buildDirectory.dir("generated/rd/kotlin"))
+    kotlin.srcDir(generatedRdKotlin)
+}
+
+idea {
+    module {
+        generatedSourceDirs.add(generatedRdKotlin.get().asFile)
+    }
 }
 
 tasks.compileKotlin {
@@ -35,7 +45,7 @@ kotlin {
     compilerOptions.jvmTarget = JvmTarget.JVM_21
 }
 
-val riderModel by configurations.creating {
+val riderModel = configurations.create("riderModel") {
     isCanBeConsumed = true
     isCanBeResolved = false
 }

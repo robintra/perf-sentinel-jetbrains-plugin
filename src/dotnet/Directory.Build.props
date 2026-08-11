@@ -2,7 +2,8 @@
   <PropertyGroup>
     <LangVersion>latest</LangVersion>
     <Nullable>enable</Nullable>
-    <NoWarn>MSB3277</NoWarn>
+    <!-- The 2025.3 JetBrains feed omits the declared 253.0.0 lower-bound native packages but resolves in-range builds. -->
+    <NoWarn>MSB3277;NU1603</NoWarn>
     <NoPackageAnalysis>true</NoPackageAnalysis>
     <AppendTargetFrameworkToOutputPath>false</AppendTargetFrameworkToOutputPath>
     <ResolveAssemblyWarnOrErrorOnTargetArchitectureMismatch>None</ResolveAssemblyWarnOrErrorOnTargetArchitectureMismatch>
