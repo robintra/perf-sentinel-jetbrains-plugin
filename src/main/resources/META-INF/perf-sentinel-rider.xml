@@ -1,5 +1,7 @@
 <idea-plugin>
     <extensions defaultExtensionNs="io.github.robintra.perfsentinel">
+        <!-- The implementation is packaged from the optional rider-frontend module. -->
+        <!--suppress PluginXmlValidity -->
         <anchorResolver implementation="io.github.robintra.perfsentinel.rider.RiderAnchorResolver"/>
     </extensions>
 </idea-plugin>

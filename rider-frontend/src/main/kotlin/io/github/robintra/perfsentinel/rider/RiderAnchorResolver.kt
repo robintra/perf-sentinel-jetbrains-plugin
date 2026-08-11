@@ -20,6 +20,7 @@ class RiderAnchorResolver internal constructor(
     private val lookup: CSharpLookup,
     private val findFile: suspend (String) -> VirtualFile?,
 ) : AnchorResolver {
+    @Suppress("unused") // Instantiated by the anchorResolver extension in perf-sentinel-rider.xml.
     constructor() : this(::resolveCSharpSymbol, ::findLocalFile)
 
     override suspend fun resolve(project: Project, finding: Finding): Navigatable? {

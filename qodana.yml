@@ -12,8 +12,28 @@ exclude:
   - name: All
     paths:
       - .qodana
+      - .superpowers
       - .worktrees
+      - CLAUDE.md
+      - build
+      - graphify-out
+      - protocol/build
+      - rider-frontend/build
+      - src/main/graphify-out
+      - gradlew
+      - gradlew.bat
+      - LICENSE
   # The Community image lacks optional product plugins; Plugin Verifier covers this file.
   - name: PluginXmlValidity
     paths:
       - src/main/resources/META-INF/plugin.xml
+      - src/main/resources/META-INF/perf-sentinel-rider.xml
+  # These are CLR metadata names, not prose misspellings.
+  - name: SpellCheckingInspection
+    paths:
+      - src/dotnet/PerfSentinel.Rider/CSharpSymbolResolver.cs
+      - src/dotnet/PerfSentinel.Rider.Tests/CSharpSymbolResolverTests.cs
+  # RDGen discovers this model from its package rather than a source reference.
+  - name: UnusedSymbol
+    paths:
+      - protocol/src/main/kotlin/model/rider/PerfSentinelModel.kt

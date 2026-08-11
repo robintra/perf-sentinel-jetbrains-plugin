@@ -18,7 +18,7 @@ private val UPDATE_MODIFIERS = setOf("ONLY", "IGNORE", "LOW_PRIORITY")
 
 internal object SqlTableExtractor {
     fun extract(sql: String): SqlTableReference? {
-        val statement = skipCtes(lex(sql) ?: return null) ?: return null
+        val statement = skipCTEs(lex(sql) ?: return null) ?: return null
         val target = when (statement.keyword()) {
             "SELECT" -> statement.indexOfKeyword("FROM", 1)?.plus(1)
             "INSERT", "MERGE" -> statement.requireKeyword("INTO", 1)
@@ -77,7 +77,7 @@ private data class SqlStatement(val tokens: List<SqlToken>, val cteNames: Set<St
 
 private data class ParsedTable(val value: SqlTableReference, val nextIndex: Int)
 
-private fun skipCtes(tokens: List<SqlToken>): SqlStatement? {
+private fun skipCTEs(tokens: List<SqlToken>): SqlStatement? {
     if (tokens.firstOrNull()?.keyword() != "WITH") return SqlStatement(tokens, emptySet())
     var index = 1
     if (tokens.getOrNull(index)?.keyword() == "RECURSIVE") index++

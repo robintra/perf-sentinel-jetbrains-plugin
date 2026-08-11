@@ -1,6 +1,5 @@
 package io.github.robintra.perfsentinel.core
 
-import com.google.gson.JsonArray
 import com.google.gson.JsonObject
 import com.google.gson.JsonParser
 import java.net.URI
@@ -36,7 +35,7 @@ private fun parseFinding(envelope: JsonObject): FindingResponse {
             severity = finding.requiredString("severity"),
             traceId = finding.requiredString("trace_id"),
             service = finding.requiredString("service"),
-            grouping = finding.optionalArray("grouping")?.map { grouping ->
+            grouping = finding["grouping"]?.takeUnless { it.isJsonNull }?.asJsonArray?.map { grouping ->
                 val value = grouping.asJsonObject
                 GroupingAttribute(value.requiredString("key"), value.requiredString("value"))
             }.orEmpty(),
@@ -96,4 +95,3 @@ private fun JsonObject.requiredLong(name: String): Long = get(name).asLong
 // so every optional read goes through one of these.
 private fun JsonObject.optionalString(name: String): String? = get(name)?.takeUnless { it.isJsonNull }?.asString
 private fun JsonObject.optionalLong(name: String): Long? = get(name)?.takeUnless { it.isJsonNull }?.asLong
-private fun JsonObject.optionalArray(name: String): JsonArray? = get(name)?.takeUnless { it.isJsonNull }?.asJsonArray

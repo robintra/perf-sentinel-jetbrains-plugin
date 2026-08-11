@@ -53,6 +53,7 @@ val dotnetExecutable = file("/usr/local/share/dotnet/dotnet")
     ?: "dotnet"
 
 val compileRiderBackend by tasks.registering(Exec::class) {
+    description = "Builds the Rider ReSharper backend."
     dependsOn(":protocol:rdgen")
     commandLine(
         dotnetExecutable,
@@ -64,6 +65,7 @@ val compileRiderBackend by tasks.registering(Exec::class) {
 }
 
 val testRiderBackend by tasks.registering(Exec::class) {
+    description = "Runs the Rider ReSharper backend tests on Windows."
     dependsOn(":protocol:rdgen")
     // JetBrains' ReSharper SDK test host is supported on Windows; macOS falls back to Mono and cannot restore fixtures.
     onlyIf { System.getProperty("os.name").startsWith("Windows") }

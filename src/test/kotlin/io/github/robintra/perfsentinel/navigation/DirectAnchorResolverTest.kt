@@ -47,8 +47,8 @@ class DirectAnchorResolverTest : BasePlatformTestCase() {
     }
 
     fun testUsesFallbackOnlyWhenNoSemanticResolverMatches() {
-        val semantic = StubNavigatable()
-        val fallback = StubNavigatable()
+        val semantic = StubTarget()
+        val fallback = StubTarget()
 
         assertSame(
             semantic,
@@ -69,14 +69,14 @@ class DirectAnchorResolverTest : BasePlatformTestCase() {
     }
 
     fun testDoesNotFallBackWhenSemanticResolutionIsAmbiguous() {
-        val fallback = StubNavigatable()
+        val fallback = StubTarget()
 
         assertNull(
             runBlocking {
                 AnchorNavigator.resolve(
                     project,
                     finding(null, null),
-                    listOf(StubResolver(StubNavigatable(), fallback), StubResolver(StubNavigatable(), null)),
+                    listOf(StubResolver(StubTarget(), fallback), StubResolver(StubTarget(), null)),
                 )
             },
         )
@@ -112,7 +112,7 @@ class DirectAnchorResolverTest : BasePlatformTestCase() {
         override suspend fun resolveFallback(project: com.intellij.openapi.project.Project, finding: Finding) = fallback
     }
 
-    private class StubNavigatable : Navigatable {
+    private class StubTarget : Navigatable {
         override fun navigate(requestFocus: Boolean) = Unit
         override fun canNavigate() = true
         override fun canNavigateToSource() = true

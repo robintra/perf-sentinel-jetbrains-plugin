@@ -1,6 +1,5 @@
 package io.github.robintra.perfsentinel.java
 
-import com.intellij.openapi.Disposable
 import com.intellij.openapi.util.Disposer
 import com.intellij.psi.PsiClass
 import com.intellij.psi.PsiMethod
@@ -342,8 +341,6 @@ class JavaAnchorResolverTest : LightJavaCodeInsightFixtureTestCase() {
         JavaAnchorResolver().resolve(project, finding(namespace, function))
     }
 
-    private fun resolve(finding: Finding) = runBlocking { JavaAnchorResolver().resolve(project, finding) }
-
     private fun navigate(finding: Finding) = runBlocking {
         AnchorNavigator.resolve(project, finding, listOf(JavaAnchorResolver()))
     }
@@ -405,7 +402,7 @@ class JavaAnchorResolverTest : LightJavaCodeInsightFixtureTestCase() {
                 }
             }
         }
-        Disposer.register(testRootDisposable, Disposable { root.toFile().deleteRecursively() })
+        Disposer.register(testRootDisposable) { root.toFile().deleteRecursively() }
         PsiTestUtil.addLibrary(
             testRootDisposable,
             module,

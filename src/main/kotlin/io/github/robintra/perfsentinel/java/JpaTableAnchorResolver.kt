@@ -36,8 +36,7 @@ internal object JpaTableAnchorResolver {
         if (projectEntities.size > 1) return null
         projectEntities.singleOrNull()?.let { return it }
         val libraryEntity = facade.entitiesMatching(table, GlobalSearchScope.allScope(project))
-            .filter { it.containingFile?.virtualFile?.let(fileIndex::isInLibraryClasses) == true }
-            .singleOrNull()
+            .singleOrNull { it.containingFile?.virtualFile?.let(fileIndex::isInLibraryClasses) == true }
             ?: return null
         return resolveRepository(project, facade, libraryEntity)
     }
@@ -45,9 +44,9 @@ internal object JpaTableAnchorResolver {
     /**
      * A finding carries no language, so provenance is read from what it does report.
      *
-     * Negative evidence wins: a reported path that is not `.java` means another runtime whatever
-     * the namespace resolves to, otherwise a SQL finding from a Node or Kotlin service lands in an
-     * unrelated Java entity. A namespace without a path must resolve to a Java class in project
+     * Negative evidence wins: a reported path that is not `.java` identifies another runtime,
+     * regardless of what the namespace resolves to. Without this guard, a SQL finding from a Node
+     * or Kotlin service could land in an unrelated Java entity. A namespace without a path must resolve to a Java class in project
      * sources; `allScope` would let a shaded library class or a Kotlin light class grant the pass.
      * A finding with neither is the case this fallback exists for -- the instrumentation agent
      * emits no `code.*` attributes -- so it stays eligible, as it was before the gate existed.

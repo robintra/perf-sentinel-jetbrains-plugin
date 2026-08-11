@@ -16,12 +16,13 @@ def main() -> None:
     parser = argparse.ArgumentParser(description="Serve one Perf Sentinel findings fixture.")
     parser.add_argument("fixture", nargs="?", type=Path, default=DEFAULT_FIXTURE)
     parser.add_argument("--port", type=int, default=4318)
-    args = parser.parse_args()
+    options = parser.parse_args()
 
-    payload = args.fixture.read_bytes()
+    payload = options.fixture.read_bytes()
     json.loads(payload)
 
     class Handler(BaseHTTPRequestHandler):
+        # noinspection PyPep8Naming
         def do_GET(self) -> None:
             if urlsplit(self.path).path != "/api/findings":
                 self.send_error(404)
@@ -35,8 +36,8 @@ def main() -> None:
         def log_message(self, format: str, *args: object) -> None:
             return
 
-    server = ThreadingHTTPServer(("127.0.0.1", args.port), Handler)
-    print(f"Serving {args.fixture} at http://127.0.0.1:{args.port}/api/findings")
+    server = ThreadingHTTPServer(("127.0.0.1", options.port), Handler)
+    print(f"Serving {options.fixture} at http://127.0.0.1:{options.port}/api/findings")
     try:
         server.serve_forever()
     except KeyboardInterrupt:

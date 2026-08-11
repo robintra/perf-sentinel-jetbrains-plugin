@@ -15,18 +15,16 @@ class SqlTableExtractorTest : TestCase() {
         cases.forEach { (sql, expected) -> assertEquals(sql, expected, SqlTableExtractor.extract(sql)) }
     }
 
-    fun testHandlesCommentsStringsCtesAndQuotedIdentifiers() {
-        assertEquals(ref("orders"), SqlTableExtractor.extract("SELECT '-- FROM fake' FROM /* FROM ignored */ orders"))
+    fun testHandlesCommentsStringsCTEsAndQuotedIdentifiers() {
+        assertExtracts(ref("orders"), "SELECT '-- FROM fake' FROM /* FROM ignored */ orders")
         // Only ANSI double quotes make an identifier case-sensitive. MySQL backticks and T-SQL
         // brackets are pure delimiters, so `Orders` still has to match @Table(name = "orders").
-        assertEquals(ref("Order", "Sales", quoted = true), SqlTableExtractor.extract("SELECT * FROM \"Sales\".\"Order\""))
-        assertEquals(ref("orders", "sales"), SqlTableExtractor.extract("SELECT * FROM `sales`.`orders`"))
-        assertEquals(ref("Orders", "Sales"), SqlTableExtractor.extract("SELECT * FROM [Sales].[Orders]"))
-        assertEquals(
+        assertExtracts(ref("Order", "Sales", quoted = true), "SELECT * FROM \"Sales\".\"Order\"")
+        assertExtracts(ref("orders", "sales"), "SELECT * FROM `sales`.`orders`")
+        assertExtracts(ref("Orders", "Sales"), "SELECT * FROM [Sales].[Orders]")
+        assertExtracts(
             ref("orders"),
-            SqlTableExtractor.extract(
-                "WITH recent AS (SELECT * FROM audit_log) SELECT * FROM orders JOIN recent ON recent.id = orders.id",
-            ),
+            "WITH recent AS (SELECT * FROM audit_log) SELECT * FROM orders JOIN recent ON recent.id = orders.id",
         )
     }
 
@@ -38,7 +36,7 @@ class SqlTableExtractorTest : TestCase() {
             "SELECT * FROM generate_series(1, 10)",
             "WITH recent AS (SELECT * FROM orders) SELECT * FROM recent",
             "SELECT * FROM orders, customers",
-            "SELECT * FROM \${dynamic_table}",
+            $$"SELECT * FROM ${dynamic_table}",
             "UPDATE",
             "INSERT INTO",
             "SELECT * FROM orders /* unterminated",
@@ -50,24 +48,28 @@ class SqlTableExtractorTest : TestCase() {
 
     fun testKeepsTheLexerInSyncThroughDialectQuirks() {
         // Nested block comment: ending at the first */ would leave "FROM shadow_orders" as live SQL.
-        assertEquals(
+        assertExtracts(
             ref("orders"),
-            SqlTableExtractor.extract("SELECT id /* audit /* legacy */ FROM shadow_orders */ FROM orders WHERE id = ?"),
+            "SELECT id /* audit /* legacy */ FROM shadow_orders */ FROM orders WHERE id = ?",
         )
         // MySQL backslash escape: closing the literal early would surface the FROM inside it.
-        assertEquals(
+        assertExtracts(
             ref("orders"),
-            SqlTableExtractor.extract("SELECT 'a\\' FROM users --' FROM orders WHERE id = ?"),
+            "SELECT 'a\\' FROM users --' FROM orders WHERE id = ?",
         )
         // A quoted CTE definition must still shadow its unquoted reference.
         assertNull(SqlTableExtractor.extract("WITH \"Recent\" AS (SELECT * FROM audit_log) SELECT * FROM Recent"))
     }
 
     fun testReadsUpdateTargetsPastDialectModifiers() {
-        assertEquals(ref("orders"), SqlTableExtractor.extract("UPDATE ONLY orders SET state = ?"))
-        assertEquals(ref("orders"), SqlTableExtractor.extract("UPDATE IGNORE orders SET state = ?"))
+        assertExtracts(ref("orders"), "UPDATE ONLY orders SET state = ?")
+        assertExtracts(ref("orders"), "UPDATE IGNORE orders SET state = ?")
         // SET bounds the table list, so assignment commas are not read as a second table.
-        assertEquals(ref("orders"), SqlTableExtractor.extract("UPDATE orders SET state = ?, total = ? WHERE id = ?"))
+        assertExtracts(ref("orders"), "UPDATE orders SET state = ?, total = ? WHERE id = ?")
+    }
+
+    private fun assertExtracts(expected: SqlTableReference, sql: String) {
+        assertEquals(expected, SqlTableExtractor.extract(sql))
     }
 
     private fun ref(table: String, schema: String? = null, quoted: Boolean = false) = SqlTableReference(

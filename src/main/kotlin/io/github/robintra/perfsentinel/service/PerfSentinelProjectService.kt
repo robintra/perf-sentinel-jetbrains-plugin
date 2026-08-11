@@ -77,8 +77,8 @@ class PerfSentinelProjectService(
 
     fun navigate(finding: Finding) {
         coroutineScope.launch {
-            // A resolver that throws must stay a silent no-op, not an IDE internal-error balloon.
-            // Cancellation is rethrown so closing the project still tears the coroutine down.
+            // A resolver that throws must remain a silent no-op, not an IDE internal-error balloon.
+            // Cancellation is rethrown, so closing the project still tears the coroutine down.
             val target = try {
                 AnchorNavigator.resolve(project, finding)
             } catch (cancellation: CancellationException) {

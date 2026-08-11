@@ -47,8 +47,8 @@ class JavaAnchorResolver : AnchorResolver {
         // KotlinAnchorResolver; returning them here makes the dispatcher see one symbol as two hits
         // and refuse to navigate at all.
         if (owner.navigationElement.language.id != JavaLanguage.INSTANCE.id) return emptyList()
-        // Own declarations first so an override does not read as ambiguity against the
-        // method it overrides; base classes only when the class declares nothing by that name.
+        // Resolve own declarations first, so an override does not read as ambiguous with the
+        // method it overrides. Search base classes only when the class declares nothing by that name.
         val declared = owner.findMethodsByName(function, false)
         val candidates = if (declared.isNotEmpty()) declared else owner.findMethodsByName(function, true)
         return candidates.toList()

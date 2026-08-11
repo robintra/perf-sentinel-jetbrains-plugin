@@ -42,6 +42,8 @@ class PerfSentinelToolWindowFactory : ToolWindowFactory {
     override fun createToolWindowContent(project: Project, toolWindow: ToolWindow) {
         val panel = PerfSentinelPanel(project)
         val content = ContentFactory.getInstance().createContent(panel, "", false)
+        // The Kotlin projection exposes disposer as a read-only property.
+        //noinspection UsePropertyAccessSyntax
         content.setDisposer(panel)
         toolWindow.contentManager.addContent(content)
     }

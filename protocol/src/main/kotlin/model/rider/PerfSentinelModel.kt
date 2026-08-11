@@ -6,6 +6,8 @@ import com.jetbrains.rd.generator.nova.csharp.CSharp50Generator
 import com.jetbrains.rd.generator.nova.kotlin.Kotlin11Generator
 import com.jetbrains.rider.model.nova.ide.SolutionModel
 
+// Discovered by the RD generator, not referenced from application code.
+//noinspection UnusedSymbol
 object PerfSentinelModel : Ext(SolutionModel.Solution) {
     private val request = structdef("CSharpSymbolRequest") {
         field("namespace", string)

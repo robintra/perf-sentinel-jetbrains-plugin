@@ -1,5 +1,6 @@
 .gradle/
 .DS_Store
+qodana.sarif.json
 .idea/
 .intellijPlatform/
 build/

@@ -8,6 +8,7 @@
     <name>Perf Sentinel</name>
 
     <!-- A displayed Vendor name or Organization ID displayed on the Plugins Page. -->
+    <!--suppress SpellCheckingInspection -->
     <vendor url="https://github.com/robintra">Robin Trassard</vendor>
 
     <!-- Description of the plugin displayed on the Plugin Page and IDE Plugin Manager.
