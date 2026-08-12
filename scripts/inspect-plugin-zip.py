@@ -2,11 +2,14 @@
 """Fail-closed inspection and stable manifest generation for plugin ZIPs."""
 
 import argparse
+from collections import Counter
 import hashlib
 import json
 import re
+import struct
 import sys
 import tempfile
+import unicodedata
 import zipfile
 from pathlib import Path, PurePosixPath
 
@@ -19,12 +22,18 @@ MAX_ENTRY_SIZE = 400 * 1024 * 1024
 MAX_UNCOMPRESSED_SIZE = 1024 * 1024 * 1024
 MAX_COMPRESSION_RATIO = 200
 CHUNK_SIZE = 64 * 1024
+LOCAL_HEADER = struct.Struct("<IHHHHHIIIHH")
+EOCD = struct.Struct("<4s4H2LH")
+LOCAL_FILE_SIGNATURE = 0x04034B50
+EOCD_SIGNATURE = b"PK\x05\x06"
+UTF8_FLAG = 0x800
 DEPENDENCY_CLASS_PREFIXES = (
     "com/fasterxml/jackson/",
     "com/google/gson/",
     "com/intellij/",
     "com/jetbrains/",
     "com/goide/",
+    "kotlin/",
     "org/jetbrains/",
 )
 SECRET_CONTENT = (
@@ -71,8 +80,103 @@ def validate_entry_metadata(info, label):
         raise ValidationError(f"{label}: nondeterministic mode for {info.filename}: {mode:o}")
     if info.extra:
         raise ValidationError(f"{label}: ZIP extra metadata for {info.filename}")
-    if info.flag_bits & 1:
-        raise ValidationError(f"{label}: encrypted entry {info.filename}")
+    if info.comment:
+        raise ValidationError(f"{label}: entry comment for {info.filename}")
+    if info.flag_bits not in {0, UTF8_FLAG}:
+        raise ValidationError(f"{label}: unsupported ZIP flags for {info.filename}")
+    if info.compress_type not in {zipfile.ZIP_STORED, zipfile.ZIP_DEFLATED}:
+        raise ValidationError(f"{label}: unsupported compression method for {info.filename}")
+
+
+def read_at(source, offset, size, label):
+    try:
+        current = source.tell()
+        source.seek(offset)
+        data = source.read(size)
+        source.seek(current)
+    except (OSError, ValueError) as exc:
+        raise ValidationError(f"{label}: unable to read ZIP structure: {exc}") from exc
+    if len(data) != size:
+        raise ValidationError(f"{label}: truncated ZIP structure")
+    return data
+
+
+def source_size(source, label):
+    try:
+        current = source.tell()
+        source.seek(0, 2)
+        size = source.tell()
+        source.seek(current)
+    except (OSError, ValueError) as exc:
+        raise ValidationError(f"{label}: unable to size ZIP: {exc}") from exc
+    return size
+
+
+def dos_timestamp(date_time):
+    year, month, day, hour, minute, second = date_time
+    return (hour << 11) | (minute << 5) | (second // 2), ((year - 1980) << 9) | (month << 5) | day
+
+
+def validate_eocd(archive, source, size, infos, label):
+    tail_size = min(size, EOCD.size + 65535)
+    tail = read_at(source, size - tail_size, tail_size, label)
+    relative_offset = tail.rfind(EOCD_SIGNATURE)
+    if relative_offset < 0 or relative_offset + EOCD.size > len(tail):
+        raise ValidationError(f"{label}: missing end-of-central-directory record")
+    offset = size - tail_size + relative_offset
+    signature, disk, central_disk, disk_entries, total_entries, central_size, central_offset, comment_size = EOCD.unpack_from(
+        tail, relative_offset
+    )
+    if signature != EOCD_SIGNATURE or disk or central_disk or disk_entries != len(infos) or total_entries != len(infos):
+        raise ValidationError(f"{label}: unsupported central-directory layout")
+    if comment_size or offset + EOCD.size + comment_size != size:
+        raise ValidationError(f"{label}: trailing data after end-of-central-directory record")
+    if central_offset != archive.start_dir or central_offset + central_size != offset:
+        raise ValidationError(f"{label}: inconsistent central-directory bounds")
+
+
+def validate_local_headers(archive, infos, label):
+    source = archive.fp
+    if source is None:
+        raise ValidationError(f"{label}: closed ZIP source")
+    size = source_size(source, label)
+    validate_eocd(archive, source, size, infos, label)
+    intervals = []
+    for info in infos:
+        if info.header_offset < 0 or info.header_offset + LOCAL_HEADER.size > archive.start_dir:
+            raise ValidationError(f"{label}: local header outside archive bounds for {info.filename}")
+        fields = LOCAL_HEADER.unpack(read_at(source, info.header_offset, LOCAL_HEADER.size, label))
+        signature, _, flags, method, dos_time, dos_date, crc, compressed, uncompressed, name_size, extra_size = fields
+        raw_name = read_at(source, info.header_offset + LOCAL_HEADER.size, name_size, label)
+        expected_time, expected_date = dos_timestamp(info.date_time)
+        expected_name = info.filename.encode("utf-8")
+        if (
+            signature != LOCAL_FILE_SIGNATURE
+            or flags != info.flag_bits
+            or method != info.compress_type
+            or dos_time != expected_time
+            or dos_date != expected_date
+            or crc != info.CRC
+            or compressed != info.compress_size
+            or uncompressed != info.file_size
+            or raw_name != expected_name
+            or extra_size
+            or (any(byte > 0x7F for byte in raw_name) and not flags & UTF8_FLAG)
+        ):
+            raise ValidationError(f"{label}: inconsistent local header for {info.filename}")
+        data_start = info.header_offset + LOCAL_HEADER.size + name_size
+        data_end = data_start + compressed
+        if data_end > archive.start_dir:
+            raise ValidationError(f"{label}: local entry overlaps central directory for {info.filename}")
+        intervals.append((info.header_offset, data_end, info.filename))
+    intervals.sort()
+    previous_end = 0
+    for start, end, name in intervals:
+        if start != previous_end:
+            raise ValidationError(f"{label}: overlapping or gapped local entry {name}")
+        previous_end = end
+    if previous_end != archive.start_dir:
+        raise ValidationError(f"{label}: data gap before central directory")
 
 
 def validate_common(archive, label, *, expected_order=None):
@@ -82,11 +186,10 @@ def validate_common(archive, label, *, expected_order=None):
     if len(infos) > MAX_ENTRY_COUNT:
         raise ValidationError(f"{label}: too many entries")
     names = [info.filename for info in infos]
-    duplicates = sorted({name for name in names if names.count(name) > 1})
-    folded = [name.casefold() for name in names]
-    case_duplicates = sorted({name for name in folded if folded.count(name) > 1})
-    if duplicates or case_duplicates:
-        duplicate = duplicates[0] if duplicates else case_duplicates[0]
+    canonical_names = [unicodedata.normalize("NFC", name).casefold() for name in names]
+    counts = Counter(canonical_names)
+    duplicate = next((name for name, canonical in zip(names, canonical_names) if counts[canonical] > 1), None)
+    if duplicate is not None:
         raise ValidationError(f"{label}: duplicate entry {duplicate}")
     for info in infos:
         validate_path(info.filename, label)
@@ -101,6 +204,7 @@ def validate_common(archive, label, *, expected_order=None):
         raise ValidationError(f"{label}: invalid entry order")
     if sum(info.file_size for info in infos) > MAX_UNCOMPRESSED_SIZE:
         raise ValidationError(f"{label}: uncompressed content exceeds safety limit")
+    validate_local_headers(archive, infos, label)
     return infos
 
 
@@ -131,7 +235,6 @@ def stream_entry(archive, info, label, *, sink=None):
     digest = hashlib.sha256()
     if info.is_dir():
         return digest.hexdigest()
-    scan_build_paths = Path(info.filename).suffix.lower() in {".dll", ".pdb"}
     tail = b""
     total = 0
     try:
@@ -146,7 +249,7 @@ def stream_entry(archive, info, label, *, sink=None):
                 window = tail + chunk
                 if any(pattern.search(window) for pattern in SECRET_CONTENT):
                     raise ValidationError(f"{label}: secret content in {info.filename}")
-                if scan_build_paths and ABSOLUTE_BUILD_PATH.search(window):
+                if ABSOLUTE_BUILD_PATH.search(window):
                     raise ValidationError(f"{label}: absolute build path in {info.filename}")
                 tail = window[-256:]
     except (OSError, RuntimeError, zipfile.BadZipFile) as exc:
@@ -265,13 +368,27 @@ def inspect(path):
                     nested_file.seek(0)
                     jar_entries, jar_names_set = nested_manifest(nested_file, info.filename)
                     nested.append({"archive": info.filename, "entries": jar_entries})
-                if info.filename == main_jar and "META-INF/plugin.xml" not in jar_names_set:
-                    raise ValidationError("main plugin jar is missing META-INF/plugin.xml")
-                if info.filename == frontend_jar and not any(
-                    name.startswith("io/github/robintra/perfsentinel/rider/") and name.endswith(".class")
-                    for name in jar_names_set
-                ):
-                    raise ValidationError("Rider frontend jar has no plugin classes")
+                classes = sorted(name for name in jar_names_set if name.endswith(".class"))
+                if info.filename == main_jar:
+                    if "META-INF/plugin.xml" not in jar_names_set:
+                        raise ValidationError("main plugin jar is missing META-INF/plugin.xml")
+                    if not classes:
+                        raise ValidationError("main plugin jar has no plugin classes")
+                    foreign = next(
+                        (name for name in classes if not name.startswith("io/github/robintra/perfsentinel/")), None
+                    )
+                    if foreign:
+                        raise ValidationError(f"main plugin jar contains unexpected class {foreign}")
+                elif info.filename == frontend_jar:
+                    if not classes:
+                        raise ValidationError("Rider frontend jar has no plugin classes")
+                    foreign = next(
+                        (name for name in classes if not name.startswith("io/github/robintra/perfsentinel/rider/")), None
+                    )
+                    if foreign:
+                        raise ValidationError(f"Rider frontend jar contains unexpected class {foreign}")
+                elif classes:
+                    raise ValidationError(f"searchable-options jar contains classes: {classes[0]}")
                 if info.filename == searchable_jar and not any(name.endswith("searchableOptions.json") for name in jar_names_set):
                     raise ValidationError("searchable-options jar has no searchableOptions.json")
             else:
