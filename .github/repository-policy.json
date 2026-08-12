@@ -1,0 +1,55 @@
+{
+  "schema_version": 1,
+  "repository": "robintra/perf-sentinel-jetbrains-plugin",
+  "visibility": "public",
+  "default_branch": "main",
+  "repository_settings": {
+    "allow_squash_merge": true,
+    "allow_rebase_merge": true,
+    "allow_merge_commit": false,
+    "allow_auto_merge": false,
+    "delete_branch_on_merge": false
+  },
+  "security": {
+    "secret_scanning": true,
+    "secret_scanning_push_protection": true,
+    "vulnerability_alerts": true,
+    "private_vulnerability_reporting": true
+  },
+  "branch_ruleset": {
+    "ref_include": "~DEFAULT_BRANCH",
+    "required_approving_review_count": 0,
+    "required_review_thread_resolution": true,
+    "dismiss_stale_reviews_on_push": true,
+    "require_code_owner_review": false,
+    "require_last_push_approval": false,
+    "strict_required_status_checks_policy": true,
+    "do_not_enforce_on_create": false,
+    "allowed_merge_methods": ["rebase", "squash"],
+    "required_status_checks": [{"context": "CI / Gate"}],
+    "require_linear_history": true,
+    "require_signed_commits": true,
+    "allow_force_pushes": false,
+    "allow_deletions": false,
+    "bypass_actors": []
+  },
+  "tag_ruleset": {
+    "ref_include": "refs/tags/v*",
+    "allow_updates": false,
+    "allow_deletions": false,
+    "bypass_actors": []
+  },
+  "release_environment": {
+    "name": "jetbrains-release",
+    "minimum_required_reviewers": 1,
+    "prevent_self_review": false
+  },
+  "workflow_secrets": [
+    "CERTIFICATE_CHAIN",
+    "PRIVATE_KEY",
+    "PRIVATE_KEY_PASSWORD",
+    "PUBLISH_TOKEN",
+    "QODANA_TOKEN",
+    "SONAR_TOKEN"
+  ]
+}

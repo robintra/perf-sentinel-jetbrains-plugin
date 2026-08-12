@@ -1,0 +1,15 @@
+name: Security report
+description: Redirect a sensitive report to GitHub private vulnerability reporting.
+title: "Security reports must remain private"
+labels: [security]
+body:
+  - type: markdown
+    attributes:
+      value: Do not submit vulnerability details in this public issue form. Use private vulnerability reporting from the repository Security page.
+  - type: checkboxes
+    id: acknowledgement
+    attributes:
+      label: Private reporting
+      options:
+        - label: I will not open a public issue and will use private vulnerability reporting.
+          required: true

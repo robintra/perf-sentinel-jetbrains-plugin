@@ -1,0 +1,53 @@
+name: Bug report
+description: Report a reproducible Perf Sentinel problem.
+title: "[Bug]: "
+labels: [bug]
+body:
+  - type: markdown
+    attributes:
+      value: Do not report security vulnerabilities here. Use private vulnerability reporting from the Security page.
+  - type: input
+    id: version
+    attributes:
+      label: Plugin version
+      placeholder: 0.1.0 or commit SHA
+    validations:
+      required: true
+  - type: dropdown
+    id: ide
+    attributes:
+      label: IDE
+      options: [IntelliJ IDEA, Rider, PyCharm, PhpStorm, RustRover, RubyMine, WebStorm, GoLand, Other]
+    validations:
+      required: true
+  - type: input
+    id: environment
+    attributes:
+      label: IDE build and operating system
+    validations:
+      required: true
+  - type: textarea
+    id: reproduce
+    attributes:
+      label: Reproduction steps
+    validations:
+      required: true
+  - type: textarea
+    id: expected
+    attributes:
+      label: Expected behavior
+    validations:
+      required: true
+  - type: textarea
+    id: actual
+    attributes:
+      label: Actual behavior
+    validations:
+      required: true
+  - type: checkboxes
+    id: checks
+    attributes:
+      label: Confirmation
+      options:
+        - label: I removed credentials, private data, and sensitive project content from logs.
+          required: true
