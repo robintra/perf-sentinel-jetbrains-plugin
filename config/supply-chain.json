@@ -39,7 +39,8 @@
     {"name": "Microsoft.NET.Test.Sdk", "kind": "nuget", "version": "18.8.1", "releasedAt": "2026-07-14", "source": "https://www.nuget.org/packages/Microsoft.NET.Test.Sdk/18.8.1", "declaration": "src/dotnet/PerfSentinel.Rider.Tests/PerfSentinel.Rider.Tests.csproj#Microsoft.NET.Test.Sdk"},
     {"name": "NUnit3TestAdapter", "kind": "nuget", "version": "6.2.0", "releasedAt": "2026-03-21", "source": "https://www.nuget.org/packages/NUnit3TestAdapter/6.2.0", "declaration": "src/dotnet/PerfSentinel.Rider.Tests/PerfSentinel.Rider.Tests.csproj#NUnit3TestAdapter"},
     {"name": "SonarScanner for Gradle", "kind": "audited-tool", "version": "7.4.0.8496", "releasedAt": "2026-08-06", "source": "https://plugins.gradle.org/plugin/org.sonarqube/7.4.0.8496"},
-    {"name": "Kover", "kind": "audited-tool", "version": "0.9.9", "releasedAt": "2026-07-17", "source": "https://plugins.gradle.org/plugin/org.jetbrains.kotlinx.kover/0.9.9"},
+    {"name": "Kover", "kind": "audited-tool", "version": "0.9.9", "releasedAt": "2026-07-17", "source": "https://plugins.gradle.org/plugin/org.jetbrains.kotlinx.kover/0.9.9", "declaration": "gradle/libs.versions.toml#kover"},
+    {"name": "coverlet.collector", "kind": "nuget", "version": "6.0.4", "releasedAt": "2025-01-19T23:24:04.97Z", "source": "https://www.nuget.org/packages/coverlet.collector/6.0.4", "compatibility": "netstandard2.0", "declaration": "src/dotnet/PerfSentinel.Rider.Tests/PerfSentinel.Rider.Tests.csproj#coverlet.collector"},
     {"name": "OSV-Scanner", "kind": "audited-tool", "version": "2.5.0", "releasedAt": "2026-08-07T05:23:52Z", "source": "https://github.com/google/osv-scanner/releases/tag/v2.5.0", "release": "v2.5.0"},
     {"name": "Gitleaks", "kind": "audited-tool", "version": "8.30.1", "releasedAt": "2026-03-21T02:17:58Z", "source": "https://github.com/gitleaks/gitleaks/releases/tag/v8.30.1", "release": "v8.30.1"},
     {"name": "TruffleHog", "kind": "audited-tool", "version": "3.96.0", "releasedAt": "2026-07-24T18:23:23Z", "source": "https://github.com/trufflesecurity/trufflehog/releases/tag/v3.96.0", "release": "v3.96.0"},
@@ -99,7 +100,18 @@
       "upstream": "https://www.jetbrains.com/intellij-repository/releases/com/jetbrains/intellij/platform/test-framework/253.33813.55/test-framework-253.33813.55.pom",
       "expiresAt": "2026-11-10T07:00:00Z",
       "lockPaths": ["gradle.lockfile", "rider-frontend/gradle.lockfile"],
-      "configurations": ["intellijPlatformTestClasspath", "intellijPlatformTestClasspath_testGoLand253", "intellijPlatformTestClasspath_testPhpStorm253", "intellijPlatformTestClasspath_testPyCharm253", "intellijPlatformTestClasspath_testRubyMine253", "intellijPlatformTestClasspath_testRustRover253", "intellijPlatformTestClasspath_testRustRover262", "intellijPlatformTestClasspath_testWebStorm253", "intellijPlatformTestRuntimeClasspath_testGoLand253", "intellijPlatformTestRuntimeClasspath_testPhpStorm253", "intellijPlatformTestRuntimeClasspath_testPyCharm253", "intellijPlatformTestRuntimeClasspath_testRubyMine253", "intellijPlatformTestRuntimeClasspath_testRustRover253", "intellijPlatformTestRuntimeClasspath_testRustRover262", "intellijPlatformTestRuntimeClasspath_testWebStorm253"]
+      "configurations": ["intellijPlatformTestClasspath", "intellijPlatformTestClasspath_testGoLand253", "intellijPlatformTestClasspath_testPhpStorm253", "intellijPlatformTestClasspath_testPyCharm253", "intellijPlatformTestClasspath_testRubyMine253", "intellijPlatformTestClasspath_testRustRover253", "intellijPlatformTestClasspath_testRustRover262", "intellijPlatformTestClasspath_testWebStorm253", "intellijPlatformTestDependencies", "intellijPlatformTestDependencies_testGoLand253", "intellijPlatformTestDependencies_testPhpStorm253", "intellijPlatformTestDependencies_testPyCharm253", "intellijPlatformTestDependencies_testRubyMine253", "intellijPlatformTestDependencies_testRustRover253", "intellijPlatformTestDependencies_testRustRover262", "intellijPlatformTestDependencies_testWebStorm253", "intellijPlatformTestRuntimeClasspath_testGoLand253", "intellijPlatformTestRuntimeClasspath_testPhpStorm253", "intellijPlatformTestRuntimeClasspath_testPyCharm253", "intellijPlatformTestRuntimeClasspath_testRubyMine253", "intellijPlatformTestRuntimeClasspath_testRustRover253", "intellijPlatformTestRuntimeClasspath_testRustRover262", "intellijPlatformTestRuntimeClasspath_testWebStorm253"]
+    },
+    {
+      "type": "transitive-prerelease",
+      "dependency": "org.jetbrains.compose.hot-reload:hot-reload-agent:1.1.0-alpha03",
+      "owner": "Maintainers",
+      "reason": "Kotlin 2.4.10 contributes this exact agent to the composeHotReloadAgent configuration, which Kover report generation resolves; the plugin does not select it directly.",
+      "evidence": "./gradlew dependencyInsight --dependency org.jetbrains.compose.hot-reload:hot-reload-agent --configuration composeHotReloadAgent",
+      "upstream": "https://repo.maven.apache.org/maven2/org/jetbrains/compose/hot-reload/hot-reload-agent/1.1.0-alpha03/hot-reload-agent-1.1.0-alpha03.pom",
+      "expiresAt": "2026-11-10T07:00:00Z",
+      "lockPaths": ["gradle.lockfile", "rider-frontend/gradle.lockfile"],
+      "configurations": ["composeHotReloadAgent"]
     }
   ]
 }

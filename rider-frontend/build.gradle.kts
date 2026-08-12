@@ -5,6 +5,7 @@ import org.jetbrains.kotlin.gradle.dsl.JvmTarget
 plugins {
     id("idea")
     id("org.jetbrains.kotlin.jvm")
+    alias(libs.plugins.kover)
     id("org.jetbrains.intellij.platform.module")
 }
 

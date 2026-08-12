@@ -5,6 +5,7 @@ import argparse
 import base64
 import binascii
 import fnmatch
+import io
 import json
 import os
 import re
@@ -15,6 +16,7 @@ import sys
 import tomllib
 import urllib.parse
 import urllib.request
+import zipfile
 from datetime import datetime, time, timedelta, timezone
 from email.utils import parsedate_to_datetime
 from pathlib import Path
@@ -52,6 +54,7 @@ REQUIRED_TRANSITIVE_EXCEPTIONS = {
     "com.jgoodies:forms:1.1-preview",
     "org.assertj:assertj-core:4.0.0-M1",
 }
+KOVER_TRANSITIVE_EXCEPTION = "org.jetbrains.compose.hot-reload:hot-reload-agent:1.1.0-alpha03"
 TOP_FIELDS = {
     "schemaVersion",
     "auditedAt",
@@ -60,7 +63,7 @@ TOP_FIELDS = {
     "dependencies",
     "exceptions",
 }
-DEPENDENCY_FIELDS = {"name", "kind", "version", "releasedAt", "source", "sha256", "release", "declaration"}
+DEPENDENCY_FIELDS = {"name", "kind", "version", "releasedAt", "source", "sha256", "release", "compatibility", "declaration"}
 DEPENDENCY_KINDS = {
     "build-tool",
     "gradle-plugin",
@@ -82,6 +85,10 @@ build.gradle.kts#WebStorm 2025.3;build.gradle.kts#WebStorm 2026.2;build.gradle.k
 src/dotnet/Plugin.props#SdkVersion:JetBrains.Rider.SDK;src/dotnet/Plugin.props#SdkVersion:JetBrains.ReSharper.SDK.Tests;src/dotnet/Directory.Build.props#Microsoft.NETFramework.ReferenceAssemblies
 src/dotnet/PerfSentinel.Rider.Tests/PerfSentinel.Rider.Tests.csproj#Microsoft.NET.Test.Sdk;src/dotnet/PerfSentinel.Rider.Tests/PerfSentinel.Rider.Tests.csproj#NUnit3TestAdapter;qodana.yml#linter
 """.replace("\n", ";").strip(";").split(";"))
+OPTIONAL_DIRECT_DECLARATIONS = {
+    "gradle/libs.versions.toml#kover",
+    "src/dotnet/PerfSentinel.Rider.Tests/PerfSentinel.Rider.Tests.csproj#coverlet.collector",
+}
 PLUGIN_IDS = {
     "Kotlin Gradle plugin": "org.jetbrains.kotlin.jvm",
     "IntelliJ Platform Gradle plugin": "org.jetbrains.intellij.platform.module",
@@ -103,6 +110,7 @@ NUGET_PACKAGES = {
     "Microsoft .NET Framework reference assemblies": "Microsoft.NETFramework.ReferenceAssemblies",
     "Microsoft.NET.Test.Sdk": "Microsoft.NET.Test.Sdk",
     "NUnit3TestAdapter": "NUnit3TestAdapter",
+    "coverlet.collector": "coverlet.collector",
 }
 GITHUB_REPOS = {
     "OSV-Scanner": "google/osv-scanner",
@@ -261,7 +269,7 @@ def check_inventory(root, errors, now):
             errors.append(f"{name} does not use its official source {expected_source}")
         if "sha256" in dependency and (type(dependency["sha256"]) is not str or not SHA256.fullmatch(dependency["sha256"])):
             errors.append(f"{name} has invalid SHA-256")
-        for field in ("release", "declaration"):
+        for field in ("release", "compatibility", "declaration"):
             if field in dependency and (type(dependency[field]) is not str or not dependency[field]):
                 errors.append(f"{name} field {field} must be a non-empty string")
         if dependency["kind"] == "github-action":
@@ -452,11 +460,16 @@ def check_declarations(root, inventory, errors):
         errors.append(f"duplicate inventory declaration: {declaration}")
     entries = {item["declaration"]: item for item in declared}
     actual_repo = (root / "gradle" / "libs.versions.toml").is_file()
-    required = DIRECT_DECLARATIONS if actual_repo else {key for key in entries if (root / key.split("#", 1)[0]).is_file()}
+    optional = {
+        declaration
+        for declaration in OPTIONAL_DIRECT_DECLARATIONS
+        if declaration in entries
+    }
+    required = DIRECT_DECLARATIONS | optional if actual_repo else {key for key in entries if (root / key.split("#", 1)[0]).is_file()}
     for declaration in sorted(required - set(entries)):
         errors.append(f"direct declaration missing from inventory: {declaration}")
     for declaration, dependency in entries.items():
-        if declaration not in DIRECT_DECLARATIONS:
+        if declaration not in DIRECT_DECLARATIONS | OPTIONAL_DIRECT_DECLARATIONS:
             errors.append(f"unsupported direct declaration {declaration}")
             continue
         try:
@@ -470,6 +483,18 @@ def check_declarations(root, inventory, errors):
         if not actual or any(value != expected for value in actual):
             detail = "Rider declarations diverge" if declaration.startswith("build.gradle.kts#Rider") else "does not match declaration"
             errors.append(f"{dependency.get('name')} {detail} {declaration}: expected {expected}, found {actual}")
+
+    kover_builds = (root / "build.gradle.kts", root / "rider-frontend" / "build.gradle.kts")
+    if any(path.is_file() and "libs.plugins.kover" in path.read_text(encoding="utf-8") for path in kover_builds):
+        kover = [item for item in inventory.get("dependencies", []) if item.get("name") == "Kover"]
+        if len(kover) != 1 or kover[0].get("declaration") != "gradle/libs.versions.toml#kover":
+            errors.append("Kover declaration missing from inventory")
+    test_project = root / "src/dotnet/PerfSentinel.Rider.Tests/PerfSentinel.Rider.Tests.csproj"
+    if test_project.is_file() and 'Include="coverlet.collector"' in test_project.read_text(encoding="utf-8"):
+        coverlet = [item for item in inventory.get("dependencies", []) if item.get("name") == "coverlet.collector"]
+        expected = "src/dotnet/PerfSentinel.Rider.Tests/PerfSentinel.Rider.Tests.csproj#coverlet.collector"
+        if len(coverlet) != 1 or coverlet[0].get("declaration") != expected:
+            errors.append("coverlet.collector declaration missing from inventory")
 
 
 def parse_gradle_locks(root, inventory, errors):
@@ -509,11 +534,13 @@ def parse_gradle_locks(root, inventory, errors):
         for item in inventory.get("exceptions", [])
         if isinstance(item, dict) and item.get("type") == "transitive-prerelease"
     }
-    required_exceptions = (
+    required_exceptions = set(
         REQUIRED_TRANSITIVE_EXCEPTIONS
         if any(item.get("name") == "RDGen" for item in inventory.get("dependencies", []) if isinstance(item, dict))
         else set()
     )
+    if any(item.get("name") == "Kover" and item.get("declaration") for item in inventory.get("dependencies", []) if isinstance(item, dict)):
+        required_exceptions.add(KOVER_TRANSITIVE_EXCEPTION)
     for coordinate in sorted(required_exceptions - set(exceptions)):
         errors.append(f"required transitive exception missing: {coordinate}")
     for coordinate in sorted(set(exceptions) - required_exceptions):
@@ -718,8 +745,10 @@ def nuget_declared_direct(root):
     result[(tests, "JetBrains.ReSharper.SDK.Tests")] = sdk
     result[(tests, "Microsoft.NETFramework.ReferenceAssemblies")] = common
     test_project = ElementTree.parse(root / "src/dotnet/PerfSentinel.Rider.Tests/PerfSentinel.Rider.Tests.csproj")
-    for package in ("Microsoft.NET.Test.Sdk", "NUnit3TestAdapter"):
-        result[(tests, package)] = test_project.find(f'.//PackageReference[@Include="{package}"]').get("Version")
+    for package in ("Microsoft.NET.Test.Sdk", "NUnit3TestAdapter", "coverlet.collector"):
+        reference = test_project.find(f'.//PackageReference[@Include="{package}"]')
+        if reference is not None:
+            result[(tests, package)] = reference.get("Version")
     return result
 
 
@@ -950,9 +979,29 @@ def verify_nuget(client, dependency, now):
         catalog = item["catalogEntry"] if isinstance(item["catalogEntry"], dict) else client.json(item["catalogEntry"])
         version = catalog["version"]
         if not PRERELEASE.search(version):
-            candidates.append((version, parse_instant(catalog["published"])))
+            candidates.append((version, parse_instant(catalog["published"]), item["packageContent"]))
+    if dependency["name"] == "coverlet.collector":
+        if dependency.get("compatibility") != "netstandard2.0":
+            raise ValueError("coverlet collector requires its net472 compatibility contract")
+        compatible = []
+        for version, published, content in sorted(candidates, key=lambda item: version_key(item[0]), reverse=True):
+            if now - published < timedelta(hours=72):
+                continue
+            package_bytes = client.get(content)[0]
+            if len(package_bytes) > 64 * 1024 * 1024:
+                raise ValueError("coverlet package exceeds audit size bound")
+            try:
+                with zipfile.ZipFile(io.BytesIO(package_bytes)) as package_archive:
+                    if "build/netstandard2.0/coverlet.collector.targets" in package_archive.namelist():
+                        compatible.append((version, published))
+            except zipfile.BadZipFile as error:
+                raise ValueError("coverlet package is not a valid NuGet archive") from error
+            if compatible:
+                break
+        validate_release(dependency, compatible, now, "net472-compatible NuGet release")
+        return
     compatible = dependency.get("release")
-    validate_release(dependency, candidates, now, "NuGet release", compatible + "." if compatible else None)
+    validate_release(dependency, [(version, published) for version, published, _ in candidates], now, "NuGet release", compatible + "." if compatible else None)
 
 
 def verify_container(client, dependency, now):
