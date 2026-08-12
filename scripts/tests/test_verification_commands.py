@@ -1,3 +1,4 @@
+import os
 import subprocess
 import tempfile
 import unittest
@@ -66,6 +67,18 @@ class VerificationCommandTests(unittest.TestCase):
         self.assertEqual(0, result.returncode, result.stderr)
         self.assertIn("Disk guard:", result.stdout)
 
+    def test_disk_guard_does_not_reject_managed_ci_runners(self):
+        result = subprocess.run(
+            ["make", "--no-print-directory", "check-disk"],
+            cwd=REPOSITORY,
+            env={**os.environ, "CI": "true"},
+            text=True,
+            capture_output=True,
+            check=False,
+        )
+        self.assertEqual(0, result.returncode, result.stderr)
+        self.assertIn("managed CI runner", result.stdout)
+
     def test_verify_adds_plugin_qodana_lock_and_packaging_gates(self):
         result = self.dry_run("verify", OS="Windows_NT")
         self.assertEqual(0, result.returncode, result.stderr)
@@ -115,6 +128,18 @@ class VerificationCommandTests(unittest.TestCase):
         self.assertNotIn("publishPlugin", result.stdout)
 
     def test_commands_do_not_duplicate_dependency_caches(self):
+        environment = os.environ.copy()
+        for name in (
+            "DOTNET_CLI_HOME",
+            "XDG_CACHE_HOME",
+            "XDG_CONFIG_HOME",
+            "ZIZMOR_CACHE_DIR",
+            "GRADLE_USER_HOME",
+            "NUGET_PACKAGES",
+            "NUGET_HTTP_CACHE_PATH",
+            "NUGET_PLUGINS_CACHE_PATH",
+        ):
+            environment.pop(name, None)
         with tempfile.TemporaryDirectory() as directory:
             makefile = Path(directory) / "Makefile"
             makefile.write_text(
@@ -124,6 +149,7 @@ class VerificationCommandTests(unittest.TestCase):
             result = subprocess.run(
                 ["make", "--no-print-directory", "-f", str(makefile), "print-environment"],
                 cwd=REPOSITORY,
+                env=environment,
                 text=True,
                 capture_output=True,
                 check=False,

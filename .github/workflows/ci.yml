@@ -281,9 +281,9 @@ jobs:
         with:
           ref: ${{ needs.changes.outputs.target-sha }}
           persist-credentials: false
-      - if: github.event_name == 'pull_request'
+      - if: github.event_name == 'pull_request' && github.event.repository.private == false
         uses: actions/dependency-review-action@a1d282b36b6f3519aa1f3fc636f609c47dddb294
-      - if: github.event_name != 'pull_request'
+      - if: github.event_name != 'pull_request' || github.event.repository.private == true
         run: python3 scripts/check-supply-chain.py
 
   workflow-security:
