@@ -61,6 +61,19 @@ class VerificationCommandTests(unittest.TestCase):
                 self.assertNotIn("./gradlew", text)
                 self.assertNotIn("gradlew.bat", text)
 
+    def test_windows_runtime_is_verified_for_hosted_rider_builds(self):
+        metadata = (REPOSITORY / "gradle" / "verification-metadata.xml").read_text(
+            encoding="utf-8"
+        )
+        self.assertIn(
+            'version="jbr_jcef-21.0.11-windows-x64-b1163.116"',
+            metadata,
+        )
+        self.assertIn(
+            'value="40a305663ded81fd49f11bb314253026df6a54b18e919bea2fc184c8f72ef23b"',
+            metadata,
+        )
+
     def dry_run(self, target, **variables):
         arguments = ["make", "--no-print-directory", "-n", target]
         arguments.extend(f"{key}={value}" for key, value in variables.items())
