@@ -31,6 +31,24 @@ allprojects {
 val ideaTestRuntime = providers.provider {
     extensions.getByType<IntelliJPlatformExtension>().platformPath.resolve("lib/idea_rt.jar").toFile()
 }
+val pluginVerifierTarget = providers.gradleProperty("pluginVerifierTarget").orNull
+val pluginVerifierTargets = setOf(
+    "idea-253", "idea-262", "rider-253", "rider-262",
+    "python-253", "python-262", "php-253", "php-262",
+    "rust-253", "rust-262", "ruby-253", "ruby-262",
+    "web-253", "web-262", "go-253", "go-262",
+)
+require(pluginVerifierTarget == null || pluginVerifierTarget in pluginVerifierTargets) {
+    "unknown pluginVerifierTarget: $pluginVerifierTarget"
+}
+fun verifyTarget(name: String) = pluginVerifierTarget == null || pluginVerifierTarget == name
+
+if (pluginVerifierTarget != null) {
+    configurations.named("intellijPluginVerifierIdesDependency") {
+        // A matrix runner resolves one exact product. Artifact integrity remains protected by strict verification metadata.
+        resolutionStrategy.deactivateDependencyLocking()
+    }
+}
 // IntelliJ Platform Gradle Plugin documentation: https://plugins.jetbrains.com/docs/intellij/tools-intellij-platform-gradle-plugin.html
 dependencies {
     compileOnly(libs.gson)
@@ -263,22 +281,22 @@ intellijPlatform {
     }
     pluginVerification {
         ides {
-            create(IntelliJPlatformType.IntellijIdea, "2025.3.6.1")
-            create(IntelliJPlatformType.IntellijIdea, "2026.2.1")
-            create(IntelliJPlatformType.Rider, "2025.3.5") { useInstaller = false }
-            create(IntelliJPlatformType.Rider, "2026.2.0.2") { useInstaller = false }
-            create(IntelliJPlatformType.PyCharmProfessional, "2025.3.6.1")
-            create(IntelliJPlatformType.PyCharm, "2026.2.0.1")
-            create(IntelliJPlatformType.PhpStorm, "2025.3.6.1")
-            create(IntelliJPlatformType.PhpStorm, "2026.2.1")
-            create(IntelliJPlatformType.RustRover, "2025.3.7")
-            create(IntelliJPlatformType.RustRover, "2026.2.1")
-            create(IntelliJPlatformType.RubyMine, "2025.3.6.1")
-            create(IntelliJPlatformType.RubyMine, "2026.2.1")
-            create(IntelliJPlatformType.WebStorm, "2025.3.6.1")
-            create(IntelliJPlatformType.WebStorm, "2026.2.1")
-            create(IntelliJPlatformType.GoLand, "2025.3.5.1")
-            create(IntelliJPlatformType.GoLand, "2026.2.1")
+            if (verifyTarget("idea-253")) create(IntelliJPlatformType.IntellijIdea, "2025.3.6.1")
+            if (verifyTarget("idea-262")) create(IntelliJPlatformType.IntellijIdea, "2026.2.1")
+            if (verifyTarget("rider-253")) create(IntelliJPlatformType.Rider, "2025.3.5") { useInstaller = false }
+            if (verifyTarget("rider-262")) create(IntelliJPlatformType.Rider, "2026.2.0.2") { useInstaller = false }
+            if (verifyTarget("python-253")) create(IntelliJPlatformType.PyCharmProfessional, "2025.3.6.1")
+            if (verifyTarget("python-262")) create(IntelliJPlatformType.PyCharm, "2026.2.0.1")
+            if (verifyTarget("php-253")) create(IntelliJPlatformType.PhpStorm, "2025.3.6.1")
+            if (verifyTarget("php-262")) create(IntelliJPlatformType.PhpStorm, "2026.2.1")
+            if (verifyTarget("rust-253")) create(IntelliJPlatformType.RustRover, "2025.3.7")
+            if (verifyTarget("rust-262")) create(IntelliJPlatformType.RustRover, "2026.2.1")
+            if (verifyTarget("ruby-253")) create(IntelliJPlatformType.RubyMine, "2025.3.6.1")
+            if (verifyTarget("ruby-262")) create(IntelliJPlatformType.RubyMine, "2026.2.1")
+            if (verifyTarget("web-253")) create(IntelliJPlatformType.WebStorm, "2025.3.6.1")
+            if (verifyTarget("web-262")) create(IntelliJPlatformType.WebStorm, "2026.2.1")
+            if (verifyTarget("go-253")) create(IntelliJPlatformType.GoLand, "2025.3.5.1")
+            if (verifyTarget("go-262")) create(IntelliJPlatformType.GoLand, "2026.2.1")
         }
     }
 }
