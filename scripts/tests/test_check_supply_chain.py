@@ -581,6 +581,34 @@ class SupplyChainCheckerTest(unittest.TestCase):
         self.write_inventory()
         self.assert_rejected("unexpected tool")
 
+    def test_accepts_task4_qodana_dotnet_and_sonar_scanner_inventory(self):
+        self.inventory["dependencies"].extend([
+            {
+                "name": "Qodana .NET image", "kind": "container",
+                "version": "sha256:" + "c" * 64, "release": "2026.1",
+                "releasedAt": "2026-04-21T09:02:03Z",
+                "source": "https://hub.docker.com/r/jetbrains/qodana-dotnet",
+                "declaration": "qodana-dotnet.yml#linter",
+            },
+            {
+                "name": "SonarScanner for .NET", "kind": "nuget",
+                "version": "11.2.1", "releasedAt": "2026-04-02T13:11:28.497Z",
+                "source": "https://www.nuget.org/packages/dotnet-sonarscanner/11.2.1",
+                "declaration": "sonar-rider.properties#scanner.dotnet.version",
+            },
+        ])
+        self.write_inventory()
+        (self.root / "qodana-dotnet.yml").write_text(
+            "linter: jetbrains/qodana-dotnet:2026.1@sha256:" + "c" * 64 + "\n",
+            encoding="utf-8",
+        )
+        (self.root / "sonar-rider.properties").write_text(
+            "scanner.dotnet.version=11.2.1\n",
+            encoding="utf-8",
+        )
+        result = self.run_checker()
+        self.assertEqual(0, result.returncode, result.stderr)
+
     def test_rejects_missing_or_extra_required_compatibility_exception(self):
         self.inventory["dependencies"].append(
             {"name": "RDGen", "kind": "maven", "version": "2026.2.5", "releasedAt": "2026-06-18", "source": "https://example.test/rdgen"}

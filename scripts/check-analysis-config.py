@@ -1,0 +1,563 @@
+#!/usr/bin/env python3
+"""Validate the closed Qodana, Sonar, and analysis-secret contracts."""
+
+from __future__ import annotations
+
+import argparse
+import json
+import posixpath
+import re
+import sys
+import unicodedata
+import xml.etree.ElementTree as ElementTree
+from pathlib import Path
+
+
+MAX_CONFIG_BYTES = 256 * 1024
+MAX_INVENTORY_BYTES = 1024 * 1024
+MAX_WORKFLOW_BYTES = 1024 * 1024
+MAX_LINE_LENGTH = 4096
+JVM_DIGEST = "sha256:f1c5d3efe2f550409c4d95d266c5dc2025a8069d82c9516781eae72e7383b55d"
+DOTNET_DIGEST = "sha256:c893fb5f5dbe54cd4b9c2cb1bd11d711242add66c5a3ac65fe7fc302cdb8c0a3"
+DOTNET_SCANNER_VERSION = "11.2.1"
+IMAGE = re.compile(r"^(jetbrains/[a-z0-9-]+):(\d{4}\.\d+)@(sha256:[0-9a-f]{64})$")
+PROPERTY_KEY = re.compile(r"^[A-Za-z][A-Za-z0-9_.-]*$")
+YAML_KEY = re.compile(r"^([A-Za-z][A-Za-z0-9]*):(?: (.*))?$")
+DRIVE_PATH = re.compile(r"^[A-Za-z]:/")
+SECRET_REFERENCE = re.compile(r"\bsecrets\.([A-Za-z_][A-Za-z0-9_]*)\b")
+SECRET_VALUE = re.compile(r"(?:gh[pousr]_[A-Za-z0-9]{20,}|sk-[A-Za-z0-9_-]{20,}|[A-Fa-f0-9]{40,})")
+FORBIDDEN_XML = re.compile(r"<!\s*(?:DOCTYPE|ENTITY)\b", re.IGNORECASE)
+
+
+class AnalysisError(ValueError):
+    pass
+
+
+class DuplicateKey(ValueError):
+    pass
+
+
+def unique_object(pairs):
+    value = {}
+    for key, item in pairs:
+        if key in value:
+            raise DuplicateKey(f"duplicate key {key}")
+        value[key] = item
+    return value
+
+
+def read_utf8(path: Path, maximum: int, label: str) -> str:
+    try:
+        with path.open("rb") as stream:
+            payload = stream.read(maximum + 1)
+    except OSError as error:
+        raise AnalysisError(f"{label} is missing") from error
+    if not payload or len(payload) > maximum:
+        raise AnalysisError(f"{label} violates the {maximum}-byte size bound")
+    if payload.startswith(b"\xef\xbb\xbf"):
+        raise AnalysisError(f"{label} must use strict UTF-8 without BOM")
+    try:
+        text = payload.decode("utf-8", errors="strict")
+    except UnicodeDecodeError as error:
+        raise AnalysisError(f"{label} must use strict UTF-8 without BOM") from error
+    if any(ord(character) < 32 and character != "\n" for character in text):
+        raise AnalysisError(f"{label} contains a forbidden control character")
+    if any(len(line) > MAX_LINE_LENGTH for line in text.splitlines()):
+        raise AnalysisError(f"{label} contains an invalid or oversized line")
+    return text
+
+
+def read_json(path: Path, maximum: int, label: str):
+    try:
+        return json.loads(read_utf8(path, maximum, label), object_pairs_hook=unique_object)
+    except DuplicateKey as error:
+        raise AnalysisError(f"{label} contains a duplicate key") from error
+    except json.JSONDecodeError as error:
+        raise AnalysisError(f"{label} is not valid JSON") from error
+
+
+def fields(value, expected: set[str], label: str) -> None:
+    if type(value) is not dict:
+        raise AnalysisError(f"{label} must be an object")
+    unknown = set(value) - expected
+    missing = expected - set(value)
+    if unknown:
+        raise AnalysisError(f"{label} has unknown field(s): {', '.join(sorted(unknown))}")
+    if missing:
+        raise AnalysisError(f"{label} is missing field(s): {', '.join(sorted(missing))}")
+
+
+def scalar(value: str):
+    if value.startswith('"'):
+        try:
+            parsed = json.loads(value)
+        except json.JSONDecodeError as error:
+            raise AnalysisError("invalid quoted YAML scalar") from error
+        if type(parsed) is not str:
+            raise AnalysisError("quoted YAML scalar must be a string")
+        return parsed
+    if value in {"true", "false"}:
+        return value == "true"
+    if re.fullmatch(r"(?:0|[1-9][0-9]*)", value):
+        return int(value)
+    if not value or value[0] in "'[{&*!|>" or " #" in value:
+        raise AnalysisError("unsupported YAML scalar")
+    return value
+
+
+def split_yaml_entry(content: str) -> tuple[str, str]:
+    match = YAML_KEY.fullmatch(content)
+    if match is None:
+        raise AnalysisError("unsupported YAML mapping entry")
+    return match.group(1), match.group(2) or ""
+
+
+def parse_mapping(tokens, index: int, indent: int, initial=None):
+    result = {} if initial is None else initial
+    while index < len(tokens):
+        line_indent, content = tokens[index]
+        if line_indent < indent:
+            break
+        if line_indent != indent or content.startswith("- "):
+            raise AnalysisError("invalid YAML mapping indentation")
+        key, raw = split_yaml_entry(content)
+        if key in result:
+            raise AnalysisError(f"duplicate YAML key {key}")
+        index += 1
+        if raw:
+            result[key] = scalar(raw)
+        else:
+            if index >= len(tokens) or tokens[index][0] != indent + 2:
+                raise AnalysisError(f"YAML key {key} has no nested value")
+            result[key], index = parse_block(tokens, index, indent + 2)
+    return result, index
+
+
+def parse_list(tokens, index: int, indent: int):
+    result = []
+    while index < len(tokens):
+        line_indent, content = tokens[index]
+        if line_indent < indent:
+            break
+        if line_indent != indent or not content.startswith("- "):
+            raise AnalysisError("invalid YAML list indentation")
+        raw = content[2:]
+        index += 1
+        if YAML_KEY.fullmatch(raw):
+            key, value = split_yaml_entry(raw)
+            item = {key: scalar(value)} if value else {}
+            if not value:
+                if index >= len(tokens) or tokens[index][0] != indent + 2:
+                    raise AnalysisError(f"YAML key {key} has no nested value")
+                item[key], index = parse_block(tokens, index, indent + 2)
+            if index < len(tokens) and tokens[index][0] == indent + 2 and not tokens[index][1].startswith("- "):
+                item, index = parse_mapping(tokens, index, indent + 2, item)
+            result.append(item)
+        else:
+            result.append(scalar(raw))
+    return result, index
+
+
+def parse_block(tokens, index: int, indent: int):
+    if tokens[index][0] != indent:
+        raise AnalysisError("invalid YAML indentation")
+    if tokens[index][1].startswith("- "):
+        return parse_list(tokens, index, indent)
+    return parse_mapping(tokens, index, indent)
+
+
+def parse_yaml(path: Path, label: str) -> tuple[dict, str]:
+    text = read_utf8(path, MAX_CONFIG_BYTES, label)
+    tokens = []
+    for line in text.splitlines():
+        if "\t" in line or line.rstrip() != line:
+            raise AnalysisError(f"{label} has unstable whitespace")
+        stripped = line.lstrip(" ")
+        if not stripped or stripped.startswith("#"):
+            continue
+        indent = len(line) - len(stripped)
+        if indent % 2:
+            raise AnalysisError(f"{label} indentation must use two spaces")
+        tokens.append((indent, stripped))
+    if not tokens or tokens[0][0] != 0:
+        raise AnalysisError(f"{label} has no root mapping")
+    value, index = parse_block(tokens, 0, 0)
+    if index != len(tokens) or type(value) is not dict:
+        raise AnalysisError(f"{label} has trailing or non-mapping YAML")
+    return value, text
+
+
+def normalized_path(value, label: str) -> str:
+    if type(value) is not str or not value or "\\" in value or any(ord(char) < 32 for char in value):
+        raise AnalysisError(f"{label} is not a stable repository path")
+    value = unicodedata.normalize("NFC", value)
+    plain = value.replace("**", "x").replace("*", "x")
+    if (
+        posixpath.isabs(plain)
+        or DRIVE_PATH.match(plain)
+        or ".." in plain.split("/")
+        or posixpath.normpath(plain).startswith("../")
+        or posixpath.normpath(value) != value
+    ):
+        raise AnalysisError(f"{label} is not a stable repository path")
+    return value
+
+
+def suppression_comments(text: str) -> dict[str, str]:
+    result = {}
+    pending = []
+    for line in text.splitlines():
+        stripped = line.strip()
+        if stripped.startswith("#"):
+            pending.append(stripped[1:].strip())
+            continue
+        match = re.fullmatch(r"- name: ([A-Za-z0-9]+)", stripped)
+        if match:
+            result[match.group(1)] = " ".join(pending)
+        pending = []
+    return result
+
+
+def parse_image(value, repository: str, release: str, digest: str) -> None:
+    match = IMAGE.fullmatch(value) if type(value) is str else None
+    if match is None or match.groups() != (repository, release, digest):
+        raise AnalysisError("configuration requires an immutable eligible Qodana image")
+
+
+def validate_jvm_qodana(config: dict, text: str) -> None:
+    fields(config, {"version", "linter", "profile", "failureConditions", "exclude"}, "JVM Qodana config")
+    if config["version"] != "1.0":
+        raise AnalysisError("JVM Qodana version must be string 1.0")
+    parse_image(config["linter"], "jetbrains/qodana-jvm-community", "2026.1", JVM_DIGEST)
+    if config["profile"] != {"path": ".qodana/profiles/plugin.yaml"}:
+        raise AnalysisError("JVM Qodana must use the local plugin profile")
+    conditions = config["failureConditions"]
+    if type(conditions) is not dict or set(conditions) != {"severityThresholds"}:
+        raise AnalysisError("JVM Qodana failure conditions are not closed")
+    thresholds = conditions["severityThresholds"]
+    if type(thresholds) is not dict or set(thresholds) != {"critical", "high"} or any(
+        type(thresholds.get(name)) is not int or thresholds[name] != 0 for name in ("critical", "high")
+    ):
+        raise AnalysisError("JVM Qodana critical and high thresholds must be integer zero")
+    exclusions = config["exclude"]
+    if type(exclusions) is not list:
+        raise AnalysisError("JVM Qodana exclusions must be an array")
+    expected = {
+        "All": ["build", "protocol/build", "rider-frontend/build"],
+        "PluginXmlValidity": ["src/main/resources/META-INF/plugin.xml", "src/main/resources/META-INF/perf-sentinel-rider.xml"],
+        "SpellCheckingInspection": ["src/dotnet/PerfSentinel.Rider/CSharpSymbolResolver.cs", "src/dotnet/PerfSentinel.Rider.Tests/CSharpSymbolResolverTests.cs"],
+        "UnusedSymbol": ["protocol/src/main/kotlin/model/rider/PerfSentinelModel.kt"],
+    }
+    actual = {}
+    for index, exclusion in enumerate(exclusions):
+        fields(exclusion, {"name", "paths"}, f"JVM Qodana exclusion[{index}]")
+        name, paths = exclusion["name"], exclusion["paths"]
+        if type(name) is not str or name in actual or type(paths) is not list or any(type(path) is not str for path in paths):
+            raise AnalysisError("JVM Qodana exclusions must have unique string names and paths")
+        for path in paths:
+            normalized_path(path, "Qodana exclusion")
+        actual[name] = paths
+    if actual.get("All") != expected["All"]:
+        raise AnalysisError("JVM Qodana All exclusion is broader than generated/build outputs")
+    if actual != expected:
+        raise AnalysisError("JVM Qodana narrow suppression set has drifted")
+    comments = suppression_comments(text)
+    markers = {"PluginXmlValidity": "Plugin Verifier", "SpellCheckingInspection": "CLR", "UnusedSymbol": "RDGen"}
+    if any(marker not in comments.get(name, "") for name, marker in markers.items()):
+        raise AnalysisError("JVM Qodana narrow suppression rationale is missing")
+
+
+def validate_dotnet_qodana(config: dict) -> None:
+    fields(config, {"version", "linter", "profile", "onlyDirectory", "dotnet", "failThreshold"}, "Qodana .NET config")
+    parse_image(config["linter"], "jetbrains/qodana-dotnet", "2026.1", DOTNET_DIGEST)
+    expected = {
+        "version": "1.0",
+        "profile": {"name": "qodana.recommended"},
+        "onlyDirectory": "src/dotnet",
+        "dotnet": {
+            "project": "src/dotnet/PerfSentinel.Rider.Tests/PerfSentinel.Rider.Tests.csproj",
+            "configuration": "Release",
+        },
+    }
+    if any(config[name] != value for name, value in expected.items()):
+        raise AnalysisError("Qodana .NET must analyze only src/dotnet through the Release test project")
+    if type(config["failThreshold"]) is not int or config["failThreshold"] != 0:
+        raise AnalysisError("Qodana .NET failThreshold must be integer zero")
+
+
+def parse_properties(path: Path, label: str) -> dict[str, str]:
+    result = {}
+    for number, line in enumerate(read_utf8(path, MAX_CONFIG_BYTES, label).splitlines(), 1):
+        if not line or line.startswith("#"):
+            continue
+        if line.strip() != line or "=" not in line:
+            raise AnalysisError(f"{label}:{number} is not a canonical property")
+        key, value = line.split("=", 1)
+        if PROPERTY_KEY.fullmatch(key) is None or not value:
+            raise AnalysisError(f"{label}:{number} is not a canonical property")
+        if key in result:
+            raise AnalysisError(f"{label} has duplicate property {key}")
+        result[key] = value
+    return result
+
+
+def csv_paths(value: str, label: str) -> list[str]:
+    paths = value.split(",")
+    if not paths or any(not path or path.strip() != path for path in paths) or len(paths) != len(set(paths)):
+        raise AnalysisError(f"{label} must be a unique path list")
+    normalized = [normalized_path(path, label) for path in paths]
+    keys = [path.casefold() for path in normalized]
+    if len(keys) != len(set(keys)):
+        raise AnalysisError(f"{label} contains a duplicate normalized path")
+    return normalized
+
+
+def validate_quality_gate(properties: dict[str, str], label: str) -> None:
+    if properties.get("sonar.qualitygate.wait") != "true":
+        raise AnalysisError(f"{label} must wait for the quality gate")
+    timeout = properties.get("sonar.qualitygate.timeout", "")
+    if re.fullmatch(r"[1-9][0-9]*", timeout) is None or not 1 <= int(timeout) <= 600:
+        raise AnalysisError(f"{label} quality gate timeout must be between 1 and 600 seconds")
+
+
+def validate_exclusions(properties: dict[str, str], label: str) -> None:
+    for key in ("sonar.exclusions", "sonar.coverage.exclusions"):
+        if key not in properties:
+            continue
+        for path in csv_paths(properties[key], key):
+            components = path.replace("**", "").split("/")
+            if not {"build", "generated"}.intersection(components):
+                raise AnalysisError(f"{label} source exclusion is outside generated/build paths")
+
+
+def validate_sonar(jvm: dict[str, str], rider: dict[str, str]) -> None:
+    if jvm.get("sonar.projectKey") == rider.get("sonar.projectKey"):
+        raise AnalysisError("Sonar project keys must be distinct")
+    jvm_fields = {
+        "sonar.projectKey", "sonar.projectName", "sonar.sourceEncoding", "sonar.sources", "sonar.tests",
+        "sonar.exclusions", "sonar.coverage.jacoco.xmlReportPaths", "sonar.junit.reportPaths",
+        "sonar.qualitygate.wait", "sonar.qualitygate.timeout",
+    }
+    rider_fields = {
+        "scanner.dotnet.version", "scanner.dotnet.testProject", "scanner.dotnet.configuration",
+        "scanner.dotnet.lockedMode", "scanner.dotnet.runSettings", "scanner.dotnet.resultsDirectory",
+        "sonar.projectKey", "sonar.projectName", "sonar.sourceEncoding", "sonar.exclusions",
+        "sonar.coverage.exclusions", "sonar.cs.cobertura.reportsPaths", "sonar.cs.vstest.reportsPaths",
+        "sonar.qualitygate.wait", "sonar.qualitygate.timeout",
+    }
+    for properties, expected, label in ((jvm, jvm_fields, "JVM Sonar config"), (rider, rider_fields, "Rider Sonar config")):
+        unknown = set(properties) - expected
+        missing = expected - set(properties)
+        if unknown:
+            raise AnalysisError(f"{label} has unknown property: {', '.join(sorted(unknown))}")
+        if missing:
+            coverage = "Kover XML" if label.startswith("JVM") else "Cobertura"
+            if any("coverage" in key or "cobertura" in key for key in missing):
+                raise AnalysisError(f"{label} is missing its {coverage} coverage report")
+            raise AnalysisError(f"{label} is missing property: {', '.join(sorted(missing))}")
+        validate_quality_gate(properties, label)
+        validate_exclusions(properties, label)
+    if jvm["sonar.projectKey"] != "robintrassard_perf-sentinel-jetbrains-plugin-jvm":
+        raise AnalysisError("JVM Sonar project key has drifted")
+    if rider["sonar.projectKey"] != "robintrassard_perf-sentinel-jetbrains-plugin-rider":
+        raise AnalysisError("Rider Sonar project key has drifted")
+    if jvm["sonar.sourceEncoding"] != "UTF-8" or rider["sonar.sourceEncoding"] != "UTF-8":
+        raise AnalysisError("Sonar source encoding must be UTF-8")
+    if csv_paths(jvm["sonar.sources"], "JVM Sonar sources") != [
+        "src/main/kotlin", "protocol/src/main/kotlin", "rider-frontend/src/main/kotlin"
+    ] or csv_paths(jvm["sonar.tests"], "JVM Sonar tests") != [
+        "src/test/kotlin", "rider-frontend/src/test/kotlin"
+    ]:
+        raise AnalysisError("JVM Sonar source/test roots have drifted")
+    if jvm["sonar.coverage.jacoco.xmlReportPaths"] != "build/reports/kover/report.xml":
+        raise AnalysisError("JVM Sonar must consume the real Kover XML report")
+    expected_reports = [
+        "build/test-results/test", "build/test-results/testGoLand253", "build/test-results/testPhpStorm253",
+        "build/test-results/testPyCharm253", "build/test-results/testRubyMine253",
+        "build/test-results/testRustRover253", "build/test-results/testRustRover262",
+        "build/test-results/testWebStorm253", "rider-frontend/build/test-results/test",
+    ]
+    if csv_paths(jvm["sonar.junit.reportPaths"], "JVM Sonar test reports") != expected_reports:
+        raise AnalysisError("JVM Sonar must consume every Kotlin/JVM test report")
+    if rider["scanner.dotnet.version"] != DOTNET_SCANNER_VERSION:
+        raise AnalysisError("Rider analysis requires the pinned SonarScanner for .NET")
+    execution = {
+        "scanner.dotnet.testProject": "src/dotnet/PerfSentinel.Rider.Tests/PerfSentinel.Rider.Tests.csproj",
+        "scanner.dotnet.configuration": "Release",
+        "scanner.dotnet.lockedMode": "true",
+        "scanner.dotnet.runSettings": "src/dotnet/coverage.runsettings",
+        "scanner.dotnet.resultsDirectory": "build/dotnet/TestResults",
+    }
+    if any(rider[key] != value for key, value in execution.items()):
+        raise AnalysisError("Rider Sonar execution must use the locked Release test contract")
+    if rider["sonar.cs.cobertura.reportsPaths"] != "build/dotnet/TestResults/**/coverage.cobertura.xml":
+        raise AnalysisError("Rider Sonar must consume the Cobertura report")
+    if rider["sonar.cs.vstest.reportsPaths"] != "build/dotnet/TestResults/**/*.trx":
+        raise AnalysisError("Rider Sonar must consume VSTest results")
+
+
+def validate_secret_inventory(inventory) -> set[str]:
+    if type(inventory) is dict:
+        for secret in inventory.get("secrets", []):
+            if type(secret) is dict and any(key.casefold() in {"value", "password", "credential", "tokenvalue", "apikey", "privatekey"} for key in secret):
+                raise AnalysisError("secret inventory contains a value-like field")
+    fields(inventory, {"schemaVersion", "secrets"}, "secret inventory")
+    if type(inventory["schemaVersion"]) is not int or inventory["schemaVersion"] != 1:
+        raise AnalysisError("secret inventory schemaVersion must be integer 1")
+    if type(inventory["secrets"]) is not list:
+        raise AnalysisError("secret inventory secrets must be an array")
+    expected_scopes = {
+        "QODANA_TOKEN": ["qodana-jvm", "qodana-rider"],
+        "SONAR_TOKEN": ["sonar-jvm", "sonar-rider"],
+    }
+    declared_names = [item.get("name") for item in inventory["secrets"] if type(item) is dict]
+    if set(declared_names) != set(expected_scopes) or len(declared_names) != len(expected_scopes):
+        raise AnalysisError("secret inventory must name exactly SONAR_TOKEN and QODANA_TOKEN")
+    names = []
+    for index, secret in enumerate(inventory["secrets"]):
+        fields(secret, {"name", "owner", "trustedJobScope", "purpose", "rotationProcedure"}, f"secret[{index}]")
+        for key in ("name", "owner", "purpose", "rotationProcedure"):
+            if type(secret[key]) is not str or not secret[key].strip() or len(secret[key]) > 1024:
+                raise AnalysisError(f"secret[{index}].{key} must be a non-empty string")
+        if secret["owner"] != "Maintainers":
+            raise AnalysisError(f"secret[{index}] owner must be Maintainers")
+        scope = secret["trustedJobScope"]
+        if type(scope) is not list or any(type(item) is not str for item in scope):
+            raise AnalysisError(f"secret[{index}] trustedJobScope must be a string array")
+        if scope != expected_scopes.get(secret["name"]):
+            raise AnalysisError(f"secret[{index}] trusted-job scope has drifted")
+        for key, value in secret.items():
+            if key != "name" and isinstance(value, str) and SECRET_VALUE.search(value):
+                raise AnalysisError("secret inventory contains a secret-like value")
+        names.append(secret["name"])
+    if set(names) != set(expected_scopes) or len(names) != len(expected_scopes):
+        raise AnalysisError("secret inventory must name exactly SONAR_TOKEN and QODANA_TOKEN")
+    return set(names)
+
+
+def validate_workflow_secrets(root: Path, inventory_names: set[str]) -> None:
+    workflow_root = root / ".github" / "workflows"
+    if not workflow_root.is_dir():
+        return
+    total = 0
+    workflow_text = []
+    for path in sorted((*workflow_root.glob("*.yml"), *workflow_root.glob("*.yaml"))):
+        text = read_utf8(path, MAX_WORKFLOW_BYTES, f"workflow {path.name}")
+        workflow_text.append(text)
+        total += len(text.encode("utf-8"))
+        if total > 4 * MAX_WORKFLOW_BYTES:
+            raise AnalysisError("workflow configuration exceeds aggregate size bound")
+        if re.search(r"\bsecrets\s*\[|\bsecrets\s*:\s*inherit\b|\btoJSON\(\s*secrets\s*\)", text):
+            raise AnalysisError(f"workflow secret reference in {path.name} must be static and inventoried")
+        unknown = set(SECRET_REFERENCE.findall(text)) - inventory_names
+        if unknown:
+            raise AnalysisError(f"workflow secret reference is absent from inventory: {', '.join(sorted(unknown))}")
+    combined = "\n".join(workflow_text)
+    category_contracts = {
+        "qodana.yml": "qodana-jvm",
+        "qodana-dotnet.yml": "qodana-rider",
+    }
+    for config, category in category_contracts.items():
+        if config in combined and re.search(rf"\bcategory:\s*{re.escape(category)}\b", combined) is None:
+            raise AnalysisError("Qodana JVM and Rider uploads require distinct Qodana SARIF categories")
+
+
+def xml_root(path: Path, label: str):
+    text = read_utf8(path, MAX_CONFIG_BYTES, label)
+    if FORBIDDEN_XML.search(text):
+        raise AnalysisError(f"{label} forbids DTD/entity declarations")
+    try:
+        root = ElementTree.fromstring(text)
+    except ElementTree.ParseError as error:
+        raise AnalysisError(f"{label} is invalid XML") from error
+    if any(not isinstance(node.tag, str) or "}" in node.tag for node in root.iter()):
+        raise AnalysisError(f"{label} forbids XML namespaces")
+    return root
+
+
+def validate_rider_contract(root: Path) -> None:
+    props = xml_root(root / "src/dotnet/Directory.Build.props", "Rider build properties")
+    if props.findtext(".//RestoreLockedMode") != "true":
+        raise AnalysisError("Rider build must enforce NuGet locked mode")
+    project = xml_root(root / "src/dotnet/PerfSentinel.Rider/PerfSentinel.Rider.csproj", "Rider project")
+    generated = [node.get("Include", "").replace("\\", "/") for node in project.findall(".//Compile")]
+    if not any(value.endswith("build/generated/rd/csharp/**/*.cs") for value in generated):
+        raise AnalysisError("Rider project must compile the generated C# model")
+    tests = xml_root(root / "src/dotnet/PerfSentinel.Rider.Tests/PerfSentinel.Rider.Tests.csproj", "Rider test project")
+    references = [node.get("Include", "").replace("\\", "/") for node in tests.findall(".//ProjectReference")]
+    if not any(value.endswith("PerfSentinel.Rider/PerfSentinel.Rider.csproj") for value in references):
+        raise AnalysisError("Rider test project must exercise the production project")
+    settings = xml_root(root / "src/dotnet/coverage.runsettings", "Rider coverage settings")
+    collector = settings.find('.//DataCollector[@friendlyName="XPlat Code Coverage"]')
+    if collector is None or collector.findtext(".//Format") != "cobertura":
+        raise AnalysisError("Rider coverage settings must emit Cobertura")
+    if collector.findtext(".//ExcludeByFile") != "**/build/generated/rd/csharp/**/*.cs":
+        raise AnalysisError("Rider coverage may exclude only generated C#")
+    if collector.findtext(".//DeterministicReport") != "true":
+        raise AnalysisError("Rider coverage report must be deterministic")
+
+
+def validate_supply_bindings(inventory, jvm_linter: str, dotnet_linter: str, scanner_version: str) -> None:
+    dependencies = inventory.get("dependencies") if type(inventory) is dict else None
+    if type(dependencies) is not list:
+        raise AnalysisError("supply-chain dependencies must be an array")
+    by_name = {}
+    for dependency in dependencies:
+        if type(dependency) is dict and type(dependency.get("name")) is str:
+            if dependency["name"] in by_name:
+                raise AnalysisError(f"duplicate supply-chain dependency {dependency['name']}")
+            by_name[dependency["name"]] = dependency
+    match_jvm = IMAGE.fullmatch(jvm_linter)
+    match_dotnet = IMAGE.fullmatch(dotnet_linter)
+    expected = {
+        "Qodana JVM Community image": {
+            "kind": "container", "version": match_jvm.group(3), "release": match_jvm.group(2),
+            "source": "https://hub.docker.com/r/jetbrains/qodana-jvm-community", "declaration": "qodana.yml#linter",
+        },
+        "Qodana .NET image": {
+            "kind": "container", "version": match_dotnet.group(3), "release": match_dotnet.group(2),
+            "source": "https://hub.docker.com/r/jetbrains/qodana-dotnet", "declaration": "qodana-dotnet.yml#linter",
+        },
+        "SonarScanner for .NET": {
+            "kind": "nuget", "version": scanner_version,
+            "source": f"https://www.nuget.org/packages/dotnet-sonarscanner/{scanner_version}",
+            "declaration": "sonar-rider.properties#scanner.dotnet.version",
+        },
+    }
+    for name, contract in expected.items():
+        dependency = by_name.get(name)
+        if dependency is None or any(dependency.get(key) != value for key, value in contract.items()):
+            raise AnalysisError(f"{name} inventory binding is missing or divergent")
+
+
+def check(root: Path) -> None:
+    jvm_qodana, jvm_text = parse_yaml(root / "qodana.yml", "JVM Qodana config")
+    dotnet_qodana, _ = parse_yaml(root / "qodana-dotnet.yml", "Qodana .NET config")
+    validate_jvm_qodana(jvm_qodana, jvm_text)
+    validate_dotnet_qodana(dotnet_qodana)
+    jvm_sonar = parse_properties(root / "sonar-jvm.properties", "JVM Sonar config")
+    rider_sonar = parse_properties(root / "sonar-rider.properties", "Rider Sonar config")
+    validate_sonar(jvm_sonar, rider_sonar)
+    secret_inventory = read_json(root / "config/secret-inventory.json", MAX_CONFIG_BYTES, "secret inventory")
+    inventory_names = validate_secret_inventory(secret_inventory)
+    validate_workflow_secrets(root, inventory_names)
+    validate_rider_contract(root)
+    supply = read_json(root / "config/supply-chain.json", MAX_INVENTORY_BYTES, "supply-chain inventory")
+    validate_supply_bindings(supply, jvm_qodana["linter"], dotnet_qodana["linter"], rider_sonar["scanner.dotnet.version"])
+
+
+def main() -> int:
+    parser = argparse.ArgumentParser()
+    parser.add_argument("--root", type=Path, default=Path(__file__).resolve().parents[1])
+    args = parser.parse_args()
+    try:
+        check(args.root.resolve())
+    except AnalysisError as error:
+        print(f"error: {error}", file=sys.stderr)
+        return 1
+    print("analysis configuration: OK")
+    return 0
+
+
+if __name__ == "__main__":
+    raise SystemExit(main())
