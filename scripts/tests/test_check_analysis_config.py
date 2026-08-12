@@ -352,6 +352,9 @@ class AnalysisConfigCheckerTests(unittest.TestCase):
             "${{ secrets }}",
             "${{ secrets . EXTRA_TOKEN }}",
             "${{ toJSON(secrets && secrets) }}",
+            "${{ '}}' && secrets.EXTRA_TOKEN }}",
+            "${{ format('}}{0}', secrets.EXTRA_TOKEN) }}",
+            "${{ Secrets.EXTRA_TOKEN }}",
         ):
             with self.subTest(expression=expression):
                 self.write(".github/workflows/analysis.yml", f"env:\n  TOKEN: {expression}\n")
@@ -362,6 +365,11 @@ class AnalysisConfigCheckerTests(unittest.TestCase):
             ".github/workflows/analysis.yml",
             "env:\n  SONAR_TOKEN: ${{ secrets . SONAR_TOKEN }}\n  QODANA_TOKEN: ${{ secrets.QODANA_TOKEN }}\n",
         )
+        result = self.run_checker()
+        self.assertEqual(0, result.returncode, result.stderr)
+
+    def test_ignores_secrets_word_inside_workflow_expression_string(self):
+        self.write(".github/workflows/analysis.yml", "env:\n  LABEL: ${{ 'secrets' }}\n")
         result = self.run_checker()
         self.assertEqual(0, result.returncode, result.stderr)
 
