@@ -149,6 +149,20 @@ class CiWorkflowTests(unittest.TestCase):
         self.assertIn("QODANA_TOKEN: ${{ secrets.QODANA_TOKEN }}", self.text)
         self.assertNotIn("secrets: inherit", self.text)
 
+    def test_dependency_review_falls_back_until_the_repository_is_public(self):
+        job = self.text.split("  dependency-review:\n", 1)[1].split(
+            "\n  workflow-security:\n", 1
+        )[0]
+        self.assertIn(
+            "github.event_name == 'pull_request' && github.event.repository.private == false",
+            job,
+        )
+        self.assertIn(
+            "github.event_name != 'pull_request' || github.event.repository.private == true",
+            job,
+        )
+        self.assertIn("python3 scripts/check-supply-chain.py", job)
+
     def test_manual_trusted_analysis_is_bound_to_an_exact_head_sha(self):
         self.assertIn("target-sha: ${{ github.sha }}", self.text)
         self.assertIn("ref: ${{ github.sha }}", self.text)

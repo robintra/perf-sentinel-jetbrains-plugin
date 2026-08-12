@@ -30,7 +30,7 @@ badge-check:
 	@cd "$(ROOT)" && $(PYTHON) scripts/check-badges.py
 
 check-disk:
-	@$(PYTHON) -c 'import shutil,sys; free=shutil.disk_usage(sys.argv[1]).free; print(f"Disk guard: {free // (1024**3)} GiB free"); sys.exit(0 if free >= 25 * 1024**3 else "At least 25 GiB free are required")' "$(ROOT)"
+	@$(PYTHON) -c 'import os,shutil,sys; free=shutil.disk_usage(sys.argv[1]).free; ci=os.environ.get("CI") == "true"; print("Disk guard: managed CI runner" if ci else f"Disk guard: {free // (1024**3)} GiB free"); sys.exit(0 if ci or free >= 25 * 1024**3 else "At least 25 GiB free are required")' "$(ROOT)"
 
 check-locks:
 	@cd "$(ROOT)" && git diff HEAD --exit-code -- $(LOCK_INPUTS)
