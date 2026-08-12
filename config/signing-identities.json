@@ -1,0 +1,10 @@
+{
+  "schemaVersion": 1,
+  "provider": "JetBrains Marketplace ZIP Signer",
+  "timestampPolicy": "unsupported-by-format",
+  "certificate": {
+    "status": "pending_activation",
+    "commonName": "Perf Sentinel JetBrains Plugin",
+    "sha256Fingerprint": null
+  }
+}

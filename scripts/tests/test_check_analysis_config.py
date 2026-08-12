@@ -124,6 +124,21 @@ class AnalysisConfigCheckerTests(unittest.TestCase):
                     "purpose": "Authenticate trusted Sonar analysis for the two isolated projects.",
                     "rotationProcedure": "Revoke the analysis token, create its replacement, and update the repository secret before re-enabling trusted analysis.",
                 },
+                *[
+                    {
+                        "name": name,
+                        "owner": "Maintainers",
+                        "trustedJobScope": ["jetbrains-release"],
+                        "purpose": f"Provide protected JetBrains release material for {name}.",
+                        "rotationProcedure": f"Replace {name} in the protected jetbrains-release environment and verify a dry-run before publication.",
+                    }
+                    for name in (
+                        "CERTIFICATE_CHAIN",
+                        "PRIVATE_KEY",
+                        "PRIVATE_KEY_PASSWORD",
+                        "PUBLISH_TOKEN",
+                    )
+                ],
             ],
         }
         self.write_json("config/secret-inventory.json", self.secret_inventory)
@@ -323,7 +338,8 @@ class AnalysisConfigCheckerTests(unittest.TestCase):
             (lambda value: value.update({"extra": []}), "unknown field"),
             (lambda value: value["secrets"][0].update({"enabled": True}), "unknown field"),
             (lambda value: value["secrets"][0].update({"owner": False}), "non-empty string"),
-            (lambda value: value["secrets"].append(dict(value["secrets"][0], name="EXTRA_TOKEN")), "exactly SONAR_TOKEN and QODANA_TOKEN"),
+            (lambda value: value["secrets"].append(dict(value["secrets"][0], name="EXTRA_TOKEN")), "exact secret set"),
+            (lambda value: value["secrets"][2].update({"trustedJobScope": ["ci"]}), "trusted-job scope"),
         )
         for mutate, message in cases:
             with self.subTest(message=message):

@@ -4,6 +4,8 @@ import org.jetbrains.intellij.platform.gradle.extensions.IntelliJPlatformExtensi
 import org.jetbrains.intellij.platform.gradle.tasks.BuildPluginTask
 import org.jetbrains.intellij.platform.gradle.tasks.PrepareSandboxTask
 import org.jetbrains.intellij.platform.gradle.tasks.PublishPluginTask
+import org.jetbrains.intellij.platform.gradle.tasks.SignPluginTask
+import org.jetbrains.intellij.platform.gradle.tasks.VerifyPluginSignatureTask
 import org.gradle.api.tasks.bundling.AbstractArchiveTask
 import org.jetbrains.kotlin.gradle.dsl.JvmTarget
 import org.jetbrains.kotlin.gradle.dsl.JvmDefaultMode
@@ -271,6 +273,28 @@ tasks.named<BuildPluginTask>("buildPlugin") {
 
 tasks.named<PublishPluginTask>("publishPlugin") {
     channels.set(providers.gradleProperty("marketplaceChannel").map { listOf(it) })
+}
+
+val releaseUnsignedZip = providers.gradleProperty("releaseUnsignedZip")
+if (releaseUnsignedZip.isPresent) {
+    val signPluginTask = tasks.named<SignPluginTask>("signPlugin") {
+        archiveFile.set(releaseUnsignedZip.map { layout.projectDirectory.file(it) })
+        signedArchiveFile.set(layout.buildDirectory.file("distributions/perf-sentinel-${project.version}-signed.zip"))
+        certificateChain.set(providers.environmentVariable("CERTIFICATE_CHAIN"))
+        privateKey.set(providers.environmentVariable("PRIVATE_KEY"))
+        password.set(providers.environmentVariable("PRIVATE_KEY_PASSWORD"))
+        setDependsOn(emptyList<Any>())
+    }
+    val verifyPluginSignatureTask = tasks.named<VerifyPluginSignatureTask>("verifyPluginSignature") {
+        inputArchiveFile.set(signPluginTask.flatMap { it.signedArchiveFile })
+        certificateChain.set(providers.environmentVariable("CERTIFICATE_CHAIN"))
+        setDependsOn(listOf(signPluginTask))
+    }
+    tasks.named<PublishPluginTask>("publishPlugin") {
+        archiveFile.set(signPluginTask.flatMap { it.signedArchiveFile })
+        token.set(providers.environmentVariable("PUBLISH_TOKEN"))
+        setDependsOn(listOf(verifyPluginSignatureTask))
+    }
 }
 
 kotlin {
