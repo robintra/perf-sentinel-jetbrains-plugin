@@ -24,8 +24,7 @@ IMAGE = re.compile(r"^(jetbrains/[a-z0-9-]+):(\d{4}\.\d+)@(sha256:[0-9a-f]{64})$
 PROPERTY_KEY = re.compile(r"^[A-Za-z][A-Za-z0-9_.-]*$")
 YAML_KEY = re.compile(r"^([A-Za-z][A-Za-z0-9]*):(?: (.*))?$")
 DRIVE_PATH = re.compile(r"^[A-Za-z]:/")
-WORKFLOW_EXPRESSION = re.compile(r"\$\{\{(.*?)\}\}", re.DOTALL)
-STATIC_SECRET = re.compile(r"\s*secrets\s*\.\s*([A-Za-z_][A-Za-z0-9_]*)\s*")
+STATIC_SECRET = re.compile(r"\s*secrets\s*\.\s*([A-Za-z_][A-Za-z0-9_]*)\s*", re.IGNORECASE)
 SECRET_VALUE = re.compile(r"(?:gh[pousr]_[A-Za-z0-9]{20,}|sk-[A-Za-z0-9_-]{20,}|[A-Fa-f0-9]{40,})")
 FORBIDDEN_XML = re.compile(r"<!\s*(?:DOCTYPE|ENTITY)\b", re.IGNORECASE)
 
@@ -442,6 +441,39 @@ def validate_secret_inventory(inventory) -> set[str]:
     return set(names)
 
 
+def workflow_expressions(text: str, label: str):
+    cursor = 0
+    while True:
+        start = text.find("${{", cursor)
+        if start < 0:
+            return
+        index = start + 3
+        quoted = False
+        code = []
+        while index < len(text):
+            if quoted:
+                if text[index] == "'":
+                    if index + 1 < len(text) and text[index + 1] == "'":
+                        index += 2
+                        continue
+                    quoted = False
+                index += 1
+                continue
+            if text[index] == "'":
+                quoted = True
+                code.append(" ")
+                index += 1
+                continue
+            if text.startswith("}}", index):
+                yield text[start + 3:index], "".join(code)
+                cursor = index + 2
+                break
+            code.append(text[index])
+            index += 1
+        else:
+            raise AnalysisError(f"workflow expression in {label} is unterminated")
+
+
 def validate_workflow_secrets(root: Path, inventory_names: set[str]) -> None:
     workflow_root = root / ".github" / "workflows"
     if not workflow_root.is_dir():
@@ -452,11 +484,11 @@ def validate_workflow_secrets(root: Path, inventory_names: set[str]) -> None:
         total += len(text.encode("utf-8"))
         if total > 4 * MAX_WORKFLOW_BYTES:
             raise AnalysisError("workflow configuration exceeds aggregate size bound")
-        if re.search(r"\bsecrets\s*:\s*inherit\b", text):
+        if re.search(r"\bsecrets\s*:\s*inherit\b", text, re.IGNORECASE):
             raise AnalysisError(f"workflow secret reference in {path.name} must be static and inventoried")
         references = set()
-        for expression in WORKFLOW_EXPRESSION.findall(text):
-            if re.search(r"\bsecrets\b", expression) is None:
+        for expression, code in workflow_expressions(text, path.name):
+            if re.search(r"\bsecrets\b", code, re.IGNORECASE) is None:
                 continue
             static = STATIC_SECRET.fullmatch(expression)
             if static is None:
