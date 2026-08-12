@@ -413,12 +413,16 @@ def validate_secret_inventory(inventory) -> set[str]:
     if type(inventory["secrets"]) is not list:
         raise AnalysisError("secret inventory secrets must be an array")
     expected_scopes = {
+        "CERTIFICATE_CHAIN": ["jetbrains-release"],
+        "PRIVATE_KEY": ["jetbrains-release"],
+        "PRIVATE_KEY_PASSWORD": ["jetbrains-release"],
+        "PUBLISH_TOKEN": ["jetbrains-release"],
         "QODANA_TOKEN": ["qodana-jvm", "qodana-rider"],
         "SONAR_TOKEN": ["sonar-jvm", "sonar-rider"],
     }
     declared_names = [item.get("name") for item in inventory["secrets"] if type(item) is dict]
     if set(declared_names) != set(expected_scopes) or len(declared_names) != len(expected_scopes):
-        raise AnalysisError("secret inventory must name exactly SONAR_TOKEN and QODANA_TOKEN")
+        raise AnalysisError("secret inventory must contain the exact secret set")
     names = []
     for index, secret in enumerate(inventory["secrets"]):
         fields(secret, {"name", "owner", "trustedJobScope", "purpose", "rotationProcedure"}, f"secret[{index}]")
@@ -437,7 +441,7 @@ def validate_secret_inventory(inventory) -> set[str]:
                 raise AnalysisError("secret inventory contains a secret-like value")
         names.append(secret["name"])
     if set(names) != set(expected_scopes) or len(names) != len(expected_scopes):
-        raise AnalysisError("secret inventory must name exactly SONAR_TOKEN and QODANA_TOKEN")
+        raise AnalysisError("secret inventory must contain the exact secret set")
     return set(names)
 
 
