@@ -191,6 +191,9 @@ class CiWorkflowTests(unittest.TestCase):
         self.assertIn("gitleaks/gitleaks-action@e0c47f4f8be36e29cdc102c57e68cb5cbf0e8d1e", self.text)
         workflow_security = self.text.split("  workflow-security:\n", 1)[1].split("\n  sonar-jvm:\n", 1)[0]
         self.assertIn("fetch-depth: 0", workflow_security)
+        self.assertIn("permissions:\n      contents: read\n      pull-requests: read", workflow_security)
+        self.assertNotIn("pull-requests: write", workflow_security)
+        self.assertIn("GITLEAKS_VERSION: 8.30.1", workflow_security)
 
     def test_pr_caches_sarif_permission_and_zip_path_are_bounded(self):
         setup_count = self.text.count("uses: gradle/actions/setup-gradle@")

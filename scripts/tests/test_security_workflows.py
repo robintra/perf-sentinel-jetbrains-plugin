@@ -39,6 +39,7 @@ class DailySecurityWorkflowTests(unittest.TestCase):
             "NuGetAuditMode=all",
             "google/osv-scanner-action/.github/workflows/osv-scanner-reusable.yml@8deb546fdb875b9996d27d4950be7312dac076a1",
             "gitleaks/gitleaks-action@e0c47f4f8be36e29cdc102c57e68cb5cbf0e8d1e",
+            "GITLEAKS_VERSION: 8.30.1",
             "zizmorcore/zizmor-action@3dc1ecc9bcb9e94e9b2c709687979e1298497054",
             "anchore/sbom-action@e22c389904149dbc22b58101806040fa8d37a610",
             "syft-version: 1.51.0",
