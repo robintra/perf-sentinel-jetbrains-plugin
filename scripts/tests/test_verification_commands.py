@@ -9,6 +9,17 @@ REPOSITORY = Path(__file__).resolve().parents[2]
 
 
 class VerificationCommandTests(unittest.TestCase):
+    def test_hosted_workflows_use_the_action_managed_gradle_distribution(self):
+        for workflow in sorted((REPOSITORY / ".github" / "workflows").glob("*.yml")):
+            text = workflow.read_text(encoding="utf-8")
+            setup_count = text.count("uses: gradle/actions/setup-gradle@")
+            if setup_count == 0:
+                continue
+            with self.subTest(workflow=workflow.name):
+                self.assertEqual(setup_count, text.count('gradle-version: "9.7.0"'))
+                self.assertNotIn("./gradlew", text)
+                self.assertNotIn("gradlew.bat", text)
+
     def dry_run(self, target, **variables):
         arguments = ["make", "--no-print-directory", "-n", target]
         arguments.extend(f"{key}={value}" for key, value in variables.items())

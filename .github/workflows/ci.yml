@@ -72,8 +72,9 @@ jobs:
           java-version: ${{ env.JAVA_VERSION }}
       - uses: gradle/actions/setup-gradle@9c971963bec38e04b3d30dcc455b5382be2fdbfb
         with:
+          gradle-version: "9.7.0"
           cache-read-only: ${{ github.event_name == 'pull_request' }}
-      - run: ./gradlew --no-daemon --dependency-verification strict test koverXmlReport
+      - run: gradle --no-daemon --dependency-verification strict test koverXmlReport
       - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a
         with:
           name: jvm-analysis-inputs
@@ -100,8 +101,9 @@ jobs:
         with: {distribution: temurin, java-version: "21"}
       - uses: gradle/actions/setup-gradle@9c971963bec38e04b3d30dcc455b5382be2fdbfb
         with:
+          gradle-version: "9.7.0"
           cache-read-only: ${{ github.event_name == 'pull_request' }}
-      - run: ./gradlew --no-daemon --dependency-verification strict testPyCharm253
+      - run: gradle --no-daemon --dependency-verification strict testPyCharm253
 
   php:
     name: PHP
@@ -117,8 +119,9 @@ jobs:
         with: {distribution: temurin, java-version: "21"}
       - uses: gradle/actions/setup-gradle@9c971963bec38e04b3d30dcc455b5382be2fdbfb
         with:
+          gradle-version: "9.7.0"
           cache-read-only: ${{ github.event_name == 'pull_request' }}
-      - run: ./gradlew --no-daemon --dependency-verification strict testPhpStorm253
+      - run: gradle --no-daemon --dependency-verification strict testPhpStorm253
 
   rust:
     name: Rust
@@ -134,8 +137,9 @@ jobs:
         with: {distribution: temurin, java-version: "21"}
       - uses: gradle/actions/setup-gradle@9c971963bec38e04b3d30dcc455b5382be2fdbfb
         with:
+          gradle-version: "9.7.0"
           cache-read-only: ${{ github.event_name == 'pull_request' }}
-      - run: ./gradlew --no-daemon --dependency-verification strict testRustRover253 testRustRover262
+      - run: gradle --no-daemon --dependency-verification strict testRustRover253 testRustRover262
 
   ruby:
     name: Ruby
@@ -151,8 +155,9 @@ jobs:
         with: {distribution: temurin, java-version: "21"}
       - uses: gradle/actions/setup-gradle@9c971963bec38e04b3d30dcc455b5382be2fdbfb
         with:
+          gradle-version: "9.7.0"
           cache-read-only: ${{ github.event_name == 'pull_request' }}
-      - run: ./gradlew --no-daemon --dependency-verification strict testRubyMine253
+      - run: gradle --no-daemon --dependency-verification strict testRubyMine253
 
   javascript:
     name: JavaScript
@@ -168,8 +173,9 @@ jobs:
         with: {distribution: temurin, java-version: "21"}
       - uses: gradle/actions/setup-gradle@9c971963bec38e04b3d30dcc455b5382be2fdbfb
         with:
+          gradle-version: "9.7.0"
           cache-read-only: ${{ github.event_name == 'pull_request' }}
-      - run: ./gradlew --no-daemon --dependency-verification strict testWebStorm253
+      - run: gradle --no-daemon --dependency-verification strict testWebStorm253
 
   go:
     name: Go
@@ -185,8 +191,9 @@ jobs:
         with: {distribution: temurin, java-version: "21"}
       - uses: gradle/actions/setup-gradle@9c971963bec38e04b3d30dcc455b5382be2fdbfb
         with:
+          gradle-version: "9.7.0"
           cache-read-only: ${{ github.event_name == 'pull_request' }}
-      - run: ./gradlew --no-daemon --dependency-verification strict testGoLand253
+      - run: gradle --no-daemon --dependency-verification strict testGoLand253
 
   rider-frontend:
     name: Rider frontend
@@ -202,8 +209,9 @@ jobs:
         with: {distribution: temurin, java-version: "21"}
       - uses: gradle/actions/setup-gradle@9c971963bec38e04b3d30dcc455b5382be2fdbfb
         with:
+          gradle-version: "9.7.0"
           cache-read-only: ${{ github.event_name == 'pull_request' }}
-      - run: ./gradlew --no-daemon --dependency-verification strict :rider-frontend:test
+      - run: gradle --no-daemon --dependency-verification strict :rider-frontend:test
 
   plugin-verifier:
     name: Plugin Verifier (${{ matrix.verifier-target }})
@@ -242,8 +250,9 @@ jobs:
           dotnet-version: 10.0.302
       - uses: gradle/actions/setup-gradle@9c971963bec38e04b3d30dcc455b5382be2fdbfb
         with:
+          gradle-version: "9.7.0"
           cache-disabled: true
-      - run: ./gradlew --no-daemon --dependency-verification strict verifyPlugin -PpluginVerifierTarget=${{ matrix.verifier-target }}
+      - run: gradle --no-daemon --dependency-verification strict verifyPlugin -PpluginVerifierTarget=${{ matrix.verifier-target }}
 
   zip:
     name: ZIP
@@ -262,8 +271,9 @@ jobs:
           dotnet-version: 10.0.302
       - uses: gradle/actions/setup-gradle@9c971963bec38e04b3d30dcc455b5382be2fdbfb
         with:
+          gradle-version: "9.7.0"
           cache-read-only: ${{ github.event_name == 'pull_request' }}
-      - run: ./gradlew --no-daemon --dependency-verification strict buildPlugin
+      - run: gradle --no-daemon --dependency-verification strict buildPlugin
       - shell: bash
         run: |
           set -euo pipefail
@@ -403,6 +413,7 @@ jobs:
           cache-dependency-path: src/dotnet/**/packages.lock.json
       - uses: gradle/actions/setup-gradle@9c971963bec38e04b3d30dcc455b5382be2fdbfb
         with:
+          gradle-version: "9.7.0"
           cache-disabled: true
       - name: Verify the .NET SDK
         shell: pwsh
@@ -411,7 +422,7 @@ jobs:
       - name: Build the unsigned plugin and Rider frontend
         shell: pwsh
         run: >-
-          .\gradlew.bat --no-daemon --no-build-cache --dependency-verification strict
+          gradle --no-daemon --no-build-cache --dependency-verification strict
           clean :rider-frontend:test buildPlugin -PriderConfiguration=Release
       - name: Restore locked Rider tests
         shell: pwsh

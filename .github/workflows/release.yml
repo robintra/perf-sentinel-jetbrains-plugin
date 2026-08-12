@@ -62,14 +62,14 @@ jobs:
       - uses: actions/setup-dotnet@a98b56852c35b8e3190ac28c8c2271da59106c68
         with: {dotnet-version: "10.0.302"}
       - uses: gradle/actions/setup-gradle@9c971963bec38e04b3d30dcc455b5382be2fdbfb
-        with: {cache-disabled: true}
+        with: {gradle-version: "9.7.0", cache-disabled: true}
       - name: Build and test the unsigned plugin
         shell: pwsh
         run: |
           if ((dotnet --version) -ne "10.0.302") { throw "expected .NET SDK 10.0.302" }
           $version = $env:TAG_NAME.Substring(1)
           python scripts/check-version.py "v$version"
-          .\gradlew.bat --no-daemon --no-build-cache --dependency-verification strict clean :rider-frontend:test buildPlugin -PriderConfiguration=Release -Pversion=$version
+          gradle --no-daemon --no-build-cache --dependency-verification strict clean :rider-frontend:test buildPlugin -PriderConfiguration=Release -Pversion=$version
           dotnet restore src/dotnet/PerfSentinel.Rider.Tests/PerfSentinel.Rider.Tests.csproj --locked-mode --configfile src/dotnet/NuGet.Config
           dotnet test src/dotnet/PerfSentinel.Rider.Tests/PerfSentinel.Rider.Tests.csproj --configuration Release --no-restore --settings src/dotnet/coverage.runsettings --results-directory build/dotnet/TestResults --collect:"XPlat Code Coverage" --logger "trx;LogFileName=tests.trx"
           $archive = "build/distributions/perf-sentinel-$version.zip"
@@ -134,7 +134,7 @@ jobs:
       - uses: actions/setup-java@b6effb05e454b25005698d916606bdc6ffcbf961
         with: {distribution: temurin, java-version: "21"}
       - uses: gradle/actions/setup-gradle@9c971963bec38e04b3d30dcc455b5382be2fdbfb
-        with: {cache-disabled: true}
+        with: {gradle-version: "9.7.0", cache-disabled: true}
       - name: Recheck the remote signed tag before any publication
         env:
           EXPECTED_SHA: ${{ github.sha }}
@@ -176,7 +176,7 @@ jobs:
           PUBLIC_SIGNED="build/release/perf-sentinel-$VERSION-signed.zip"
           mkdir -p build/distributions
           printf '%s' "$CERTIFICATE_CHAIN" > "$CERTIFICATE"
-          ./gradlew --no-daemon --dependency-verification strict signPlugin verifyPluginSignature \
+          gradle --no-daemon --dependency-verification strict signPlugin verifyPluginSignature \
             "-PreleaseUnsignedZip=$UNSIGNED" "-Pversion=$VERSION"
           SIGNER="$(find "$HOME/.gradle/caches/modules-2/files-2.1/org.jetbrains/marketplace-zip-signer/0.1.43" -name 'marketplace-zip-signer-0.1.43-cli.jar' -type f -print -quit)"
           python3 scripts/check-plugin-signature.py --unsigned "$UNSIGNED" --signed "$SIGNED" --certificate "$CERTIFICATE" --identity config/signing-identities.json --signer-jar "$SIGNER"
@@ -220,7 +220,7 @@ jobs:
           git fetch --force --no-tags origin "refs/tags/$GITHUB_REF_NAME:refs/tags/$GITHUB_REF_NAME"
           test "$(git rev-list -n 1 "$GITHUB_REF_NAME")" = "$GITHUB_SHA"
           git -c gpg.ssh.allowedSignersFile="$GITHUB_WORKSPACE/config/release-allowed-signers" verify-tag "$GITHUB_REF_NAME"
-          ./gradlew --no-daemon --dependency-verification strict publishPlugin -x signPlugin -x verifyPluginSignature "-PreleaseUnsignedZip=$UNSIGNED" "-Pversion=$VERSION" -PmarketplaceChannel=default
+          gradle --no-daemon --dependency-verification strict publishPlugin -x signPlugin -x verifyPluginSignature "-PreleaseUnsignedZip=$UNSIGNED" "-Pversion=$VERSION" -PmarketplaceChannel=default
       - name: Publish the exact closed asset set to GitHub
         env:
           GH_TOKEN: ${{ github.token }}
