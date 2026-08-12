@@ -12,7 +12,7 @@
     <RestorePackagesWithLockFile>true</RestorePackagesWithLockFile>
     <RestoreLockedMode Condition="'$(ContinuousIntegrationBuild)' == 'true'">true</RestoreLockedMode>
     <RestoreConfigFile>$(MSBuildThisFileDirectory)NuGet.Config</RestoreConfigFile>
-    <!-- The 2025.3 JetBrains feed omits the declared 253.0.0 lower-bound native packages but resolves in-range builds. -->
+    <!-- JetBrains 2025.3 resolves in-range native builds and pins vulnerable Microsoft.Bcl.Memory 9.0.0 exactly. -->
     <NoWarn>MSB3277;NU1603</NoWarn>
     <NoPackageAnalysis>true</NoPackageAnalysis>
     <AppendTargetFrameworkToOutputPath>false</AppendTargetFrameworkToOutputPath>
@@ -25,5 +25,6 @@
 
   <ItemGroup>
     <PackageReference Include="Microsoft.NETFramework.ReferenceAssemblies" Version="1.0.3" PrivateAssets="All" />
+    <PackageReference Include="Microsoft.Bcl.Memory" Version="9.0.19" NoWarn="NU1608" />
   </ItemGroup>
 </Project>

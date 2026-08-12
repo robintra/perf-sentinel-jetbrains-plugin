@@ -79,10 +79,7 @@ val runRider262 = intellijPlatformTesting.runIde.register("runRider262") {
     splitMode = false
 }
 
-val dotnetExecutable = file("/usr/local/share/dotnet/dotnet")
-    .takeIf { it.isFile }
-    ?.absolutePath
-    ?: "dotnet"
+val dotnetExecutable = "dotnet"
 
 val compileRiderBackend = tasks.register<Exec>("compileRiderBackend") {
     description = "Builds the Rider ReSharper backend."
@@ -267,21 +264,21 @@ intellijPlatform {
     pluginVerification {
         ides {
             create(IntelliJPlatformType.IntellijIdea, "2025.3.6.1")
-            create(IntelliJPlatformType.IntellijIdea, "2026.2.0.1")
+            create(IntelliJPlatformType.IntellijIdea, "2026.2.1")
             create(IntelliJPlatformType.Rider, "2025.3.5") { useInstaller = false }
             create(IntelliJPlatformType.Rider, "2026.2.0.2") { useInstaller = false }
             create(IntelliJPlatformType.PyCharmProfessional, "2025.3.6.1")
             create(IntelliJPlatformType.PyCharm, "2026.2.0.1")
             create(IntelliJPlatformType.PhpStorm, "2025.3.6.1")
-            create(IntelliJPlatformType.PhpStorm, "2026.2.0.1")
+            create(IntelliJPlatformType.PhpStorm, "2026.2.1")
             create(IntelliJPlatformType.RustRover, "2025.3.7")
             create(IntelliJPlatformType.RustRover, "2026.2.1")
             create(IntelliJPlatformType.RubyMine, "2025.3.6.1")
-            create(IntelliJPlatformType.RubyMine, "2026.2")
+            create(IntelliJPlatformType.RubyMine, "2026.2.1")
             create(IntelliJPlatformType.WebStorm, "2025.3.6.1")
             create(IntelliJPlatformType.WebStorm, "2026.2.1")
             create(IntelliJPlatformType.GoLand, "2025.3.5.1")
-            create(IntelliJPlatformType.GoLand, "2026.2.0.1")
+            create(IntelliJPlatformType.GoLand, "2026.2.1")
         }
     }
 }

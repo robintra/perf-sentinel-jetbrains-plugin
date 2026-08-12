@@ -17,6 +17,17 @@
           "JetBrains.ReSharper.SDK": "2025.3.5"
         }
       },
+      "Microsoft.Bcl.Memory": {
+        "type": "Direct",
+        "requested": "[9.0.19, )",
+        "resolved": "9.0.19",
+        "contentHash": "kOvputXd10iywJoyeS6ndlFl52TSXpn5RfMmZlELvu6ALDRGICwcHY6UTYbOv5ycQencWJEFEyWG3zAEXgOa+A==",
+        "dependencies": {
+          "System.Memory": "4.5.5",
+          "System.Runtime.CompilerServices.Unsafe": "6.0.0",
+          "System.ValueTuple": "4.5.0"
+        }
+      },
       "Microsoft.NET.Test.Sdk": {
         "type": "Direct",
         "requested": "[18.8.1, )",
@@ -3582,16 +3593,6 @@
           "System.Threading.Tasks.Extensions": "4.5.4"
         }
       },
-      "Microsoft.Bcl.Memory": {
-        "type": "Transitive",
-        "resolved": "9.0.0",
-        "contentHash": "bTUtGfpGyJnohQzjdXbtc7MqNzkv7CWUSRz54+ucNm0i32rZiIU0VdVPHDBShOl1qhVKRjW8mnEBz3d2vH93tQ==",
-        "dependencies": {
-          "System.Memory": "4.5.5",
-          "System.Runtime.CompilerServices.Unsafe": "6.0.0",
-          "System.ValueTuple": "4.5.0"
-        }
-      },
       "Microsoft.CodeAnalysis.FlowAnalysis.Utilities": {
         "type": "Transitive",
         "resolved": "2.9.5",
@@ -4419,7 +4420,8 @@
       "perfsentinel.rider": {
         "type": "Project",
         "dependencies": {
-          "JetBrains.Rider.SDK": "[2025.3.5, )"
+          "JetBrains.Rider.SDK": "[2025.3.5, )",
+          "Microsoft.Bcl.Memory": "[9.0.19, )"
         }
       }
     }

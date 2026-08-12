@@ -17,8 +17,8 @@ MAX_CONFIG_BYTES = 256 * 1024
 MAX_INVENTORY_BYTES = 1024 * 1024
 MAX_WORKFLOW_BYTES = 1024 * 1024
 MAX_LINE_LENGTH = 4096
-JVM_DIGEST = "sha256:f1c5d3efe2f550409c4d95d266c5dc2025a8069d82c9516781eae72e7383b55d"
-DOTNET_DIGEST = "sha256:c893fb5f5dbe54cd4b9c2cb1bd11d711242add66c5a3ac65fe7fc302cdb8c0a3"
+JVM_DIGEST = "sha256:8ff36b5cebc0a6d720f77dcf3e0a94a03c39b4c42c3724a99ce5f7e462e42f99"
+DOTNET_DIGEST = "sha256:083e222c54d976b29a3118036559340a18e804f82d30947548468443ca60de59"
 DOTNET_SCANNER_VERSION = "11.2.1"
 IMAGE = re.compile(r"^(jetbrains/[a-z0-9-]+):(\d{4}\.\d+)@(sha256:[0-9a-f]{64})$")
 PROPERTY_KEY = re.compile(r"^[A-Za-z][A-Za-z0-9_.-]*$")
@@ -228,7 +228,7 @@ def validate_jvm_qodana(config: dict, text: str) -> None:
     fields(config, {"version", "linter", "profile", "failureConditions", "exclude"}, "JVM Qodana config")
     if config["version"] != "1.0":
         raise AnalysisError("JVM Qodana version must be string 1.0")
-    parse_image(config["linter"], "jetbrains/qodana-jvm-community", "2026.1", JVM_DIGEST)
+    parse_image(config["linter"], "jetbrains/qodana-jvm-community", "2026.2", JVM_DIGEST)
     if config["profile"] != {"path": ".qodana/profiles/plugin.yaml"}:
         raise AnalysisError("JVM Qodana must use the local plugin profile")
     conditions = config["failureConditions"]
@@ -594,7 +594,7 @@ def validate_supply_bindings(inventory, jvm_linter: str, scanner_version: str) -
             "source": "https://hub.docker.com/r/jetbrains/qodana-jvm-community", "declaration": "qodana.yml#linter",
         },
         "Qodana .NET image": {
-            "kind": "container", "version": DOTNET_DIGEST, "release": "2026.1",
+            "kind": "container", "version": DOTNET_DIGEST, "release": "2026.2",
             "source": "https://hub.docker.com/r/jetbrains/qodana-dotnet",
         },
         "SonarScanner for .NET": {

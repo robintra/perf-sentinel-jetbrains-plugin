@@ -9,14 +9,14 @@ from pathlib import Path
 REPOSITORY = Path(__file__).resolve().parents[2]
 CHECKER = REPOSITORY / "scripts" / "check-analysis-config.py"
 
-JVM_DIGEST = "sha256:f1c5d3efe2f550409c4d95d266c5dc2025a8069d82c9516781eae72e7383b55d"
-DOTNET_DIGEST = "sha256:c893fb5f5dbe54cd4b9c2cb1bd11d711242add66c5a3ac65fe7fc302cdb8c0a3"
+JVM_DIGEST = "sha256:8ff36b5cebc0a6d720f77dcf3e0a94a03c39b4c42c3724a99ce5f7e462e42f99"
+DOTNET_DIGEST = "sha256:083e222c54d976b29a3118036559340a18e804f82d30947548468443ca60de59"
 DOTNET_SCANNER_VERSION = "11.2.1"
 
 
 def jvm_qodana():
     return f'''version: "1.0"
-linter: jetbrains/qodana-jvm-community:2026.1@{JVM_DIGEST}
+linter: jetbrains/qodana-jvm-community:2026.2@{JVM_DIGEST}
 profile:
   path: .qodana/profiles/plugin.yaml
 failureConditions:
@@ -133,7 +133,7 @@ class AnalysisConfigCheckerTests(unittest.TestCase):
                     "name": "Qodana JVM Community image",
                     "kind": "container",
                     "version": JVM_DIGEST,
-                    "release": "2026.1",
+                    "release": "2026.2",
                     "source": "https://hub.docker.com/r/jetbrains/qodana-jvm-community",
                     "declaration": "qodana.yml#linter",
                 },
@@ -141,7 +141,7 @@ class AnalysisConfigCheckerTests(unittest.TestCase):
                     "name": "Qodana .NET image",
                     "kind": "container",
                     "version": DOTNET_DIGEST,
-                    "release": "2026.1",
+                    "release": "2026.2",
                     "source": "https://hub.docker.com/r/jetbrains/qodana-dotnet",
                 },
                 {
@@ -205,7 +205,7 @@ class AnalysisConfigCheckerTests(unittest.TestCase):
         self.write(
             "qodana.yml",
             jvm_qodana().replace(
-                f"jetbrains/qodana-jvm-community:2026.1@{JVM_DIGEST}",
+                f"jetbrains/qodana-jvm-community:2026.2@{JVM_DIGEST}",
                 "jetbrains/qodana-jvm-community:latest",
             ),
         )
@@ -214,7 +214,7 @@ class AnalysisConfigCheckerTests(unittest.TestCase):
     def test_requires_native_qodana_for_net472(self):
         cases = (
             ("withinDocker: false", "withinDocker: true"),
-            ("linter: qodana-dotnet", f"linter: jetbrains/qodana-dotnet:2026.1@{DOTNET_DIGEST}"),
+            ("linter: qodana-dotnet", f"linter: jetbrains/qodana-dotnet:2026.2@{DOTNET_DIGEST}"),
         )
         for old, new in cases:
             with self.subTest(new=new):
