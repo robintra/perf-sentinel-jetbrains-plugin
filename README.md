@@ -43,12 +43,21 @@ Open `src/test/resources/rider-smoke` in that instance. The default fixture targ
 
 The installable ZIP is generated in `build/distributions/` by `buildPlugin`.
 
+## Releases
+
+Stable releases use `0.MINOR.PATCH` versions. GitHub builds the plugin twice on
+Windows, compares the unsigned archives byte for byte, signs the verified ZIP
+with the native JetBrains format, and uploads the same author-signed bytes to
+JetBrains Marketplace and GitHub. Marketplace then adds its own signature.
+See [RELEASING.md](RELEASING.md) for the activation checklist, release steps,
+public verification, rotation, and rollback procedures.
+
 ## Current limits
 
 - Findings are read-only. Acknowledgements are displayed but cannot be edited.
 - Rider resolves C# `namespace:function` locations through ReSharper when direct `filepath:lineno` data is unavailable. Metadata symbols and overloads without an argument signature are intentionally unresolved.
 - Java SQL navigation does not infer implicit JPA table names or guess targets for ambiguous SQL, ambiguous entities, other ORMs, or repositories with incomplete generic types.
-- Split Mode, signing, and Marketplace publishing are deferred.
+- Split Mode remains disabled.
 
 ## License
 
