@@ -2,6 +2,7 @@
 <idea-plugin>
     <!-- Unique identifier of the plugin. It should be FQN. It cannot be changed between the plugin versions. -->
     <id>io.github.robintra.perfsentinel</id>
+    <version>0.1.0</version>
 
     <!-- Capitalize the public plugin name.
      Guidelines: https://plugins.jetbrains.com/docs/marketplace/best-practices-for-listing.html#plugin-name -->
