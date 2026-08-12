@@ -588,7 +588,6 @@ class SupplyChainCheckerTest(unittest.TestCase):
                 "version": "sha256:" + "c" * 64, "release": "2026.1",
                 "releasedAt": "2026-04-21T09:02:03Z",
                 "source": "https://hub.docker.com/r/jetbrains/qodana-dotnet",
-                "declaration": "qodana-dotnet.yml#linter",
             },
             {
                 "name": "SonarScanner for .NET", "kind": "nuget",
@@ -598,10 +597,6 @@ class SupplyChainCheckerTest(unittest.TestCase):
             },
         ])
         self.write_inventory()
-        (self.root / "qodana-dotnet.yml").write_text(
-            "linter: jetbrains/qodana-dotnet:2026.1@sha256:" + "c" * 64 + "\n",
-            encoding="utf-8",
-        )
         (self.root / "sonar-rider.properties").write_text(
             "scanner.dotnet.version=11.2.1\n",
             encoding="utf-8",

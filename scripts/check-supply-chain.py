@@ -89,7 +89,6 @@ src/dotnet/PerfSentinel.Rider.Tests/PerfSentinel.Rider.Tests.csproj#Microsoft.NE
 OPTIONAL_DIRECT_DECLARATIONS = {
     "gradle/libs.versions.toml#kover",
     "src/dotnet/PerfSentinel.Rider.Tests/PerfSentinel.Rider.Tests.csproj#coverlet.collector",
-    "qodana-dotnet.yml#linter",
     "sonar-rider.properties#scanner.dotnet.version",
 }
 PLUGIN_IDS = {
@@ -455,9 +454,8 @@ def declared_versions(root, declaration):
             return [xml.findtext(".//SdkVersion")]
         package = xml.find(f'.//PackageReference[@Include="{selector}"]')
         return [package.get("Version")] if package is not None else []
-    if relative in {"qodana.yml", "qodana-dotnet.yml"}:
-        repository = "qodana-jvm-community" if relative == "qodana.yml" else "qodana-dotnet"
-        match = re.search(rf"^linter:\s*jetbrains/{repository}:([^@\s]+)@(sha256:[0-9a-f]{{64}})$", text, re.M)
+    if relative == "qodana.yml":
+        match = re.search(r"^linter:\s*jetbrains/qodana-jvm-community:([^@\s]+)@(sha256:[0-9a-f]{64})$", text, re.M)
         return [f"{match.group(1)}@{match.group(2)}"] if match else []
     if relative == "sonar-rider.properties" and selector == "scanner.dotnet.version":
         match = re.search(r"^scanner\.dotnet\.version=([^\s]+)$", text, re.M)
@@ -488,7 +486,7 @@ def check_declarations(root, inventory, errors):
             actual = declared_versions(root, declaration)
         except (OSError, ElementTree.ParseError, ValueError, tomllib.TOMLDecodeError):
             actual = []
-        if declaration in {"qodana.yml#linter", "qodana-dotnet.yml#linter"}:
+        if declaration == "qodana.yml#linter":
             expected = f"{dependency.get('release')}@{dependency.get('version')}"
         else:
             expected = dependency.get("sha256") if declaration.endswith("#sha256") else dependency.get("version")
