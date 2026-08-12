@@ -350,10 +350,20 @@ class AnalysisConfigCheckerTests(unittest.TestCase):
             "${{ secrets[matrix.secret_name] }}",
             "${{ toJSON(secrets) }}",
             "${{ secrets }}",
+            "${{ secrets . EXTRA_TOKEN }}",
+            "${{ toJSON(secrets && secrets) }}",
         ):
             with self.subTest(expression=expression):
                 self.write(".github/workflows/analysis.yml", f"env:\n  TOKEN: {expression}\n")
                 self.assert_rejected("workflow secret")
+
+    def test_accepts_static_inventoried_workflow_secret_references(self):
+        self.write(
+            ".github/workflows/analysis.yml",
+            "env:\n  SONAR_TOKEN: ${{ secrets . SONAR_TOKEN }}\n  QODANA_TOKEN: ${{ secrets.QODANA_TOKEN }}\n",
+        )
+        result = self.run_checker()
+        self.assertEqual(0, result.returncode, result.stderr)
 
     def test_rejects_shared_qodana_sarif_categories_when_workflows_activate_uploads(self):
         self.write(
@@ -416,6 +426,24 @@ class AnalysisConfigCheckerTests(unittest.TestCase):
       category: qodana-rider
   - uses: github/codeql-action/upload-sarif@0123456789012345678901234567890123456789
     with:
+      category: qodana-jvm
+  - run: qodana scan --config qodana-dotnet.yml
+  - uses: github/codeql-action/upload-sarif@0123456789012345678901234567890123456789
+    with:
+      category: qodana-rider
+""",
+        )
+        self.assert_rejected("distinct Qodana SARIF categories")
+
+    def test_rejects_qodana_sarif_category_outside_upload_with_block(self):
+        self.write(
+            ".github/workflows/analysis.yml",
+            """steps:
+  - run: qodana scan --config qodana.yml
+  - uses: github/codeql-action/upload-sarif@0123456789012345678901234567890123456789
+    with:
+      sarif_file: build/qodana-jvm/results/qodana.sarif.json
+    env:
       category: qodana-jvm
   - run: qodana scan --config qodana-dotnet.yml
   - uses: github/codeql-action/upload-sarif@0123456789012345678901234567890123456789
