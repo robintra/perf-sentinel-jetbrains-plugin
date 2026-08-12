@@ -99,6 +99,15 @@ class VerificationCommandTests(unittest.TestCase):
                 gradle = job.index("uses: gradle/actions/setup-gradle@")
                 self.assertLess(cleanup, gradle)
 
+        codeql = (REPOSITORY / ".github" / "workflows" / "codeql.yml").read_text(
+            encoding="utf-8"
+        )
+        java_job = codeql.split("  java-kotlin:\n", 1)[1].split("\n  csharp:\n", 1)[0]
+        self.assertLess(
+            java_job.index("scripts/free-hosted-runner-space.sh"),
+            java_job.index("uses: gradle/actions/setup-gradle@"),
+        )
+
     def dry_run(self, target, **variables):
         arguments = ["make", "--no-print-directory", "-n", target]
         arguments.extend(f"{key}={value}" for key, value in variables.items())
