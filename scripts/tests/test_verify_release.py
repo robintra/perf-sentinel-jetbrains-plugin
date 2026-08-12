@@ -262,6 +262,14 @@ class ReleaseWorkflowTests(unittest.TestCase):
         for forbidden in ("buildPlugin", "compileKotlin", "rdgen", "slsa", "cosign"):
             self.assertNotIn(forbidden, protected.lower())
 
+    def test_protected_release_job_disables_the_gradle_cache(self):
+        text = RELEASE_WORKFLOW.read_text(encoding="utf-8")
+        protected = text.split("  jetbrains-release:\n", 1)[1]
+        setup = protected.split("      - uses: gradle/actions/setup-gradle@", 1)[1]
+        setup = setup.split("      - name:", 1)[0]
+        self.assertIn("cache-disabled: true", setup)
+        self.assertNotIn("cache-read-only:", setup)
+
     def test_protected_job_rechecks_the_remote_tag_and_scopes_secrets_to_steps(self):
         text = RELEASE_WORKFLOW.read_text(encoding="utf-8")
         protected = text.split("  jetbrains-release:\n", 1)[1]
