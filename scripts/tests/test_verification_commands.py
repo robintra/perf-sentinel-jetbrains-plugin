@@ -74,6 +74,31 @@ class VerificationCommandTests(unittest.TestCase):
             metadata,
         )
 
+    def test_heavy_linux_jobs_free_unused_hosted_toolchains_before_gradle(self):
+        workflow = (REPOSITORY / ".github" / "workflows" / "ci.yml").read_text(
+            encoding="utf-8"
+        )
+        script = REPOSITORY / "scripts" / "free-hosted-runner-space.sh"
+        self.assertTrue(script.is_file())
+        self.assertIn("/usr/local/lib/android", script.read_text(encoding="utf-8"))
+        for start, end in (
+            ("  jvm:\n", "\n  python:\n"),
+            ("  python:\n", "\n  php:\n"),
+            ("  php:\n", "\n  rust:\n"),
+            ("  rust:\n", "\n  ruby:\n"),
+            ("  ruby:\n", "\n  javascript:\n"),
+            ("  javascript:\n", "\n  go:\n"),
+            ("  go:\n", "\n  rider-frontend:\n"),
+            ("  rider-frontend:\n", "\n  plugin-verifier:\n"),
+            ("  plugin-verifier:\n", "\n  zip:\n"),
+            ("  zip:\n", "\n  dependency-review:\n"),
+        ):
+            with self.subTest(job=start.strip()):
+                job = workflow.split(start, 1)[1].split(end, 1)[0]
+                cleanup = job.index("scripts/free-hosted-runner-space.sh")
+                gradle = job.index("uses: gradle/actions/setup-gradle@")
+                self.assertLess(cleanup, gradle)
+
     def dry_run(self, target, **variables):
         arguments = ["make", "--no-print-directory", "-n", target]
         arguments.extend(f"{key}={value}" for key, value in variables.items())
