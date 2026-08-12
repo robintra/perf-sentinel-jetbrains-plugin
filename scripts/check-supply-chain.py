@@ -49,6 +49,7 @@ google/osv-scanner-action gitleaks/gitleaks-action zizmorcore/zizmor-action slsa
 REQUIRED_TOOLS = {
     "SonarScanner for Gradle", "Kover", "OSV-Scanner", "Gitleaks", "TruffleHog", "Zizmor",
     "Syft", "actionlint", "Marketplace ZIP Signer", "Qodana JVM Community image",
+    "Qodana .NET image",
 }
 REQUIRED_TRANSITIVE_EXCEPTIONS = {
     "com.jgoodies:forms:1.1-preview",
@@ -88,6 +89,8 @@ src/dotnet/PerfSentinel.Rider.Tests/PerfSentinel.Rider.Tests.csproj#Microsoft.NE
 OPTIONAL_DIRECT_DECLARATIONS = {
     "gradle/libs.versions.toml#kover",
     "src/dotnet/PerfSentinel.Rider.Tests/PerfSentinel.Rider.Tests.csproj#coverlet.collector",
+    "qodana-dotnet.yml#linter",
+    "sonar-rider.properties#scanner.dotnet.version",
 }
 PLUGIN_IDS = {
     "Kotlin Gradle plugin": "org.jetbrains.kotlin.jvm",
@@ -111,6 +114,7 @@ NUGET_PACKAGES = {
     "Microsoft.NET.Test.Sdk": "Microsoft.NET.Test.Sdk",
     "NUnit3TestAdapter": "NUnit3TestAdapter",
     "coverlet.collector": "coverlet.collector",
+    "SonarScanner for .NET": "dotnet-sonarscanner",
 }
 GITHUB_REPOS = {
     "OSV-Scanner": "google/osv-scanner",
@@ -120,6 +124,10 @@ GITHUB_REPOS = {
     "Syft": "anchore/syft",
     "actionlint": "rhysd/actionlint",
     "Marketplace ZIP Signer": "JetBrains/marketplace-zip-signer",
+}
+CONTAINER_REPOSITORIES = {
+    "Qodana JVM Community image": "jetbrains/qodana-jvm-community",
+    "Qodana .NET image": "jetbrains/qodana-dotnet",
 }
 PRODUCT_CODES = {
     "IntelliJ IDEA": "IIU",
@@ -198,8 +206,8 @@ def official_source(dependency):
         return f"https://github.com/{name}/releases/tag/{dependency.get('release', '')}"
     if name in GITHUB_REPOS:
         return f"https://github.com/{GITHUB_REPOS[name]}/releases/tag/{dependency.get('release', '')}"
-    if kind == "container":
-        return "https://hub.docker.com/r/jetbrains/qodana-jvm-community"
+    if kind == "container" and name in CONTAINER_REPOSITORIES:
+        return f"https://hub.docker.com/r/{CONTAINER_REPOSITORIES[name]}"
     return None
 
 
@@ -447,9 +455,13 @@ def declared_versions(root, declaration):
             return [xml.findtext(".//SdkVersion")]
         package = xml.find(f'.//PackageReference[@Include="{selector}"]')
         return [package.get("Version")] if package is not None else []
-    if relative == "qodana.yml":
-        match = re.search(r"^linter:\s*jetbrains/qodana-jvm-community:([^@\s]+)@(sha256:[0-9a-f]{64})$", text, re.M)
+    if relative in {"qodana.yml", "qodana-dotnet.yml"}:
+        repository = "qodana-jvm-community" if relative == "qodana.yml" else "qodana-dotnet"
+        match = re.search(rf"^linter:\s*jetbrains/{repository}:([^@\s]+)@(sha256:[0-9a-f]{{64}})$", text, re.M)
         return [f"{match.group(1)}@{match.group(2)}"] if match else []
+    if relative == "sonar-rider.properties" and selector == "scanner.dotnet.version":
+        match = re.search(r"^scanner\.dotnet\.version=([^\s]+)$", text, re.M)
+        return [match.group(1)] if match else []
     return []
 
 
@@ -476,7 +488,7 @@ def check_declarations(root, inventory, errors):
             actual = declared_versions(root, declaration)
         except (OSError, ElementTree.ParseError, ValueError, tomllib.TOMLDecodeError):
             actual = []
-        if declaration == "qodana.yml#linter":
+        if declaration in {"qodana.yml#linter", "qodana-dotnet.yml#linter"}:
             expected = f"{dependency.get('release')}@{dependency.get('version')}"
         else:
             expected = dependency.get("sha256") if declaration.endswith("#sha256") else dependency.get("version")
@@ -1005,10 +1017,11 @@ def verify_nuget(client, dependency, now):
 
 
 def verify_container(client, dependency, now):
-    data = client.json(f"https://hub.docker.com/v2/repositories/jetbrains/qodana-jvm-community/tags/{dependency['release']}")
+    repository = CONTAINER_REPOSITORIES[dependency["name"]]
+    data = client.json(f"https://hub.docker.com/v2/repositories/{repository}/tags/{dependency['release']}")
     if dependency["version"] != data.get("digest"):
         raise ValueError("container digest mismatch")
-    tags = client.json("https://hub.docker.com/v2/repositories/jetbrains/qodana-jvm-community/tags?page_size=30")["results"]
+    tags = client.json(f"https://hub.docker.com/v2/repositories/{repository}/tags?page_size=30")["results"]
     candidates = [
         (item["name"], parse_instant(item["last_updated"]))
         for item in tags

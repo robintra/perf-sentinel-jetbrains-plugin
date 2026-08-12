@@ -39,6 +39,7 @@
     {"name": "Microsoft.NET.Test.Sdk", "kind": "nuget", "version": "18.8.1", "releasedAt": "2026-07-14", "source": "https://www.nuget.org/packages/Microsoft.NET.Test.Sdk/18.8.1", "declaration": "src/dotnet/PerfSentinel.Rider.Tests/PerfSentinel.Rider.Tests.csproj#Microsoft.NET.Test.Sdk"},
     {"name": "NUnit3TestAdapter", "kind": "nuget", "version": "6.2.0", "releasedAt": "2026-03-21", "source": "https://www.nuget.org/packages/NUnit3TestAdapter/6.2.0", "declaration": "src/dotnet/PerfSentinel.Rider.Tests/PerfSentinel.Rider.Tests.csproj#NUnit3TestAdapter"},
     {"name": "SonarScanner for Gradle", "kind": "audited-tool", "version": "7.4.0.8496", "releasedAt": "2026-08-06", "source": "https://plugins.gradle.org/plugin/org.sonarqube/7.4.0.8496"},
+    {"name": "SonarScanner for .NET", "kind": "nuget", "version": "11.2.1", "releasedAt": "2026-04-02T13:11:28.497Z", "source": "https://www.nuget.org/packages/dotnet-sonarscanner/11.2.1", "declaration": "sonar-rider.properties#scanner.dotnet.version"},
     {"name": "Kover", "kind": "audited-tool", "version": "0.9.9", "releasedAt": "2026-07-17", "source": "https://plugins.gradle.org/plugin/org.jetbrains.kotlinx.kover/0.9.9", "declaration": "gradle/libs.versions.toml#kover"},
     {"name": "coverlet.collector", "kind": "nuget", "version": "6.0.4", "releasedAt": "2025-01-19T23:24:04.97Z", "source": "https://www.nuget.org/packages/coverlet.collector/6.0.4", "compatibility": "netstandard2.0", "declaration": "src/dotnet/PerfSentinel.Rider.Tests/PerfSentinel.Rider.Tests.csproj#coverlet.collector"},
     {"name": "OSV-Scanner", "kind": "audited-tool", "version": "2.5.0", "releasedAt": "2026-08-07T05:23:52Z", "source": "https://github.com/google/osv-scanner/releases/tag/v2.5.0", "release": "v2.5.0"},
@@ -68,7 +69,8 @@
     {"name": "zizmorcore/zizmor-action", "kind": "github-action", "version": "3dc1ecc9bcb9e94e9b2c709687979e1298497054", "release": "v0.6.2", "releasedAt": "2026-08-01T21:21:25Z", "source": "https://github.com/zizmorcore/zizmor-action/releases/tag/v0.6.2"},
     {"name": "slsa-framework/slsa-github-generator", "kind": "github-action", "version": "f7dd8c54c2067bafc12ca7a55595d5ee9b75204a", "release": "v2.1.0", "releasedAt": "2025-02-24T19:32:29Z", "source": "https://github.com/slsa-framework/slsa-github-generator/releases/tag/v2.1.0"},
     {"name": "gradle/actions", "kind": "github-action", "version": "9c971963bec38e04b3d30dcc455b5382be2fdbfb", "release": "v6.3.0", "releasedAt": "2026-08-02T19:51:42Z", "source": "https://github.com/gradle/actions/releases/tag/v6.3.0"},
-    {"name": "Qodana JVM Community image", "kind": "container", "version": "sha256:f1c5d3efe2f550409c4d95d266c5dc2025a8069d82c9516781eae72e7383b55d", "release": "2026.1", "releasedAt": "2026-06-15T07:58:19.698001Z", "source": "https://hub.docker.com/r/jetbrains/qodana-jvm-community", "declaration": "qodana.yml#linter"}
+    {"name": "Qodana JVM Community image", "kind": "container", "version": "sha256:f1c5d3efe2f550409c4d95d266c5dc2025a8069d82c9516781eae72e7383b55d", "release": "2026.1", "releasedAt": "2026-06-15T07:58:19.698001Z", "source": "https://hub.docker.com/r/jetbrains/qodana-jvm-community", "declaration": "qodana.yml#linter"},
+    {"name": "Qodana .NET image", "kind": "container", "version": "sha256:c893fb5f5dbe54cd4b9c2cb1bd11d711242add66c5a3ac65fe7fc302cdb8c0a3", "release": "2026.1", "releasedAt": "2026-04-21T09:02:03.110286Z", "source": "https://hub.docker.com/r/jetbrains/qodana-dotnet", "declaration": "qodana-dotnet.yml#linter"}
   ],
   "exceptions": [
     {

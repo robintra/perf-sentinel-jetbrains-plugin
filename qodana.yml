@@ -8,22 +8,18 @@ linter: jetbrains/qodana-jvm-community:2026.1@sha256:f1c5d3efe2f550409c4d95d266c
 profile:
   path: .qodana/profiles/plugin.yaml
 
+failureConditions:
+  severityThresholds:
+    critical: 0
+    high: 0
+
 exclude:
   - name: All
     paths:
-      - .qodana
-      - .superpowers
-      - .worktrees
-      - CLAUDE.md
       - build
-      - graphify-out
       - protocol/build
       - rider-frontend/build
-      - src/main/graphify-out
-      - gradlew
-      - gradlew.bat
-      - LICENSE
-  # The Community image lacks optional product plugins; Plugin Verifier covers this file.
+  # The Community image lacks optional product plugins; Plugin Verifier covers these descriptors.
   - name: PluginXmlValidity
     paths:
       - src/main/resources/META-INF/plugin.xml
