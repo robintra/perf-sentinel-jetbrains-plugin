@@ -70,6 +70,7 @@ jobs:
         with:
           distribution: temurin
           java-version: ${{ env.JAVA_VERSION }}
+      - run: scripts/free-hosted-runner-space.sh
       - uses: gradle/actions/setup-gradle@9c971963bec38e04b3d30dcc455b5382be2fdbfb
         with:
           gradle-version: "9.7.0"
@@ -99,6 +100,7 @@ jobs:
           persist-credentials: false
       - uses: actions/setup-java@b6effb05e454b25005698d916606bdc6ffcbf961
         with: {distribution: temurin, java-version: "21"}
+      - run: scripts/free-hosted-runner-space.sh
       - uses: gradle/actions/setup-gradle@9c971963bec38e04b3d30dcc455b5382be2fdbfb
         with:
           gradle-version: "9.7.0"
@@ -117,6 +119,7 @@ jobs:
           persist-credentials: false
       - uses: actions/setup-java@b6effb05e454b25005698d916606bdc6ffcbf961
         with: {distribution: temurin, java-version: "21"}
+      - run: scripts/free-hosted-runner-space.sh
       - uses: gradle/actions/setup-gradle@9c971963bec38e04b3d30dcc455b5382be2fdbfb
         with:
           gradle-version: "9.7.0"
@@ -135,6 +138,7 @@ jobs:
           persist-credentials: false
       - uses: actions/setup-java@b6effb05e454b25005698d916606bdc6ffcbf961
         with: {distribution: temurin, java-version: "21"}
+      - run: scripts/free-hosted-runner-space.sh
       - uses: gradle/actions/setup-gradle@9c971963bec38e04b3d30dcc455b5382be2fdbfb
         with:
           gradle-version: "9.7.0"
@@ -153,6 +157,7 @@ jobs:
           persist-credentials: false
       - uses: actions/setup-java@b6effb05e454b25005698d916606bdc6ffcbf961
         with: {distribution: temurin, java-version: "21"}
+      - run: scripts/free-hosted-runner-space.sh
       - uses: gradle/actions/setup-gradle@9c971963bec38e04b3d30dcc455b5382be2fdbfb
         with:
           gradle-version: "9.7.0"
@@ -171,6 +176,7 @@ jobs:
           persist-credentials: false
       - uses: actions/setup-java@b6effb05e454b25005698d916606bdc6ffcbf961
         with: {distribution: temurin, java-version: "21"}
+      - run: scripts/free-hosted-runner-space.sh
       - uses: gradle/actions/setup-gradle@9c971963bec38e04b3d30dcc455b5382be2fdbfb
         with:
           gradle-version: "9.7.0"
@@ -189,6 +195,7 @@ jobs:
           persist-credentials: false
       - uses: actions/setup-java@b6effb05e454b25005698d916606bdc6ffcbf961
         with: {distribution: temurin, java-version: "21"}
+      - run: scripts/free-hosted-runner-space.sh
       - uses: gradle/actions/setup-gradle@9c971963bec38e04b3d30dcc455b5382be2fdbfb
         with:
           gradle-version: "9.7.0"
@@ -207,6 +214,7 @@ jobs:
           persist-credentials: false
       - uses: actions/setup-java@b6effb05e454b25005698d916606bdc6ffcbf961
         with: {distribution: temurin, java-version: "21"}
+      - run: scripts/free-hosted-runner-space.sh
       - uses: gradle/actions/setup-gradle@9c971963bec38e04b3d30dcc455b5382be2fdbfb
         with:
           gradle-version: "9.7.0"
@@ -248,6 +256,7 @@ jobs:
       - uses: actions/setup-dotnet@a98b56852c35b8e3190ac28c8c2271da59106c68
         with:
           dotnet-version: 10.0.302
+      - run: scripts/free-hosted-runner-space.sh
       - uses: gradle/actions/setup-gradle@9c971963bec38e04b3d30dcc455b5382be2fdbfb
         with:
           gradle-version: "9.7.0"
@@ -269,6 +278,7 @@ jobs:
       - uses: actions/setup-dotnet@a98b56852c35b8e3190ac28c8c2271da59106c68
         with:
           dotnet-version: 10.0.302
+      - run: scripts/free-hosted-runner-space.sh
       - uses: gradle/actions/setup-gradle@9c971963bec38e04b3d30dcc455b5382be2fdbfb
         with:
           gradle-version: "9.7.0"
