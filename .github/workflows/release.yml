@@ -1,0 +1,238 @@
+name: Release
+
+on:
+  push:
+    tags: ['v0.*.*']
+
+permissions:
+  contents: read
+
+concurrency:
+  group: release-${{ github.ref }}
+  cancel-in-progress: false
+
+env:
+  JAVA_VERSION: "21"
+  DOTNET_VERSION: "10.0.302"
+
+jobs:
+  validate-tag:
+    name: Validate signed release tag
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
+        with:
+          fetch-depth: 0
+          ref: ${{ github.sha }}
+          persist-credentials: false
+      - name: Require the approved signed tag on the exact commit
+        env:
+          EXPECTED_SHA: ${{ github.sha }}
+        run: |
+          set -euo pipefail
+          test "$GITHUB_REF_TYPE" = tag
+          test "$(git rev-list -n 1 "$GITHUB_REF_NAME")" = "$EXPECTED_SHA"
+          git -c gpg.ssh.allowedSignersFile="$GITHUB_WORKSPACE/config/release-allowed-signers" verify-tag "$GITHUB_REF_NAME"
+          python3 scripts/check-version.py "$GITHUB_REF_NAME"
+
+  windows-build:
+    name: Windows release build (${{ matrix.build }})
+    needs: validate-tag
+    runs-on: windows-2025
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - build: a
+          - build: b
+    env:
+      GRADLE_USER_HOME: ${{ github.workspace }}\.gradle-release-${{ matrix.build }}
+      BUILD_ID: ${{ matrix.build }}
+      TAG_NAME: ${{ github.ref_name }}
+      DOTNET_CLI_TELEMETRY_OPTOUT: "1"
+      DOTNET_NOLOGO: "1"
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
+        with:
+          fetch-depth: 0
+          ref: ${{ github.sha }}
+          persist-credentials: false
+      - uses: actions/setup-java@b6effb05e454b25005698d916606bdc6ffcbf961
+        with: {distribution: temurin, java-version: "21"}
+      - uses: actions/setup-dotnet@a98b56852c35b8e3190ac28c8c2271da59106c68
+        with: {dotnet-version: "10.0.302"}
+      - uses: gradle/actions/setup-gradle@9c971963bec38e04b3d30dcc455b5382be2fdbfb
+        with: {cache-disabled: true}
+      - name: Build and test the unsigned plugin
+        shell: pwsh
+        run: |
+          if ((dotnet --version) -ne "10.0.302") { throw "expected .NET SDK 10.0.302" }
+          $version = $env:TAG_NAME.Substring(1)
+          python scripts/check-version.py "v$version"
+          .\gradlew.bat --no-daemon --no-build-cache --dependency-verification strict clean :rider-frontend:test buildPlugin -PriderConfiguration=Release -Pversion=$version
+          dotnet restore src/dotnet/PerfSentinel.Rider.Tests/PerfSentinel.Rider.Tests.csproj --locked-mode --configfile src/dotnet/NuGet.Config
+          dotnet test src/dotnet/PerfSentinel.Rider.Tests/PerfSentinel.Rider.Tests.csproj --configuration Release --no-restore --settings src/dotnet/coverage.runsettings --results-directory build/dotnet/TestResults --collect:"XPlat Code Coverage" --logger "trx;LogFileName=tests.trx"
+          $archive = "build/distributions/perf-sentinel-$version.zip"
+          $evidence = "build/release-$($env:BUILD_ID)"
+          New-Item -ItemType Directory -Path $evidence | Out-Null
+          Copy-Item $archive "$evidence/perf-sentinel-$version.zip"
+          python scripts/inspect-plugin-zip.py "$evidence/perf-sentinel-$version.zip" --manifest "$evidence/plugin.manifest.json"
+      - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a
+        with:
+          name: release-windows-${{ matrix.build }}
+          path: build/release-${{ matrix.build }}/
+          if-no-files-found: error
+          retention-days: 1
+
+  compare:
+    name: Compare release builds
+    needs: windows-build
+    runs-on: ubuntu-24.04
+    outputs:
+      artifact-id: ${{ steps.upload.outputs.artifact-id }}
+      artifact-digest: ${{ steps.upload.outputs.artifact-digest }}
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
+        with: {ref: "${{ github.sha }}", persist-credentials: false}
+      - uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c
+        with: {name: release-windows-a, path: build/release/a}
+      - uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c
+        with: {name: release-windows-b, path: build/release/b}
+      - name: Require byte-identical inspected inputs
+        run: |
+          set -euo pipefail
+          VERSION="${GITHUB_REF_NAME#v}"
+          python3 scripts/compare-plugin-builds.py \
+            --archive-a "build/release/a/perf-sentinel-$VERSION.zip" \
+            --manifest-a build/release/a/plugin.manifest.json \
+            --archive-b "build/release/b/perf-sentinel-$VERSION.zip" \
+            --manifest-b build/release/b/plugin.manifest.json
+          mkdir -p build/verified
+          cp "build/release/a/perf-sentinel-$VERSION.zip" build/verified/
+      - id: upload
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a
+        with:
+          name: verified-unsigned-plugin
+          path: build/verified/*.zip
+          archive: false
+          if-no-files-found: error
+          retention-days: 1
+
+  jetbrains-release:
+    name: Sign and publish
+    needs: compare
+    runs-on: ubuntu-24.04
+    environment: jetbrains-release
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
+        with:
+          fetch-depth: 0
+          ref: ${{ github.sha }}
+          persist-credentials: false
+      - uses: actions/setup-java@b6effb05e454b25005698d916606bdc6ffcbf961
+        with: {distribution: temurin, java-version: "21"}
+      - uses: gradle/actions/setup-gradle@9c971963bec38e04b3d30dcc455b5382be2fdbfb
+        with: {cache-read-only: true}
+      - name: Recheck the remote signed tag before any publication
+        env:
+          EXPECTED_SHA: ${{ github.sha }}
+        run: |
+          set -euo pipefail
+          git update-ref -d "refs/tags/$GITHUB_REF_NAME"
+          git fetch --force --no-tags origin "refs/tags/$GITHUB_REF_NAME:refs/tags/$GITHUB_REF_NAME"
+          test "$(git rev-list -n 1 "$GITHUB_REF_NAME")" = "$EXPECTED_SHA"
+          git -c gpg.ssh.allowedSignersFile="$GITHUB_WORKSPACE/config/release-allowed-signers" verify-tag "$GITHUB_REF_NAME"
+      - uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c
+        with:
+          artifact-ids: ${{ needs.compare.outputs.artifact-id }}
+          path: build/verified
+      - name: Bind downloaded artifact to the comparison result
+        env:
+          EXPECTED_ARTIFACT_DIGEST: ${{ needs.compare.outputs.artifact-digest }}
+        run: |
+          set -euo pipefail
+          VERSION="${GITHUB_REF_NAME#v}"
+          FILE="build/verified/perf-sentinel-$VERSION.zip"
+          test "$(find build/verified -maxdepth 1 -type f | wc -l | tr -d ' ')" = 1
+          test -f "$FILE"
+          EXPECTED="${EXPECTED_ARTIFACT_DIGEST#sha256:}"
+          test "${#EXPECTED}" = 64
+          case "$EXPECTED" in (*[!0-9a-f]*) echo "invalid artifact digest" >&2; exit 1;; esac
+          test "$(sha256sum "$FILE" | awk '{print $1}')" = "$EXPECTED"
+      - id: signed
+        name: Sign and verify the compared ZIP
+        env:
+          CERTIFICATE_CHAIN: ${{ secrets.CERTIFICATE_CHAIN }}
+          PRIVATE_KEY: ${{ secrets.PRIVATE_KEY }}
+          PRIVATE_KEY_PASSWORD: ${{ secrets.PRIVATE_KEY_PASSWORD }}
+        run: |
+          set -euo pipefail
+          VERSION="${GITHUB_REF_NAME#v}"
+          UNSIGNED="build/verified/perf-sentinel-$VERSION.zip"
+          SIGNED="build/distributions/perf-sentinel-$VERSION-signed.zip"
+          CERTIFICATE="build/distributions/perf-sentinel-$VERSION-certificate-chain.pem"
+          PUBLIC_SIGNED="build/release/perf-sentinel-$VERSION-signed.zip"
+          mkdir -p build/distributions
+          printf '%s' "$CERTIFICATE_CHAIN" > "$CERTIFICATE"
+          ./gradlew --no-daemon --dependency-verification strict signPlugin verifyPluginSignature \
+            "-PreleaseUnsignedZip=$UNSIGNED" "-Pversion=$VERSION"
+          SIGNER="$(find "$HOME/.gradle/caches/modules-2/files-2.1/org.jetbrains/marketplace-zip-signer/0.1.43" -name 'marketplace-zip-signer-0.1.43-cli.jar' -type f -print -quit)"
+          python3 scripts/check-plugin-signature.py --unsigned "$UNSIGNED" --signed "$SIGNED" --certificate "$CERTIFICATE" --identity config/signing-identities.json --signer-jar "$SIGNER"
+          mkdir -p build/release
+          cp "$SIGNED" "$PUBLIC_SIGNED"
+          cp "$CERTIFICATE" build/release/
+          {
+            echo "VERSION=$VERSION"
+            echo "UNSIGNED=$UNSIGNED"
+            echo "SIGNED=$SIGNED"
+            echo "PUBLIC_SIGNED=$PUBLIC_SIGNED"
+            echo "CERTIFICATE=$CERTIFICATE"
+            echo "SIGNER=$SIGNER"
+          } >> "$GITHUB_ENV"
+          {
+            echo "version=$VERSION"
+            echo "signed=$SIGNED"
+          } >> "$GITHUB_OUTPUT"
+      - uses: anchore/sbom-action@e22c389904149dbc22b58101806040fa8d37a610
+        with:
+          file: ${{ steps.signed.outputs.signed }}
+          format: spdx-json
+          output-file: build/release/perf-sentinel-${{ steps.signed.outputs.version }}.spdx.json
+          syft-version: 1.51.0
+          dependency-snapshot: false
+          upload-artifact: false
+          upload-release-assets: false
+      - name: Create and verify the closed release set
+        run: |
+          set -euo pipefail
+          MANIFEST="build/release/perf-sentinel-$VERSION-release.json"
+          SBOM="build/release/perf-sentinel-$VERSION.spdx.json"
+          python3 scripts/verify-release.py create --version "$VERSION" --unsigned "$UNSIGNED" --signed "$SIGNED" --sbom "$SBOM" --certificate "$CERTIFICATE" --identity config/signing-identities.json --signer-jar "$SIGNER" --manifest "$MANIFEST"
+          python3 scripts/verify-release.py verify --version "$VERSION" --signed "$SIGNED" --github-zip "$PUBLIC_SIGNED" --marketplace-zip "$SIGNED" --sbom "$SBOM" --certificate "$CERTIFICATE" --identity config/signing-identities.json --signer-jar "$SIGNER" --manifest "$MANIFEST"
+      - name: Publish the exact signed ZIP to Marketplace
+        env:
+          PUBLISH_TOKEN: ${{ secrets.PUBLISH_TOKEN }}
+        run: |
+          set -euo pipefail
+          git update-ref -d "refs/tags/$GITHUB_REF_NAME"
+          git fetch --force --no-tags origin "refs/tags/$GITHUB_REF_NAME:refs/tags/$GITHUB_REF_NAME"
+          test "$(git rev-list -n 1 "$GITHUB_REF_NAME")" = "$GITHUB_SHA"
+          git -c gpg.ssh.allowedSignersFile="$GITHUB_WORKSPACE/config/release-allowed-signers" verify-tag "$GITHUB_REF_NAME"
+          ./gradlew --no-daemon --dependency-verification strict publishPlugin -x signPlugin -x verifyPluginSignature "-PreleaseUnsignedZip=$UNSIGNED" "-Pversion=$VERSION" -PmarketplaceChannel=default
+      - name: Publish the exact closed asset set to GitHub
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          git update-ref -d "refs/tags/$GITHUB_REF_NAME"
+          git fetch --force --no-tags origin "refs/tags/$GITHUB_REF_NAME:refs/tags/$GITHUB_REF_NAME"
+          test "$(git rev-list -n 1 "$GITHUB_REF_NAME")" = "$GITHUB_SHA"
+          git -c gpg.ssh.allowedSignersFile="$GITHUB_WORKSPACE/config/release-allowed-signers" verify-tag "$GITHUB_REF_NAME"
+          python3 scripts/verify-release.py verify --version "$VERSION" --signed "$SIGNED" --github-zip "$PUBLIC_SIGNED" --marketplace-zip "$SIGNED" --sbom "build/release/perf-sentinel-$VERSION.spdx.json" --certificate "$CERTIFICATE" --identity config/signing-identities.json --signer-jar "$SIGNER" --manifest "build/release/perf-sentinel-$VERSION-release.json"
+          gh release create "$GITHUB_REF_NAME" --verify-tag --title "$GITHUB_REF_NAME" --notes-from-tag \
+            "$PUBLIC_SIGNED" \
+            "build/release/perf-sentinel-$VERSION-release.json" \
+            "build/release/perf-sentinel-$VERSION.spdx.json" \
+            "build/release/perf-sentinel-$VERSION-certificate-chain.pem"

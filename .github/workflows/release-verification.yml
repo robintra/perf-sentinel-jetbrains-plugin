@@ -1,0 +1,70 @@
+name: Release Verification
+
+on:
+  schedule:
+    - cron: '29 6 * * *'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: release-verification
+  cancel-in-progress: true
+
+jobs:
+  verify:
+    name: Verify latest stable release
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
+        with: {persist-credentials: false}
+      - uses: actions/setup-java@b6effb05e454b25005698d916606bdc6ffcbf961
+        with: {distribution: temurin, java-version: "21"}
+      - uses: gradle/actions/setup-gradle@9c971963bec38e04b3d30dcc455b5382be2fdbfb
+        with: {cache-read-only: true}
+      - name: Download the exact latest stable public release
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          TAG="$(gh release list --exclude-drafts --exclude-pre-releases --limit 100 --json tagName --jq '[.[].tagName | select(test("^v0\\.(0|[1-9][0-9]*)\\.(0|[1-9][0-9]*)$"))] | sort_by(split(".") | map(ltrimstr("v") | tonumber)) | last')"
+          test -n "$TAG"
+          VERSION="${TAG#v}"
+          mkdir -p build/public build/marketplace
+          ASSETS="$(gh release view "$TAG" --json assets)"
+          printf '%s' "$ASSETS" | python3 -c '
+          import json, sys
+          version = sys.argv[1]
+          expected = {
+              f"perf-sentinel-{version}-signed.zip": 419430400,
+              f"perf-sentinel-{version}-release.json": 67108864,
+              f"perf-sentinel-{version}.spdx.json": 67108864,
+              f"perf-sentinel-{version}-certificate-chain.pem": 65536,
+          }
+          assets = json.load(sys.stdin)["assets"]
+          actual = {item.get("name"): item.get("size") for item in assets}
+          if set(actual) != set(expected) or any(type(actual[name]) is not int or actual[name] <= 0 or actual[name] > limit for name, limit in expected.items()):
+              raise SystemExit("release asset set or size is invalid")
+          ' "$VERSION"
+          gh release download "$TAG" --dir build/public
+          test "$(find build/public -maxdepth 1 -type f | wc -l | tr -d ' ')" = 4 || { echo "expected exactly four GitHub release assets" >&2; exit 1; }
+          curl --fail --silent --show-error --location --max-filesize 419430400 --output "build/marketplace/perf-sentinel-$VERSION-signed.zip" "https://plugins.jetbrains.com/plugin/download?pluginId=io.github.robintra.perfsentinel&version=$VERSION"
+          echo "VERSION=$VERSION" >> "$GITHUB_ENV"
+      - name: Verify signature, identity, SBOM and identical public bytes
+        run: |
+          set -euo pipefail
+          ./gradlew --no-daemon --dependency-verification strict help
+          SIGNER="$(find "$HOME/.gradle/caches/modules-2/files-2.1/org.jetbrains/marketplace-zip-signer/0.1.43" -name 'marketplace-zip-signer-0.1.43-cli.jar' -type f -print -quit)"
+          test -n "$SIGNER"
+          python3 scripts/verify-release.py verify \
+            --version "$VERSION" \
+            --signed "build/public/perf-sentinel-$VERSION-signed.zip" \
+            --github-zip "build/public/perf-sentinel-$VERSION-signed.zip" \
+            --marketplace-zip "build/marketplace/perf-sentinel-$VERSION-signed.zip" \
+            --marketplace-distributed \
+            --sbom "build/public/perf-sentinel-$VERSION.spdx.json" \
+            --certificate "build/public/perf-sentinel-$VERSION-certificate-chain.pem" \
+            --identity config/signing-identities.json \
+            --signer-jar "$SIGNER" \
+            --manifest "build/public/perf-sentinel-$VERSION-release.json"
