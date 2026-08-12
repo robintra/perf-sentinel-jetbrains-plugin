@@ -1,7 +1,9 @@
 import org.jetbrains.intellij.platform.gradle.TestFrameworkType
 import org.jetbrains.intellij.platform.gradle.IntelliJPlatformType
 import org.jetbrains.intellij.platform.gradle.extensions.IntelliJPlatformExtension
+import org.jetbrains.intellij.platform.gradle.tasks.BuildPluginTask
 import org.jetbrains.intellij.platform.gradle.tasks.PrepareSandboxTask
+import org.gradle.api.tasks.bundling.AbstractArchiveTask
 import org.jetbrains.kotlin.gradle.dsl.JvmTarget
 import org.jetbrains.kotlin.gradle.dsl.JvmDefaultMode
 
@@ -16,6 +18,12 @@ plugins {
 allprojects {
     dependencyLocking {
         lockAllConfigurations()
+    }
+    tasks.withType<AbstractArchiveTask>().configureEach {
+        isPreserveFileTimestamps = false
+        isReproducibleFileOrder = true
+        dirPermissions { unix("755") }
+        filePermissions { unix("644") }
     }
 }
 
@@ -223,6 +231,10 @@ tasks.withType<PrepareSandboxTask>().configureEach {
         include("PerfSentinel.Rider.dll", "PerfSentinel.Rider.pdb")
         into("${rootProject.name}/dotnet")
     }
+}
+
+tasks.named<BuildPluginTask>("buildPlugin") {
+    archiveBaseName.set("perf-sentinel")
 }
 
 kotlin {

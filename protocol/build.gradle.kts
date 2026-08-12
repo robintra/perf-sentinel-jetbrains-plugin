@@ -39,4 +39,18 @@ tasks.withType<RdGenTask>().configureEach {
     dependsOn(classPath)
     classpath(classPath)
     notCompatibleWithConfigurationCache("RD generator retains Gradle project state")
+    doLast {
+        listOf(
+            rootProject.layout.projectDirectory.dir("rider-frontend/build/generated/rd/kotlin").asFile,
+            rootProject.layout.buildDirectory.dir("generated/rd/csharp").get().asFile,
+        ).flatMap { directory ->
+            directory.walkTopDown().filter { it.isFile }.toList()
+        }.sortedBy { it.invariantSeparatorsPath }.forEach { generatedFile ->
+            val original = generatedFile.readText(Charsets.UTF_8)
+            val normalized = original.replace("\r\n", "\n").replace('\r', '\n')
+            if (normalized != original) {
+                generatedFile.writeText(normalized, Charsets.UTF_8)
+            }
+        }
+    }
 }
