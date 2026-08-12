@@ -268,8 +268,9 @@ def validate_jvm_qodana(config: dict, text: str) -> None:
 
 
 def validate_dotnet_qodana(config: dict) -> None:
-    fields(config, {"version", "linter", "profile", "onlyDirectory", "dotnet", "failThreshold"}, "Qodana .NET config")
-    parse_image(config["linter"], "jetbrains/qodana-dotnet", "2026.1", DOTNET_DIGEST)
+    fields(config, {"version", "linter", "withinDocker", "profile", "onlyDirectory", "dotnet", "failThreshold"}, "Qodana .NET config")
+    if config["linter"] != "qodana-dotnet" or type(config["withinDocker"]) is not bool or config["withinDocker"]:
+        raise AnalysisError("Qodana .NET net472 analysis must use native mode")
     expected = {
         "version": "1.0",
         "profile": {"name": "qodana.recommended"},
@@ -341,6 +342,7 @@ def validate_sonar(jvm: dict[str, str], rider: dict[str, str]) -> None:
     rider_fields = {
         "scanner.dotnet.version", "scanner.dotnet.testProject", "scanner.dotnet.configuration",
         "scanner.dotnet.lockedMode", "scanner.dotnet.runSettings", "scanner.dotnet.resultsDirectory",
+        "scanner.dotnet.collect", "scanner.dotnet.logger",
         "sonar.projectKey", "sonar.projectName", "sonar.sourceEncoding", "sonar.exclusions",
         "sonar.coverage.exclusions", "sonar.cs.cobertura.reportsPaths", "sonar.cs.vstest.reportsPaths",
         "sonar.qualitygate.wait", "sonar.qualitygate.timeout",
@@ -390,6 +392,10 @@ def validate_sonar(jvm: dict[str, str], rider: dict[str, str]) -> None:
     }
     if any(rider[key] != value for key, value in execution.items()):
         raise AnalysisError("Rider Sonar execution must use the locked Release test contract")
+    if rider["scanner.dotnet.collect"] != "XPlat Code Coverage":
+        raise AnalysisError("Rider Sonar execution must enable XPlat coverage collection")
+    if rider["scanner.dotnet.logger"] != "trx":
+        raise AnalysisError("Rider Sonar execution must enable the VSTest logger")
     if rider["sonar.cs.cobertura.reportsPaths"] != "build/dotnet/TestResults/**/coverage.cobertura.xml":
         raise AnalysisError("Rider Sonar must consume the Cobertura report")
     if rider["sonar.cs.vstest.reportsPaths"] != "build/dotnet/TestResults/**/*.trx":
@@ -440,26 +446,35 @@ def validate_workflow_secrets(root: Path, inventory_names: set[str]) -> None:
     if not workflow_root.is_dir():
         return
     total = 0
-    workflow_text = []
     for path in sorted((*workflow_root.glob("*.yml"), *workflow_root.glob("*.yaml"))):
         text = read_utf8(path, MAX_WORKFLOW_BYTES, f"workflow {path.name}")
-        workflow_text.append(text)
         total += len(text.encode("utf-8"))
         if total > 4 * MAX_WORKFLOW_BYTES:
             raise AnalysisError("workflow configuration exceeds aggregate size bound")
-        if re.search(r"\bsecrets\s*\[|\bsecrets\s*:\s*inherit\b|\btoJSON\(\s*secrets\s*\)", text):
+        if re.search(r"\bsecrets\s*\[|\bsecrets\s*:\s*inherit\b|\btoJSON\(\s*secrets\s*\)|\$\{\{\s*secrets\s*\}\}", text):
             raise AnalysisError(f"workflow secret reference in {path.name} must be static and inventoried")
         unknown = set(SECRET_REFERENCE.findall(text)) - inventory_names
         if unknown:
             raise AnalysisError(f"workflow secret reference is absent from inventory: {', '.join(sorted(unknown))}")
-    combined = "\n".join(workflow_text)
-    category_contracts = {
-        "qodana.yml": "qodana-jvm",
-        "qodana-dotnet.yml": "qodana-rider",
-    }
-    for config, category in category_contracts.items():
-        if config in combined and re.search(rf"\bcategory:\s*{re.escape(category)}\b", combined) is None:
-            raise AnalysisError("Qodana JVM and Rider uploads require distinct Qodana SARIF categories")
+        references = list(re.finditer(r"(?<![\w.-])(qodana-dotnet\.yml|qodana\.yml)(?![\w.-])", text))
+        categories = {"qodana.yml": "qodana-jvm", "qodana-dotnet.yml": "qodana-rider"}
+        for index, reference in enumerate(references):
+            end = references[index + 1].start() if index + 1 < len(references) else len(text)
+            segment = text[reference.end():end]
+            uploads = list(re.finditer(
+                r"(?m)^(?P<indent>[ \t]*)-[ \t]+uses:[ \t]+github/codeql-action/upload-sarif@[0-9a-f]{40}[ \t]*$",
+                segment,
+            ))
+            if len(uploads) != 1:
+                raise AnalysisError("Qodana JVM and Rider uploads require distinct Qodana SARIF categories")
+            upload = uploads[0]
+            tail = segment[upload.end():]
+            next_step = re.search(rf"(?m)^{re.escape(upload.group('indent'))}-[ \t]+", tail)
+            upload_block = tail[:next_step.start()] if next_step else tail
+            with_fields = list(re.finditer(r"(?m)^[ \t]+with:[ \t]*$", upload_block))
+            found_categories = re.findall(r"(?m)^[ \t]+category:[ \t]*([A-Za-z0-9_-]+)[ \t]*$", upload_block)
+            if len(with_fields) != 1 or found_categories != [categories[reference.group(1)]]:
+                raise AnalysisError("Qodana JVM and Rider uploads require distinct Qodana SARIF categories")
 
 
 def xml_root(path: Path, label: str):
@@ -497,7 +512,7 @@ def validate_rider_contract(root: Path) -> None:
         raise AnalysisError("Rider coverage report must be deterministic")
 
 
-def validate_supply_bindings(inventory, jvm_linter: str, dotnet_linter: str, scanner_version: str) -> None:
+def validate_supply_bindings(inventory, jvm_linter: str, scanner_version: str) -> None:
     dependencies = inventory.get("dependencies") if type(inventory) is dict else None
     if type(dependencies) is not list:
         raise AnalysisError("supply-chain dependencies must be an array")
@@ -508,15 +523,14 @@ def validate_supply_bindings(inventory, jvm_linter: str, dotnet_linter: str, sca
                 raise AnalysisError(f"duplicate supply-chain dependency {dependency['name']}")
             by_name[dependency["name"]] = dependency
     match_jvm = IMAGE.fullmatch(jvm_linter)
-    match_dotnet = IMAGE.fullmatch(dotnet_linter)
     expected = {
         "Qodana JVM Community image": {
             "kind": "container", "version": match_jvm.group(3), "release": match_jvm.group(2),
             "source": "https://hub.docker.com/r/jetbrains/qodana-jvm-community", "declaration": "qodana.yml#linter",
         },
         "Qodana .NET image": {
-            "kind": "container", "version": match_dotnet.group(3), "release": match_dotnet.group(2),
-            "source": "https://hub.docker.com/r/jetbrains/qodana-dotnet", "declaration": "qodana-dotnet.yml#linter",
+            "kind": "container", "version": DOTNET_DIGEST, "release": "2026.1",
+            "source": "https://hub.docker.com/r/jetbrains/qodana-dotnet",
         },
         "SonarScanner for .NET": {
             "kind": "nuget", "version": scanner_version,
@@ -543,7 +557,7 @@ def check(root: Path) -> None:
     validate_workflow_secrets(root, inventory_names)
     validate_rider_contract(root)
     supply = read_json(root / "config/supply-chain.json", MAX_INVENTORY_BYTES, "supply-chain inventory")
-    validate_supply_bindings(supply, jvm_qodana["linter"], dotnet_qodana["linter"], rider_sonar["scanner.dotnet.version"])
+    validate_supply_bindings(supply, jvm_qodana["linter"], rider_sonar["scanner.dotnet.version"])
 
 
 def main() -> int:

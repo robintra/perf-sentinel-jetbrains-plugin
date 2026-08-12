@@ -47,8 +47,9 @@ exclude:
 
 
 def dotnet_qodana():
-    return f'''version: "1.0"
-linter: jetbrains/qodana-dotnet:2026.1@{DOTNET_DIGEST}
+    return '''version: "1.0"
+linter: qodana-dotnet
+withinDocker: false
 profile:
   name: qodana.recommended
 onlyDirectory: src/dotnet
@@ -80,6 +81,8 @@ scanner.dotnet.configuration=Release
 scanner.dotnet.lockedMode=true
 scanner.dotnet.runSettings=src/dotnet/coverage.runsettings
 scanner.dotnet.resultsDirectory=build/dotnet/TestResults
+scanner.dotnet.collect=XPlat Code Coverage
+scanner.dotnet.logger=trx
 sonar.projectKey=robintrassard_perf-sentinel-jetbrains-plugin-rider
 sonar.projectName=Perf Sentinel JetBrains Plugin Rider
 sonar.sourceEncoding=UTF-8
@@ -140,7 +143,6 @@ class AnalysisConfigCheckerTests(unittest.TestCase):
                     "version": DOTNET_DIGEST,
                     "release": "2026.1",
                     "source": "https://hub.docker.com/r/jetbrains/qodana-dotnet",
-                    "declaration": "qodana-dotnet.yml#linter",
                 },
                 {
                     "name": "SonarScanner for .NET",
@@ -200,16 +202,24 @@ class AnalysisConfigCheckerTests(unittest.TestCase):
         self.assertEqual(0, result.returncode, result.stderr)
 
     def test_rejects_mutable_or_ineligible_qodana_images(self):
-        cases = (
-            ("qodana.yml", f"jetbrains/qodana-jvm-community:2026.1@{JVM_DIGEST}", "jetbrains/qodana-jvm-community:latest"),
-            ("qodana-dotnet.yml", f"jetbrains/qodana-dotnet:2026.1@{DOTNET_DIGEST}", "jetbrains/qodana-dotnet:2026.2"),
+        self.write(
+            "qodana.yml",
+            jvm_qodana().replace(
+                f"jetbrains/qodana-jvm-community:2026.1@{JVM_DIGEST}",
+                "jetbrains/qodana-jvm-community:latest",
+            ),
         )
-        for relative, pinned, mutable in cases:
-            with self.subTest(relative=relative):
-                original = (self.root / relative).read_text(encoding="utf-8")
-                self.write(relative, original.replace(pinned, mutable))
-                self.assert_rejected("immutable eligible Qodana image")
-                self.write(relative, original)
+        self.assert_rejected("immutable eligible Qodana image")
+
+    def test_requires_native_qodana_for_net472(self):
+        cases = (
+            ("withinDocker: false", "withinDocker: true"),
+            ("linter: qodana-dotnet", f"linter: jetbrains/qodana-dotnet:2026.1@{DOTNET_DIGEST}"),
+        )
+        for old, new in cases:
+            with self.subTest(new=new):
+                self.write("qodana-dotnet.yml", dotnet_qodana().replace(old, new))
+                self.assert_rejected("native mode")
 
     def test_rejects_broad_qodana_all_exclusions(self):
         self.write("qodana.yml", jvm_qodana().replace("      - build\n", "      - build\n      - src\n"))
@@ -247,6 +257,8 @@ class AnalysisConfigCheckerTests(unittest.TestCase):
             ("scanner.dotnet.version=11.2.1", "scanner.dotnet.version=latest", "pinned SonarScanner for .NET"),
             ("scanner.dotnet.configuration=Release", "scanner.dotnet.configuration=Debug", "locked Release"),
             ("scanner.dotnet.lockedMode=true", "scanner.dotnet.lockedMode=false", "locked Release"),
+            ("scanner.dotnet.collect=XPlat Code Coverage", "scanner.dotnet.collect=None", "coverage collection"),
+            ("scanner.dotnet.logger=trx", "scanner.dotnet.logger=console", "VSTest logger"),
         )
         for old, new, message in cases:
             with self.subTest(new=new):
@@ -337,6 +349,7 @@ class AnalysisConfigCheckerTests(unittest.TestCase):
             "${{ secrets.EXTRA_TOKEN }}",
             "${{ secrets[matrix.secret_name] }}",
             "${{ toJSON(secrets) }}",
+            "${{ secrets }}",
         ):
             with self.subTest(expression=expression):
                 self.write(".github/workflows/analysis.yml", f"env:\n  TOKEN: {expression}\n")
@@ -354,6 +367,60 @@ class AnalysisConfigCheckerTests(unittest.TestCase):
   - uses: github/codeql-action/upload-sarif@0123456789012345678901234567890123456789
     with:
       category: qodana-jvm
+""",
+        )
+        self.assert_rejected("distinct Qodana SARIF categories")
+
+    def test_accepts_qodana_uploads_bound_to_distinct_surface_categories(self):
+        self.write(
+            ".github/workflows/analysis.yml",
+            """steps:
+  - run: qodana scan --config qodana.yml
+  - uses: github/codeql-action/upload-sarif@0123456789012345678901234567890123456789
+    with:
+      sarif_file: build/qodana-jvm/results/qodana.sarif.json
+      category: qodana-jvm
+  - run: qodana scan --config qodana-dotnet.yml
+  - uses: github/codeql-action/upload-sarif@0123456789012345678901234567890123456789
+    with:
+      sarif_file: build/qodana-rider/results/qodana.sarif.json
+      category: qodana-rider
+""",
+        )
+        result = self.run_checker()
+        self.assertEqual(0, result.returncode, result.stderr)
+
+    def test_rejects_swapped_qodana_sarif_category_bindings(self):
+        self.write(
+            ".github/workflows/analysis.yml",
+            """steps:
+  - run: qodana scan --config qodana.yml
+  - uses: github/codeql-action/upload-sarif@0123456789012345678901234567890123456789
+    with:
+      category: qodana-rider
+  - run: qodana scan --config qodana-dotnet.yml
+  - uses: github/codeql-action/upload-sarif@0123456789012345678901234567890123456789
+    with:
+      category: qodana-jvm
+""",
+        )
+        self.assert_rejected("distinct Qodana SARIF categories")
+
+    def test_rejects_unbound_qodana_sarif_category_after_another_upload(self):
+        self.write(
+            ".github/workflows/analysis.yml",
+            """steps:
+  - run: qodana scan --config qodana.yml
+  - uses: github/codeql-action/upload-sarif@0123456789012345678901234567890123456789
+    with:
+      category: qodana-rider
+  - uses: github/codeql-action/upload-sarif@0123456789012345678901234567890123456789
+    with:
+      category: qodana-jvm
+  - run: qodana scan --config qodana-dotnet.yml
+  - uses: github/codeql-action/upload-sarif@0123456789012345678901234567890123456789
+    with:
+      category: qodana-rider
 """,
         )
         self.assert_rejected("distinct Qodana SARIF categories")
