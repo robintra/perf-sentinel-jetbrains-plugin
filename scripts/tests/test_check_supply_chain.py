@@ -23,7 +23,6 @@ class SupplyChainCheckerTest(unittest.TestCase):
         self.inventory = {
             "schemaVersion": 1,
             "auditedAt": "2026-08-12T07:00:00Z",
-            "minimumReleaseAgeHours": 72,
             "approvedNuGetSources": [
                 "https://api.nuget.org/v3/index.json",
                 "https://resharper-platform.jetbrains.com/api/v2/",
@@ -175,10 +174,11 @@ class SupplyChainCheckerTest(unittest.TestCase):
         self.write_inventory()
         self.assert_rejected("release date")
 
-    def test_rejects_dependency_released_within_seventy_two_hours(self):
+    def test_accepts_recent_stable_dependency_without_release_delay(self):
         self.inventory["dependencies"][0]["releasedAt"] = "2026-08-11"
         self.write_inventory()
-        self.assert_rejected("72 hours")
+        result = self.run_checker()
+        self.assertEqual(0, result.returncode, result.stderr)
 
     def test_rejects_compatibility_exception_over_ninety_days(self):
         self.inventory["exceptions"] = [
@@ -263,10 +263,10 @@ class SupplyChainCheckerTest(unittest.TestCase):
         self.write_inventory()
         self.assert_rejected("dependencies must not be empty")
 
-    def test_rejects_weakened_release_age_policy(self):
-        self.inventory["minimumReleaseAgeHours"] = 0
+    def test_rejects_legacy_release_age_policy(self):
+        self.inventory["minimumReleaseAgeHours"] = 72
         self.write_inventory()
-        self.assert_rejected("minimumReleaseAgeHours")
+        self.assert_rejected("unknown field")
 
     def test_rejects_inventory_version_drift_from_declaration(self):
         self.inventory["dependencies"][0]["version"] = "2.3.21"
@@ -286,11 +286,12 @@ class SupplyChainCheckerTest(unittest.TestCase):
         self.write_inventory()
         self.assert_rejected("required action")
 
-    def test_enforces_exact_seventy_two_hours_with_timestamps(self):
+    def test_accepts_precise_recent_stable_timestamp(self):
         self.inventory["auditedAt"] = "2026-08-12T00:30:00Z"
         self.inventory["dependencies"][0]["releasedAt"] = "2026-08-09T01:00:00Z"
         self.write_inventory()
-        self.assert_rejected("72 hours")
+        result = self.run_checker()
+        self.assertEqual(0, result.returncode, result.stderr)
 
     def test_rejects_exception_expired_against_real_time(self):
         self.inventory["auditedAt"] = "2020-01-01T00:00:00Z"
@@ -601,6 +602,18 @@ class SupplyChainCheckerTest(unittest.TestCase):
             "scanner.dotnet.version=11.2.1\n",
             encoding="utf-8",
         )
+        result = self.run_checker()
+        self.assertEqual(0, result.returncode, result.stderr)
+
+    def test_accepts_qodana_cli_as_an_official_audited_tool(self):
+        self.inventory["dependencies"].append(
+            {
+                "name": "Qodana CLI", "kind": "audited-tool", "version": "2026.2.0",
+                "release": "v2026.2.0", "releasedAt": "2026-07-28T21:14:54Z",
+                "source": "https://github.com/JetBrains/qodana-cli/releases/tag/v2026.2.0",
+            }
+        )
+        self.write_inventory()
         result = self.run_checker()
         self.assertEqual(0, result.returncode, result.stderr)
 

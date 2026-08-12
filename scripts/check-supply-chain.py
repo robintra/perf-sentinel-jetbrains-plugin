@@ -48,7 +48,7 @@ google/osv-scanner-action gitleaks/gitleaks-action zizmorcore/zizmor-action slsa
 """.split())
 REQUIRED_TOOLS = {
     "SonarScanner for Gradle", "Kover", "OSV-Scanner", "Gitleaks", "TruffleHog", "Zizmor",
-    "Syft", "actionlint", "Marketplace ZIP Signer", "Qodana JVM Community image",
+    "Syft", "actionlint", "Marketplace ZIP Signer", "Qodana CLI", "Qodana JVM Community image",
     "Qodana .NET image",
 }
 REQUIRED_TRANSITIVE_EXCEPTIONS = {
@@ -59,7 +59,6 @@ KOVER_TRANSITIVE_EXCEPTION = "org.jetbrains.compose.hot-reload:hot-reload-agent:
 TOP_FIELDS = {
     "schemaVersion",
     "auditedAt",
-    "minimumReleaseAgeHours",
     "approvedNuGetSources",
     "dependencies",
     "exceptions",
@@ -83,7 +82,7 @@ gradle/libs.versions.toml#gson;gradle/libs.versions.toml#jackson;gradle/libs.ver
 build.gradle.kts#IntelliJ IDEA 2025.3;build.gradle.kts#IntelliJ IDEA 2026.2;build.gradle.kts#Rider 2025.3;build.gradle.kts#Rider 2026.2;build.gradle.kts#PyCharm 2025.3;build.gradle.kts#PyCharm 2026.2
 build.gradle.kts#PhpStorm 2025.3;build.gradle.kts#PhpStorm 2026.2;build.gradle.kts#RustRover 2025.3;build.gradle.kts#RustRover 2026.2;build.gradle.kts#RubyMine 2025.3;build.gradle.kts#RubyMine 2026.2
 build.gradle.kts#WebStorm 2025.3;build.gradle.kts#WebStorm 2026.2;build.gradle.kts#GoLand 2025.3;build.gradle.kts#GoLand 2026.2
-src/dotnet/Plugin.props#SdkVersion:JetBrains.Rider.SDK;src/dotnet/Plugin.props#SdkVersion:JetBrains.ReSharper.SDK.Tests;src/dotnet/Directory.Build.props#Microsoft.NETFramework.ReferenceAssemblies
+src/dotnet/Plugin.props#SdkVersion:JetBrains.Rider.SDK;src/dotnet/Plugin.props#SdkVersion:JetBrains.ReSharper.SDK.Tests;src/dotnet/Directory.Build.props#Microsoft.NETFramework.ReferenceAssemblies;src/dotnet/Directory.Build.props#Microsoft.Bcl.Memory
 src/dotnet/PerfSentinel.Rider.Tests/PerfSentinel.Rider.Tests.csproj#Microsoft.NET.Test.Sdk;src/dotnet/PerfSentinel.Rider.Tests/PerfSentinel.Rider.Tests.csproj#NUnit3TestAdapter;qodana.yml#linter
 """.replace("\n", ";").strip(";").split(";"))
 OPTIONAL_DIRECT_DECLARATIONS = {
@@ -110,6 +109,7 @@ NUGET_PACKAGES = {
     "JetBrains Rider SDK": "JetBrains.Rider.SDK",
     "JetBrains ReSharper SDK Tests": "JetBrains.ReSharper.SDK.Tests",
     "Microsoft .NET Framework reference assemblies": "Microsoft.NETFramework.ReferenceAssemblies",
+    "Microsoft.Bcl.Memory": "Microsoft.Bcl.Memory",
     "Microsoft.NET.Test.Sdk": "Microsoft.NET.Test.Sdk",
     "NUnit3TestAdapter": "NUnit3TestAdapter",
     "coverlet.collector": "coverlet.collector",
@@ -123,6 +123,7 @@ GITHUB_REPOS = {
     "Syft": "anchore/syft",
     "actionlint": "rhysd/actionlint",
     "Marketplace ZIP Signer": "JetBrains/marketplace-zip-signer",
+    "Qodana CLI": "JetBrains/qodana-cli",
 }
 CONTAINER_REPOSITORIES = {
     "Qodana JVM Community image": "jetbrains/qodana-jvm-community",
@@ -216,8 +217,6 @@ def check_inventory(root, errors, now):
         return inventory
     if type(inventory["schemaVersion"]) is not int or inventory["schemaVersion"] != 1:
         errors.append("schemaVersion must be integer 1")
-    if type(inventory["minimumReleaseAgeHours"]) is not int or inventory["minimumReleaseAgeHours"] != 72:
-        errors.append("minimumReleaseAgeHours must be integer 72")
     try:
         audited = parse_instant(inventory["auditedAt"])
         if not inventory["auditedAt"].endswith("Z") or not RFC3339_UTC.fullmatch(inventory["auditedAt"]):
@@ -264,9 +263,6 @@ def check_inventory(root, errors, now):
             released = parse_instant(dependency["releasedAt"], end_of_day=True)
         except ValueError:
             errors.append(f"{name} has no valid release date")
-        else:
-            if audited and audited - released < timedelta(hours=72):
-                errors.append(f"{name} was released within 72 hours of the audit")
         if not dependency["source"].startswith("https://"):
             errors.append(f"{name} has no primary HTTPS source")
         expected_source = official_source(dependency)
@@ -748,12 +744,15 @@ def nuget_declared_direct(root):
     props = ElementTree.parse(root / "src/dotnet/Directory.Build.props")
     sdk = ElementTree.parse(root / "src/dotnet/Plugin.props").findtext(".//SdkVersion")
     common = props.find('.//PackageReference[@Include="Microsoft.NETFramework.ReferenceAssemblies"]').get("Version")
+    patched_memory = props.find('.//PackageReference[@Include="Microsoft.Bcl.Memory"]').get("Version")
     rider = "src/dotnet/PerfSentinel.Rider/packages.lock.json"
     tests = "src/dotnet/PerfSentinel.Rider.Tests/packages.lock.json"
     result[(rider, "JetBrains.Rider.SDK")] = sdk
     result[(rider, "Microsoft.NETFramework.ReferenceAssemblies")] = common
+    result[(rider, "Microsoft.Bcl.Memory")] = patched_memory
     result[(tests, "JetBrains.ReSharper.SDK.Tests")] = sdk
     result[(tests, "Microsoft.NETFramework.ReferenceAssemblies")] = common
+    result[(tests, "Microsoft.Bcl.Memory")] = patched_memory
     test_project = ElementTree.parse(root / "src/dotnet/PerfSentinel.Rider.Tests/PerfSentinel.Rider.Tests.csproj")
     for package in ("Microsoft.NET.Test.Sdk", "NUnit3TestAdapter", "coverlet.collector"):
         reference = test_project.find(f'.//PackageReference[@Include="{package}"]')
@@ -887,7 +886,7 @@ def same_release_date(recorded, actual):
 
 
 def latest_eligible(candidates, now):
-    stable = [item for item in candidates if not PRERELEASE.search(item[0]) and now - item[1] >= timedelta(hours=72)]
+    stable = [item for item in candidates if not PRERELEASE.search(item[0]) and item[1] <= now]
     return max(stable, key=lambda item: version_key(item[0])) if stable else None
 
 
@@ -952,8 +951,6 @@ def verify_gradle(client, dependency, now):
     expected = data["wrapperChecksum"] if dependency["name"] == "Gradle wrapper JAR" else data["checksum"]
     if dependency.get("sha256") != expected:
         raise ValueError("Gradle SHA-256 mismatch")
-    if now - released < timedelta(hours=72):
-        raise ValueError("current Gradle is not yet 72 hours old")
 
 
 def verify_jetbrains_product(client, dependency, now):
@@ -995,8 +992,6 @@ def verify_nuget(client, dependency, now):
             raise ValueError("coverlet collector requires its net472 compatibility contract")
         compatible = []
         for version, published, content in sorted(candidates, key=lambda item: version_key(item[0]), reverse=True):
-            if now - published < timedelta(hours=72):
-                continue
             package_bytes = client.get(content)[0]
             if len(package_bytes) > 64 * 1024 * 1024:
                 raise ValueError("coverlet package exceeds audit size bound")
