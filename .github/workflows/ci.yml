@@ -1,0 +1,402 @@
+name: CI
+
+on:
+  pull_request:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ci-${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+
+env:
+  JAVA_VERSION: "21"
+
+jobs:
+  changes:
+    name: Changes
+    runs-on: ubuntu-24.04
+    outputs:
+      scope: ${{ steps.scope.outputs.scope }}
+      target-sha: ${{ github.sha }}
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
+        with:
+          fetch-depth: 0
+          ref: ${{ github.sha }}
+          persist-credentials: false
+      - id: scope
+        name: Classify changes
+        shell: bash
+        env:
+          EVENT_NAME: ${{ github.event_name }}
+          PR_HEAD_REPOSITORY: ${{ github.event.pull_request.head.repo.full_name }}
+          REPOSITORY: ${{ github.repository }}
+        run: |
+          set -euo pipefail
+          if [[ "$EVENT_NAME" == workflow_dispatch ]]; then
+            echo "scope=code" >> "$GITHUB_OUTPUT"
+            exit 0
+          fi
+          base="${{ github.event.pull_request.base.sha || github.event.before }}"
+          if [[ -z "$base" || "$base" == "0000000000000000000000000000000000000000" ]]; then
+            base="HEAD^"
+          fi
+          if git diff --name-only "$base" HEAD | grep -Ev '^(README\.md|CHANGELOG\.md|SECURITY\.md|CONTRIBUTING\.md|docs/)' >/dev/null; then
+            scope=code
+          else
+            scope=docs
+          fi
+          if [[ "$scope" == code && "$EVENT_NAME" == pull_request && "$PR_HEAD_REPOSITORY" != "$REPOSITORY" ]]; then
+            scope=fork
+          fi
+          echo "scope=$scope" >> "$GITHUB_OUTPUT"
+
+  jvm:
+    name: JVM
+    needs: changes
+    if: needs.changes.outputs.scope != 'docs'
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
+        with:
+          ref: ${{ needs.changes.outputs.target-sha }}
+          persist-credentials: false
+      - uses: actions/setup-java@b6effb05e454b25005698d916606bdc6ffcbf961
+        with:
+          distribution: temurin
+          java-version: ${{ env.JAVA_VERSION }}
+      - uses: gradle/actions/setup-gradle@9c971963bec38e04b3d30dcc455b5382be2fdbfb
+        with:
+          cache-read-only: ${{ github.event_name == 'pull_request' }}
+      - run: ./gradlew --no-daemon --dependency-verification strict test koverXmlReport
+      - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a
+        with:
+          name: jvm-analysis-inputs
+          if-no-files-found: error
+          path: |
+            build/classes
+            build/reports/kover/report.xml
+            build/test-results
+            protocol/build/classes
+            rider-frontend/build/classes
+            rider-frontend/build/test-results
+
+  python:
+    name: Python
+    needs: changes
+    if: needs.changes.outputs.scope != 'docs'
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
+        with:
+          ref: ${{ needs.changes.outputs.target-sha }}
+          persist-credentials: false
+      - uses: actions/setup-java@b6effb05e454b25005698d916606bdc6ffcbf961
+        with: {distribution: temurin, java-version: "21"}
+      - uses: gradle/actions/setup-gradle@9c971963bec38e04b3d30dcc455b5382be2fdbfb
+        with:
+          cache-read-only: ${{ github.event_name == 'pull_request' }}
+      - run: ./gradlew --no-daemon --dependency-verification strict testPyCharm253
+
+  php:
+    name: PHP
+    needs: changes
+    if: needs.changes.outputs.scope != 'docs'
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
+        with:
+          ref: ${{ needs.changes.outputs.target-sha }}
+          persist-credentials: false
+      - uses: actions/setup-java@b6effb05e454b25005698d916606bdc6ffcbf961
+        with: {distribution: temurin, java-version: "21"}
+      - uses: gradle/actions/setup-gradle@9c971963bec38e04b3d30dcc455b5382be2fdbfb
+        with:
+          cache-read-only: ${{ github.event_name == 'pull_request' }}
+      - run: ./gradlew --no-daemon --dependency-verification strict testPhpStorm253
+
+  rust:
+    name: Rust
+    needs: changes
+    if: needs.changes.outputs.scope != 'docs'
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
+        with:
+          ref: ${{ needs.changes.outputs.target-sha }}
+          persist-credentials: false
+      - uses: actions/setup-java@b6effb05e454b25005698d916606bdc6ffcbf961
+        with: {distribution: temurin, java-version: "21"}
+      - uses: gradle/actions/setup-gradle@9c971963bec38e04b3d30dcc455b5382be2fdbfb
+        with:
+          cache-read-only: ${{ github.event_name == 'pull_request' }}
+      - run: ./gradlew --no-daemon --dependency-verification strict testRustRover253 testRustRover262
+
+  ruby:
+    name: Ruby
+    needs: changes
+    if: needs.changes.outputs.scope != 'docs'
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
+        with:
+          ref: ${{ needs.changes.outputs.target-sha }}
+          persist-credentials: false
+      - uses: actions/setup-java@b6effb05e454b25005698d916606bdc6ffcbf961
+        with: {distribution: temurin, java-version: "21"}
+      - uses: gradle/actions/setup-gradle@9c971963bec38e04b3d30dcc455b5382be2fdbfb
+        with:
+          cache-read-only: ${{ github.event_name == 'pull_request' }}
+      - run: ./gradlew --no-daemon --dependency-verification strict testRubyMine253
+
+  javascript:
+    name: JavaScript
+    needs: changes
+    if: needs.changes.outputs.scope != 'docs'
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
+        with:
+          ref: ${{ needs.changes.outputs.target-sha }}
+          persist-credentials: false
+      - uses: actions/setup-java@b6effb05e454b25005698d916606bdc6ffcbf961
+        with: {distribution: temurin, java-version: "21"}
+      - uses: gradle/actions/setup-gradle@9c971963bec38e04b3d30dcc455b5382be2fdbfb
+        with:
+          cache-read-only: ${{ github.event_name == 'pull_request' }}
+      - run: ./gradlew --no-daemon --dependency-verification strict testWebStorm253
+
+  go:
+    name: Go
+    needs: changes
+    if: needs.changes.outputs.scope != 'docs'
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
+        with:
+          ref: ${{ needs.changes.outputs.target-sha }}
+          persist-credentials: false
+      - uses: actions/setup-java@b6effb05e454b25005698d916606bdc6ffcbf961
+        with: {distribution: temurin, java-version: "21"}
+      - uses: gradle/actions/setup-gradle@9c971963bec38e04b3d30dcc455b5382be2fdbfb
+        with:
+          cache-read-only: ${{ github.event_name == 'pull_request' }}
+      - run: ./gradlew --no-daemon --dependency-verification strict testGoLand253
+
+  rider-frontend:
+    name: Rider frontend
+    needs: changes
+    if: needs.changes.outputs.scope != 'docs'
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
+        with:
+          ref: ${{ needs.changes.outputs.target-sha }}
+          persist-credentials: false
+      - uses: actions/setup-java@b6effb05e454b25005698d916606bdc6ffcbf961
+        with: {distribution: temurin, java-version: "21"}
+      - uses: gradle/actions/setup-gradle@9c971963bec38e04b3d30dcc455b5382be2fdbfb
+        with:
+          cache-read-only: ${{ github.event_name == 'pull_request' }}
+      - run: ./gradlew --no-daemon --dependency-verification strict :rider-frontend:test
+
+  plugin-verifier:
+    name: Plugin Verifier (${{ matrix.verifier-target }})
+    needs: changes
+    if: needs.changes.outputs.scope != 'docs'
+    runs-on: ubuntu-24.04
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - verifier-target: idea-253
+          - verifier-target: idea-262
+          - verifier-target: rider-253
+          - verifier-target: rider-262
+          - verifier-target: python-253
+          - verifier-target: python-262
+          - verifier-target: php-253
+          - verifier-target: php-262
+          - verifier-target: rust-253
+          - verifier-target: rust-262
+          - verifier-target: ruby-253
+          - verifier-target: ruby-262
+          - verifier-target: web-253
+          - verifier-target: web-262
+          - verifier-target: go-253
+          - verifier-target: go-262
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
+        with:
+          ref: ${{ needs.changes.outputs.target-sha }}
+          persist-credentials: false
+      - uses: actions/setup-java@b6effb05e454b25005698d916606bdc6ffcbf961
+        with: {distribution: temurin, java-version: "21"}
+      - uses: gradle/actions/setup-gradle@9c971963bec38e04b3d30dcc455b5382be2fdbfb
+        with:
+          cache-disabled: true
+      - run: ./gradlew --no-daemon --dependency-verification strict verifyPlugin -PpluginVerifierTarget=${{ matrix.verifier-target }}
+
+  zip:
+    name: ZIP
+    needs: changes
+    if: needs.changes.outputs.scope != 'docs'
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
+        with:
+          ref: ${{ needs.changes.outputs.target-sha }}
+          persist-credentials: false
+      - uses: actions/setup-java@b6effb05e454b25005698d916606bdc6ffcbf961
+        with: {distribution: temurin, java-version: "21"}
+      - uses: gradle/actions/setup-gradle@9c971963bec38e04b3d30dcc455b5382be2fdbfb
+        with:
+          cache-read-only: ${{ github.event_name == 'pull_request' }}
+      - run: ./gradlew --no-daemon --dependency-verification strict buildPlugin
+      - shell: bash
+        run: |
+          set -euo pipefail
+          mapfile -t archives < <(find build/distributions -maxdepth 1 -type f -name 'perf-sentinel-*.zip' -print)
+          [[ ${#archives[@]} -eq 1 ]]
+          python3 scripts/inspect-plugin-zip.py "${archives[0]}"
+
+  dependency-review:
+    name: Dependency review
+    needs: changes
+    if: needs.changes.outputs.scope != 'docs'
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
+        with:
+          ref: ${{ needs.changes.outputs.target-sha }}
+          persist-credentials: false
+      - if: github.event_name == 'pull_request'
+        uses: actions/dependency-review-action@a1d282b36b6f3519aa1f3fc636f609c47dddb294
+      - if: github.event_name != 'pull_request'
+        run: python3 scripts/check-supply-chain.py
+
+  workflow-security:
+    name: Workflow security
+    needs: changes
+    if: needs.changes.outputs.scope != 'docs'
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
+        with:
+          fetch-depth: 0
+          ref: ${{ needs.changes.outputs.target-sha }}
+          persist-credentials: false
+      - run: python3 -B -m unittest discover -s scripts/tests -p 'test_*.py'
+      - run: python3 scripts/check-supply-chain.py
+      - run: python3 scripts/check-analysis-config.py
+      - name: Actionlint
+        shell: bash
+        run: |
+          set -euo pipefail
+          curl -fsSLO https://github.com/rhysd/actionlint/releases/download/v1.7.12/actionlint_1.7.12_linux_amd64.tar.gz
+          echo '8aca8db96f1b94770f1b0d72b6dddcb1ebb8123cb3712530b08cc387b349a3d8  actionlint_1.7.12_linux_amd64.tar.gz' | sha256sum --check --strict
+          tar -xzf actionlint_1.7.12_linux_amd64.tar.gz actionlint
+          ./actionlint
+      - uses: gitleaks/gitleaks-action@e0c47f4f8be36e29cdc102c57e68cb5cbf0e8d1e
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
+      - uses: zizmorcore/zizmor-action@3dc1ecc9bcb9e94e9b2c709687979e1298497054
+        with:
+          version: 1.29.0
+          collect: workflows
+          online-audits: false
+          advanced-security: false
+          annotations: true
+
+  sonar-jvm:
+    name: Sonar JVM
+    needs: [changes, jvm]
+    if: needs.changes.outputs.scope == 'code' && (github.event_name != 'pull_request' || github.event.pull_request.head.repo.full_name == github.repository)
+    runs-on: ubuntu-24.04
+    env:
+      SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
+        with:
+          ref: ${{ needs.changes.outputs.target-sha }}
+          persist-credentials: false
+      - uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c
+        with:
+          name: jvm-analysis-inputs
+          path: .
+      - uses: SonarSource/sonarqube-scan-action@22918119ff8e1ca75a623e15c8296b6ea4fbe28f
+        with:
+          args: >-
+            -Dproject.settings=sonar-jvm.properties
+            -Dsonar.java.binaries=build/classes/kotlin/main,protocol/build/classes/kotlin/main,rider-frontend/build/classes/kotlin/main
+
+  qodana-jvm:
+    name: Qodana JVM
+    needs: [changes, jvm]
+    if: needs.changes.outputs.scope == 'code' && (github.event_name != 'pull_request' || github.event.pull_request.head.repo.full_name == github.repository)
+    runs-on: ubuntu-24.04
+    permissions:
+      contents: read
+      security-events: write
+    env:
+      QODANA_TOKEN: ${{ secrets.QODANA_TOKEN }}
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
+        with:
+          ref: ${{ needs.changes.outputs.target-sha }}
+          persist-credentials: false
+      - uses: JetBrains/qodana-action@b588768b6e7e6da579e518bc584f79de0d243692
+        with:
+          args: --config qodana.yml
+          results-dir: build/qodana-jvm/results
+          upload-result: false
+          use-caches: false
+          use-annotations: false
+          post-pr-comment: false
+          push-fixes: none
+      - uses: github/codeql-action/upload-sarif@5595ccaf912efad79be6eef63a5619ff05969be3
+        with:
+          sarif_file: build/qodana-jvm/results/qodana.sarif.json
+          category: qodana-jvm
+
+  gate:
+    name: Gate
+    if: always()
+    needs: [changes, jvm, python, php, rust, ruby, javascript, go, rider-frontend, plugin-verifier, zip, dependency-review, workflow-security, sonar-jvm, qodana-jvm]
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
+        with:
+          ref: ${{ needs.changes.outputs.target-sha }}
+          persist-credentials: false
+      - name: Aggregate results
+        env:
+          SCOPE: ${{ needs.changes.outputs.scope }}
+          JVM: ${{ needs.jvm.result }}
+          PYTHON: ${{ needs.python.result }}
+          PHP: ${{ needs.php.result }}
+          RUST: ${{ needs.rust.result }}
+          RUBY: ${{ needs.ruby.result }}
+          JAVASCRIPT: ${{ needs.javascript.result }}
+          GO: ${{ needs.go.result }}
+          RIDER_FRONTEND: ${{ needs.rider-frontend.result }}
+          PLUGIN_VERIFIER: ${{ needs.plugin-verifier.result }}
+          ZIP: ${{ needs.zip.result }}
+          DEPENDENCY_REVIEW: ${{ needs.dependency-review.result }}
+          WORKFLOW_SECURITY: ${{ needs.workflow-security.result }}
+          SONAR_JVM: ${{ needs.sonar-jvm.result }}
+          QODANA_JVM: ${{ needs.qodana-jvm.result }}
+        run: |
+          python3 - <<'PY'
+          import json, os
+          names = ["jvm", "python", "php", "rust", "ruby", "javascript", "go", "rider_frontend", "plugin_verifier", "zip", "dependency_review", "workflow_security", "sonar_jvm", "qodana_jvm"]
+          payload = {"schema_version": 1, "change_scope": os.environ["SCOPE"], "results": {name: os.environ[name.upper()] for name in names}}
+          with open("ci-results.json", "w", encoding="utf-8") as stream:
+              json.dump(payload, stream, sort_keys=True)
+          PY
+          python3 scripts/check-ci-results.py ci-results.json
