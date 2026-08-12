@@ -19,10 +19,12 @@ REPOSITORY = Path(__file__).resolve().parents[1]
 DEFAULT_BASELINE = REPOSITORY / "config" / "coverage-baseline.json"
 MAX_REPORT_BYTES = 64 * 1024 * 1024
 MAX_BASELINE_BYTES = 64 * 1024
+MAX_CHANGED_LINES_BYTES = 64 * 1024 * 1024
 MAX_LINE_RECORDS = 2_000_000
 NEW_CODE_MINIMUM = Decimal(80)
 POSITIVE_INTEGER = re.compile(r"^[1-9][0-9]{0,9}$")
 NONNEGATIVE_INTEGER = re.compile(r"^(?:0|[1-9][0-9]{0,9})$")
+TIMESTAMP_INTEGER = re.compile(r"^(?:0|[1-9][0-9]{0,18})$")
 DRIVE_PATH = re.compile(r"^[A-Za-z]:/")
 XML_DECLARATION = re.compile(
     r'^<\?xml\s+version=["\']1\.0["\']\s+encoding=["\']utf-8["\']\s*\?>',
@@ -95,7 +97,12 @@ def normalize_component(value: object, *, allow_empty: bool = False, allow_pathm
     if ".." in value.split("/"):
         raise CoverageError("source path is not stable")
     normalized = posixpath.normpath(value)
-    if normalized in {"", ".", ".."} or normalized.startswith("../"):
+    if (
+        normalized in {"", ".", ".."}
+        or normalized.startswith("../")
+        or posixpath.isabs(normalized)
+        or DRIVE_PATH.match(normalized)
+    ):
         raise CoverageError("source path is not stable")
     return normalized
 
@@ -140,7 +147,40 @@ def check_source_line_counter(element: ElementTree.Element, lines: dict[tuple[st
     return missed, covered
 
 
-def parse_kover_sourcefile(package: str, source: ElementTree.Element) -> CoverageReport:
+def parse_kover_method(method: ElementTree.Element) -> tuple[int, int]:
+    if set(method.attrib) != {"name", "desc"} or any(child.tag != "counter" for child in method):
+        raise CoverageError("Kover method structure is invalid")
+    if not method.get("name") or not method.get("desc"):
+        raise CoverageError("Kover method structure is invalid")
+    return line_counter(method, "Kover")
+
+
+def parse_kover_class(class_element: ElementTree.Element) -> tuple[str, int, int]:
+    if set(class_element.attrib) != {"name", "sourcefilename"} or any(
+        child.tag not in {"method", "counter"} for child in class_element
+    ):
+        raise CoverageError("Kover class structure is invalid")
+    if not class_element.get("name"):
+        raise CoverageError("Kover class structure is invalid")
+    source = normalize_component(class_element.get("sourcefilename"))
+    method_counts: list[tuple[int, int]] = []
+    method_keys: set[tuple[str, str]] = set()
+    for method in (child for child in class_element if child.tag == "method"):
+        key = tuple(unicodedata.normalize("NFC", method.get(field, "")) for field in ("name", "desc"))
+        if key in method_keys:
+            raise CoverageError("duplicate Kover method")
+        method_keys.add(key)
+        method_counts.append(parse_kover_method(method))
+    missed, covered = line_counter(class_element, "Kover")
+    if (missed, covered) != (
+        sum(count[0] for count in method_counts),
+        sum(count[1] for count in method_counts),
+    ):
+        raise CoverageError("Kover class LINE counter differs from method counters")
+    return source, missed, covered
+
+
+def parse_kover_sourcefile(package: str, source: ElementTree.Element) -> tuple[str, CoverageReport]:
     if set(source.attrib) != {"name"} or any(child.tag not in {"line", "counter"} for child in source):
         raise CoverageError("Kover sourcefile structure is invalid")
     filename = normalize_component(source.get("name"))
@@ -161,7 +201,7 @@ def parse_kover_sourcefile(package: str, source: ElementTree.Element) -> Coverag
             raise CoverageError("duplicate executable line after path normalization")
         lines[key] = covered > 0
     missed, covered = check_source_line_counter(source, lines)
-    return CoverageReport(lines, missed, covered)
+    return filename, CoverageReport(lines, missed, covered)
 
 
 def parse_kover_container(container: ElementTree.Element) -> CoverageReport:
@@ -177,9 +217,30 @@ def parse_kover_container(container: ElementTree.Element) -> CoverageReport:
         if set(container.attrib) != {"name"}:
             raise CoverageError("Kover package structure is invalid")
         package = normalize_component(container.get("name"), allow_empty=True)
+    elif container.tag == "group":
+        if set(container.attrib) != {"name"} or not container.get("name"):
+            raise CoverageError("Kover group structure is invalid")
+    for session in (child for child in container if child.tag == "sessioninfo"):
+        if set(session.attrib) != {"id", "start", "dump"} or list(session) or not session.get("id"):
+            raise CoverageError("Kover session structure is invalid")
+        if any(TIMESTAMP_INTEGER.fullmatch(session.get(field, "")) is None for field in ("start", "dump")):
+            raise CoverageError("Kover session structure is invalid")
+    class_counts: dict[str, tuple[int, int]] = {}
+    if container.tag == "package":
+        class_names: set[str] = set()
+        for class_element in (child for child in container if child.tag == "class"):
+            class_name = unicodedata.normalize("NFC", class_element.get("name", "")).casefold()
+            if class_name in class_names:
+                raise CoverageError("duplicate Kover class")
+            class_names.add(class_name)
+            source, class_missed, class_covered = parse_kover_class(class_element)
+            key = source.casefold()
+            missed, covered = class_counts.get(key, (0, 0))
+            class_counts[key] = missed + class_missed, covered + class_covered
     lines: dict[tuple[str, int], bool] = {}
     missed = 0
     covered = 0
+    source_counts: dict[str, tuple[int, int]] = {}
     for child in container:
         if child.tag in {"package", "group"}:
             report = parse_kover_container(child)
@@ -187,10 +248,16 @@ def parse_kover_container(container: ElementTree.Element) -> CoverageReport:
             missed += report.missed
             covered += report.covered
         elif child.tag == "sourcefile":
-            report = parse_kover_sourcefile(package, child)
+            source, report = parse_kover_sourcefile(package, child)
+            key = source.casefold()
+            if key in source_counts:
+                raise CoverageError("duplicate Kover sourcefile after path normalization")
+            source_counts[key] = report.missed, report.covered
             merge_lines(lines, report.lines)
             missed += report.missed
             covered += report.covered
+    if container.tag == "package" and source_counts != class_counts:
+        raise CoverageError("Kover sourcefile LINE counter differs from class counters")
     if line_counter(container, "Kover") != (missed, covered):
         raise CoverageError("Kover LINE counter differs from child counters")
     return CoverageReport(lines, missed, covered)
@@ -212,35 +279,108 @@ def direct_children(element: ElementTree.Element, name: str) -> list[ElementTree
     return [child for child in element if child.tag == name]
 
 
+def validate_cobertura_line(line: ElementTree.Element) -> tuple[int, int]:
+    branch = line.get("branch")
+    expected = {"number", "hits", "branch"}
+    if branch == "True":
+        expected.add("condition-coverage")
+        conditions = direct_children(line, "conditions")
+        if [child.tag for child in line] != ["conditions"] or set(conditions[0].attrib) or any(
+            child.tag != "condition" for child in conditions[0]
+        ):
+            raise CoverageError("Cobertura structure is invalid")
+        for condition in conditions[0]:
+            if set(condition.attrib) != {"number", "type", "coverage"} or list(condition):
+                raise CoverageError("Cobertura structure is invalid")
+    elif branch == "False":
+        if list(line):
+            raise CoverageError("Cobertura structure is invalid")
+    else:
+        raise CoverageError("Cobertura structure is invalid")
+    if set(line.attrib) != expected:
+        raise CoverageError("Cobertura structure is invalid")
+    return (
+        parse_integer(line.get("number"), positive=True, label="Cobertura line number is invalid"),
+        parse_integer(line.get("hits"), positive=False, label="Cobertura line hits are invalid"),
+    )
+
+
+def validate_cobertura_methods(methods: ElementTree.Element) -> None:
+    if set(methods.attrib) or any(child.tag != "method" for child in methods):
+        raise CoverageError("Cobertura structure is invalid")
+    for method in methods:
+        if set(method.attrib) != {"name", "signature", "line-rate", "branch-rate", "complexity"}:
+            raise CoverageError("Cobertura structure is invalid")
+        method_lines = direct_children(method, "lines")
+        if len(method_lines) != 1 or any(child.tag != "lines" for child in method):
+            raise CoverageError("Cobertura structure is invalid")
+        if set(method_lines[0].attrib):
+            raise CoverageError("Cobertura structure is invalid")
+        for line in method_lines[0]:
+            if line.tag != "line":
+                raise CoverageError("Cobertura structure is invalid")
+            validate_cobertura_line(line)
+
+
 def read_cobertura(path: Path) -> CoverageReport:
     root = parse_xml(path, "Cobertura")
     if root.tag != "coverage":
         raise CoverageError(f"{path}: Cobertura root must be coverage")
-    if any(child.tag not in {"sources", "packages"} for child in root):
+    if set(root.attrib) != {
+        "line-rate",
+        "branch-rate",
+        "version",
+        "timestamp",
+        "lines-covered",
+        "lines-valid",
+        "branches-covered",
+        "branches-valid",
+    } or [child.tag for child in root] != ["sources", "packages"]:
         raise CoverageError("Cobertura root structure is invalid")
     packages = direct_children(root, "packages")
     sources = direct_children(root, "sources")
-    if len(packages) != 1 or len(sources) > 1:
+    if len(packages) != 1 or len(sources) != 1 or set(packages[0].attrib) or set(sources[0].attrib):
         raise CoverageError("Cobertura packages structure is required")
+    if any(source.tag != "source" or set(source.attrib) or list(source) for source in sources[0]):
+        raise CoverageError("Cobertura structure is invalid")
     lines: dict[tuple[str, int], bool] = {}
     for package in packages[0]:
-        if package.tag != "package":
+        if package.tag != "package" or set(package.attrib) != {
+            "name",
+            "line-rate",
+            "branch-rate",
+            "complexity",
+        }:
             raise CoverageError("Cobertura package structure is invalid")
         classes = direct_children(package, "classes")
-        if len(classes) != 1 or any(child.tag != "classes" for child in package):
+        if len(classes) != 1 or any(child.tag != "classes" for child in package) or set(classes[0].attrib):
             raise CoverageError("Cobertura classes structure is required")
         for class_element in classes[0]:
             if class_element.tag != "class":
                 raise CoverageError("Cobertura class structure is invalid")
+            if set(class_element.attrib) != {
+                "name",
+                "filename",
+                "line-rate",
+                "branch-rate",
+                "complexity",
+            }:
+                raise CoverageError("Cobertura structure is invalid")
             class_lines = direct_children(class_element, "lines")
-            if len(class_lines) != 1 or any(child.tag not in {"methods", "lines"} for child in class_element):
+            methods = direct_children(class_element, "methods")
+            if (
+                len(class_lines) != 1
+                or len(methods) != 1
+                or [child.tag for child in class_element] != ["methods", "lines"]
+                or set(class_lines[0].attrib)
+            ):
                 raise CoverageError("Cobertura class lines structure is required")
+            validate_cobertura_methods(methods[0])
             filename = normalize_component(class_element.get("filename"), allow_pathmap=True)
             for line in class_lines[0]:
                 if line.tag != "line":
                     raise CoverageError("Cobertura line structure is invalid")
-                number = parse_integer(line.get("number"), positive=True, label="Cobertura line number is invalid")
-                hits = parse_integer(line.get("hits"), positive=False, label="Cobertura line hits are invalid")
+                number, hits = validate_cobertura_line(line)
                 key = line_key(filename, number)
                 if key in lines:
                     raise CoverageError("duplicate executable line after path normalization")
@@ -266,6 +406,39 @@ def total_percentage(report: CoverageReport) -> Decimal:
 
 def display(value: Decimal) -> str:
     return f"{value:.2f}%"
+
+
+def read_changed_lines(path: Path, surface: str) -> set[tuple[str, int]]:
+    text = read_utf8(path, MAX_CHANGED_LINES_BYTES, "changed-lines manifest")
+    if not text.endswith("\n"):
+        raise CoverageError(f"{path}: changed-lines manifest must end with a newline")
+    records = text.splitlines()
+    if not records or records[0] != f"coverage-changed-lines-v1\t{surface}":
+        raise CoverageError(f"{path}: changed-lines manifest header is invalid")
+    result: set[tuple[str, int]] = set()
+    for record in records[1:]:
+        fields = record.split("\t")
+        if len(fields) != 2:
+            raise CoverageError(f"{path}: changed-lines record is malformed")
+        repository_path = normalize_component(fields[0])
+        if surface == "jvm":
+            prefixes = ("src/main/kotlin/", "rider-frontend/src/main/kotlin/")
+            prefix = next((candidate for candidate in prefixes if repository_path.startswith(candidate)), None)
+            if prefix is None or not repository_path.endswith(".kt"):
+                raise CoverageError(f"{path}: changed path is outside the {surface} coverage surface")
+            normalized = repository_path[len(prefix) :]
+        else:
+            if not repository_path.startswith("src/dotnet/") or not repository_path.endswith(".cs"):
+                raise CoverageError(f"{path}: changed path is outside the {surface} coverage surface")
+            normalized = repository_path
+        number = parse_integer(fields[1], positive=True, label=f"{path}: changed line number is invalid")
+        key = line_key(normalized, number)
+        if key in result:
+            raise CoverageError(f"{path}: duplicate changed line after path normalization")
+        result.add(key)
+        if len(result) > MAX_LINE_RECORDS:
+            raise CoverageError(f"changed-lines manifest exceeds {MAX_LINE_RECORDS} records")
+    return result
 
 
 def unique_object(pairs: list[tuple[str, object]]) -> dict[str, object]:
@@ -368,7 +541,13 @@ def establish(surface: str, report_path: Path, baseline_path: Path) -> None:
     print(f"established {surface} total line coverage baseline: {display(total)}")
 
 
-def check(surface: str, current_path: Path, reference_path: Path, baseline_path: Path) -> None:
+def check(
+    surface: str,
+    current_path: Path,
+    reference_path: Path,
+    baseline_path: Path,
+    changed_lines_path: Path,
+) -> None:
     baseline = load_baseline(baseline_path)
     configured = baseline_value(baseline, surface)
     reader = read_kover if surface == "jvm" else read_cobertura
@@ -384,12 +563,13 @@ def check(surface: str, current_path: Path, reference_path: Path, baseline_path:
         raise CoverageError(
             f"total line coverage regressed: {display(current_total)} < {display(configured)}"
         )
-    new_lines = {key: covered for key, covered in current.lines.items() if key not in reference.lines}
+    changed = read_changed_lines(changed_lines_path, surface)
+    new_lines = {key: current.lines[key] for key in changed if key in current.lines}
     if not new_lines:
         print(
             f"{surface} total line coverage: {display(current_total)} "
             f"(baseline {display(configured)}); new-code line coverage: not applicable "
-            "(no new executable lines)"
+            "(no changed executable lines)"
         )
         return
     new_total = percentage(new_lines)
@@ -411,6 +591,11 @@ def parse_arguments() -> argparse.Namespace:
     mode = parser.add_mutually_exclusive_group(required=True)
     mode.add_argument("--establish-baseline", action="store_true")
     mode.add_argument("--baseline-report", type=Path)
+    parser.add_argument(
+        "--changed-lines-file",
+        type=Path,
+        help="trusted SCM-derived changed-line manifest for the selected surface",
+    )
     return parser.parse_args()
 
 
@@ -418,9 +603,19 @@ def main() -> int:
     arguments = parse_arguments()
     try:
         if arguments.establish_baseline:
+            if arguments.changed_lines_file is not None:
+                raise CoverageError("changed lines are only valid when checking coverage")
             establish(arguments.surface, arguments.current_report, arguments.baseline_file)
         else:
-            check(arguments.surface, arguments.current_report, arguments.baseline_report, arguments.baseline_file)
+            if arguments.changed_lines_file is None:
+                raise CoverageError("coverage checking requires --changed-lines-file")
+            check(
+                arguments.surface,
+                arguments.current_report,
+                arguments.baseline_report,
+                arguments.baseline_file,
+                arguments.changed_lines_file,
+            )
     except CoverageError as error:
         print(f"coverage check failed: {error}", file=sys.stderr)
         return 1
