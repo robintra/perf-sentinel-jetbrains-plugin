@@ -9,3 +9,5 @@
 build/
 *.iml
 verification-*/
+*.manifest.json
+__pycache__/
