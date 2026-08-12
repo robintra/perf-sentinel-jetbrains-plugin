@@ -1,0 +1,136 @@
+{
+  "$schema": "https://docs.renovatebot.com/renovate-schema.json",
+  "enabledManagers": ["gradle", "gradle-wrapper", "nuget", "custom.regex"],
+  "dependencyDashboard": true,
+  "ignoreUnstable": true,
+  "osvVulnerabilityAlerts": false,
+  "respectLatest": true,
+  "vulnerabilityAlerts": {"enabled": false},
+  "rangeStrategy": "bump",
+  "prConcurrentLimit": 5,
+  "labels": ["dependencies"],
+  "schedule": ["after 6:00am and before 7:00am on monday"],
+  "timezone": "Europe/Paris",
+  "lockFileMaintenance": {
+    "enabled": true,
+    "schedule": ["after 6:00am and before 7:00am on monday"]
+  },
+  "packageRules": [
+    {
+      "description": "Disable inherited auto-merge for every dependency",
+      "matchPackageNames": ["*"],
+      "automerge": false
+    },
+    {
+      "description": "Group ordinary non-major Gradle and NuGet updates",
+      "matchManagers": ["gradle", "gradle-wrapper", "nuget", "custom.regex"],
+      "matchUpdateTypes": ["minor", "patch"],
+      "groupName": "ordinary-build-dependencies"
+    },
+    {
+      "description": "Use stable Maven releases rather than repository publication order",
+      "matchDatasources": ["maven"],
+      "respectLatest": true
+    },
+    {
+      "description": "Keep JetBrains 2025.3 targets on their compatibility wave",
+      "matchPackageNames": ["GO", "IIU", "JetBrains.Rider.SDK", "PCP", "PS", "RD", "RM", "RR", "WS"],
+      "matchCurrentValue": "/^2025\\.3\\./",
+      "allowedVersions": "/^2025\\.3\\./"
+    },
+    {
+      "description": "Keep JetBrains 2026.2 targets on their compatibility wave",
+      "matchPackageNames": ["GO", "IIU", "PCP", "PS", "RD", "RM", "RR", "WS"],
+      "matchCurrentValue": "/^2026\\.2\\./",
+      "allowedVersions": "/^2026\\.2\\./"
+    },
+    {
+      "description": "Keep Coverlet compatible with the Rider net472 test host",
+      "matchPackageNames": ["coverlet.collector"],
+      "allowedVersions": "<7.0.0"
+    }
+  ],
+  "customDatasources": {
+    "jetbrains-products": {
+      "defaultRegistryUrlTemplate": "https://data.services.jetbrains.com/products/releases?code={{{packageName}}}&type=release",
+      "format": "json",
+      "transformTemplates": [
+        "{\"releases\": $reduce($each($, function($items) { $items }), $append, []).{\"version\": version, \"releaseTimestamp\": date}}"
+      ]
+    }
+  },
+  "customManagers": [
+    {
+      "customType": "regex",
+      "managerFilePatterns": ["/^build\\.gradle\\.kts$/"],
+      "matchStrings": ["intellijIdea\\(\\s*\"(?<currentValue>[0-9.]+)\"\\s*\\)", "create\\(\\s*IntelliJPlatformType\\.IntellijIdea\\s*,\\s*\"(?<currentValue>[0-9.]+)\"\\s*\\)"],
+      "depNameTemplate": "IIU",
+      "datasourceTemplate": "custom.jetbrains-products",
+      "versioningTemplate": "loose"
+    },
+    {
+      "customType": "regex",
+      "managerFilePatterns": ["/^build\\.gradle\\.kts$/", "/^rider-frontend/build\\.gradle\\.kts$/"],
+      "matchStrings": ["type\\s*=\\s*IntelliJPlatformType\\.Rider[\\s\\S]{0,120}?version\\s*=\\s*\"(?<currentValue>[0-9.]+)\"", "create\\(\\s*IntelliJPlatformType\\.Rider\\s*,\\s*\"(?<currentValue>[0-9.]+)\"", "rider\\(\\s*\"(?<currentValue>[0-9.]+)\"\\s*\\)"],
+      "depNameTemplate": "RD",
+      "datasourceTemplate": "custom.jetbrains-products",
+      "versioningTemplate": "loose"
+    },
+    {
+      "customType": "regex",
+      "managerFilePatterns": ["/^build\\.gradle\\.kts$/"],
+      "matchStrings": ["type\\s*=\\s*IntelliJPlatformType\\.PyCharmProfessional[\\s\\S]{0,120}?version\\s*=\\s*\"(?<currentValue>[0-9.]+)\"", "create\\(\\s*IntelliJPlatformType\\.PyCharm(?:Professional)?\\s*,\\s*\"(?<currentValue>[0-9.]+)\"\\s*\\)"],
+      "depNameTemplate": "PCP",
+      "datasourceTemplate": "custom.jetbrains-products",
+      "versioningTemplate": "loose"
+    },
+    {
+      "customType": "regex",
+      "managerFilePatterns": ["/^build\\.gradle\\.kts$/"],
+      "matchStrings": ["type\\s*=\\s*IntelliJPlatformType\\.PhpStorm[\\s\\S]{0,120}?version\\s*=\\s*\"(?<currentValue>[0-9.]+)\"", "create\\(\\s*IntelliJPlatformType\\.PhpStorm\\s*,\\s*\"(?<currentValue>[0-9.]+)\"\\s*\\)"],
+      "depNameTemplate": "PS",
+      "datasourceTemplate": "custom.jetbrains-products",
+      "versioningTemplate": "loose"
+    },
+    {
+      "customType": "regex",
+      "managerFilePatterns": ["/^build\\.gradle\\.kts$/"],
+      "matchStrings": ["type\\s*=\\s*IntelliJPlatformType\\.RustRover[\\s\\S]{0,120}?version\\s*=\\s*\"(?<currentValue>[0-9.]+)\"", "create\\(\\s*IntelliJPlatformType\\.RustRover\\s*,\\s*\"(?<currentValue>[0-9.]+)\"\\s*\\)"],
+      "depNameTemplate": "RR",
+      "datasourceTemplate": "custom.jetbrains-products",
+      "versioningTemplate": "loose"
+    },
+    {
+      "customType": "regex",
+      "managerFilePatterns": ["/^build\\.gradle\\.kts$/"],
+      "matchStrings": ["type\\s*=\\s*IntelliJPlatformType\\.RubyMine[\\s\\S]{0,120}?version\\s*=\\s*\"(?<currentValue>[0-9.]+)\"", "create\\(\\s*IntelliJPlatformType\\.RubyMine\\s*,\\s*\"(?<currentValue>[0-9.]+)\"\\s*\\)"],
+      "depNameTemplate": "RM",
+      "datasourceTemplate": "custom.jetbrains-products",
+      "versioningTemplate": "loose"
+    },
+    {
+      "customType": "regex",
+      "managerFilePatterns": ["/^build\\.gradle\\.kts$/"],
+      "matchStrings": ["type\\s*=\\s*IntelliJPlatformType\\.WebStorm[\\s\\S]{0,120}?version\\s*=\\s*\"(?<currentValue>[0-9.]+)\"", "create\\(\\s*IntelliJPlatformType\\.WebStorm\\s*,\\s*\"(?<currentValue>[0-9.]+)\"\\s*\\)"],
+      "depNameTemplate": "WS",
+      "datasourceTemplate": "custom.jetbrains-products",
+      "versioningTemplate": "loose"
+    },
+    {
+      "customType": "regex",
+      "managerFilePatterns": ["/^build\\.gradle\\.kts$/"],
+      "matchStrings": ["type\\s*=\\s*IntelliJPlatformType\\.GoLand[\\s\\S]{0,120}?version\\s*=\\s*\"(?<currentValue>[0-9.]+)\"", "create\\(\\s*IntelliJPlatformType\\.GoLand\\s*,\\s*\"(?<currentValue>[0-9.]+)\"\\s*\\)"],
+      "depNameTemplate": "GO",
+      "datasourceTemplate": "custom.jetbrains-products",
+      "versioningTemplate": "loose"
+    },
+    {
+      "customType": "regex",
+      "managerFilePatterns": ["/^src/dotnet/Plugin\\.props$/"],
+      "matchStrings": ["<SdkVersion>(?<currentValue>[0-9.]+)</SdkVersion>"],
+      "depNameTemplate": "JetBrains.Rider.SDK",
+      "datasourceTemplate": "nuget",
+      "versioningTemplate": "nuget"
+    }
+  ]
+}
