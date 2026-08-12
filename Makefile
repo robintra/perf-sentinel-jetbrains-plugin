@@ -18,7 +18,7 @@ endif
 
 GRADLE_FLAGS := --no-daemon --dependency-verification strict
 LANGUAGE_TESTS := testPyCharm253 testPhpStorm253 testRustRover253 testRustRover262 testRubyMine253 testWebStorm253 testGoLand253
-PLUGIN_VERSION ?= 0.1.0-SNAPSHOT
+PLUGIN_VERSION ?= 0.1.0
 PLUGIN_ZIP ?= $(ROOT)/build/distributions/perf-sentinel-$(PLUGIN_VERSION).zip
 RIDER_PROJECT := src/dotnet/PerfSentinel.Rider.Tests/PerfSentinel.Rider.Tests.csproj
 NUGET_CONFIG := src/dotnet/NuGet.Config
@@ -67,5 +67,6 @@ security: check-disk
 release-check:
 	@release_version='$(RAW_VERSION)' && \
 	RELEASE_VERSION="$$release_version" $(PYTHON) -c 'import os,re,sys; value=os.environ.get("RELEASE_VERSION", ""); sys.exit(0) if re.fullmatch(r"(?:0|[1-9][0-9]*)\.(?:0|[1-9][0-9]*)\.(?:0|[1-9][0-9]*)", value) else sys.exit("VERSION must be an exact stable semantic version")' && \
+	$(PYTHON) scripts/check-version.py "v$$release_version" && \
 	$(MAKE) --no-print-directory verify PLUGIN_VERSION="$$release_version" PLUGIN_ZIP="$(ROOT)/build/distributions/perf-sentinel-$$release_version.zip" GRADLE_FLAGS="$(GRADLE_FLAGS) -Pversion=$$release_version" && \
 	$(MAKE) --no-print-directory security

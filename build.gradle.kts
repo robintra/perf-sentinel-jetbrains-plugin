@@ -3,6 +3,7 @@ import org.jetbrains.intellij.platform.gradle.IntelliJPlatformType
 import org.jetbrains.intellij.platform.gradle.extensions.IntelliJPlatformExtension
 import org.jetbrains.intellij.platform.gradle.tasks.BuildPluginTask
 import org.jetbrains.intellij.platform.gradle.tasks.PrepareSandboxTask
+import org.jetbrains.intellij.platform.gradle.tasks.PublishPluginTask
 import org.gradle.api.tasks.bundling.AbstractArchiveTask
 import org.jetbrains.kotlin.gradle.dsl.JvmTarget
 import org.jetbrains.kotlin.gradle.dsl.JvmDefaultMode
@@ -266,6 +267,10 @@ tasks.withType<PrepareSandboxTask>().configureEach {
 
 tasks.named<BuildPluginTask>("buildPlugin") {
     archiveBaseName.set("perf-sentinel")
+}
+
+tasks.named<PublishPluginTask>("publishPlugin") {
+    channels.set(providers.gradleProperty("marketplaceChannel").map { listOf(it) })
 }
 
 kotlin {
