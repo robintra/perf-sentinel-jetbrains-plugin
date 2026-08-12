@@ -237,6 +237,9 @@ jobs:
           persist-credentials: false
       - uses: actions/setup-java@b6effb05e454b25005698d916606bdc6ffcbf961
         with: {distribution: temurin, java-version: "21"}
+      - uses: actions/setup-dotnet@a98b56852c35b8e3190ac28c8c2271da59106c68
+        with:
+          dotnet-version: 10.0.302
       - uses: gradle/actions/setup-gradle@9c971963bec38e04b3d30dcc455b5382be2fdbfb
         with:
           cache-disabled: true
@@ -254,6 +257,9 @@ jobs:
           persist-credentials: false
       - uses: actions/setup-java@b6effb05e454b25005698d916606bdc6ffcbf961
         with: {distribution: temurin, java-version: "21"}
+      - uses: actions/setup-dotnet@a98b56852c35b8e3190ac28c8c2271da59106c68
+        with:
+          dotnet-version: 10.0.302
       - uses: gradle/actions/setup-gradle@9c971963bec38e04b3d30dcc455b5382be2fdbfb
         with:
           cache-read-only: ${{ github.event_name == 'pull_request' }}
@@ -364,10 +370,119 @@ jobs:
           sarif_file: build/qodana-jvm/results/qodana.sarif.json
           category: qodana-jvm
 
+  windows-rider-build:
+    name: Windows Rider build (${{ matrix.build }})
+    needs: changes
+    if: needs.changes.outputs.scope != 'docs'
+    runs-on: windows-2025
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - build: a
+          - build: b
+    env:
+      GRADLE_USER_HOME: ${{ github.workspace }}\.gradle-home-${{ matrix.build }}
+      DOTNET_CLI_TELEMETRY_OPTOUT: "1"
+      DOTNET_NOLOGO: "1"
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
+        with:
+          ref: ${{ needs.changes.outputs.target-sha }}
+          persist-credentials: false
+      - uses: actions/setup-java@b6effb05e454b25005698d916606bdc6ffcbf961
+        with: {distribution: temurin, java-version: "21"}
+      - uses: actions/setup-dotnet@a98b56852c35b8e3190ac28c8c2271da59106c68
+        with:
+          dotnet-version: 10.0.302
+          cache: true
+          cache-dependency-path: src/dotnet/**/packages.lock.json
+      - uses: gradle/actions/setup-gradle@9c971963bec38e04b3d30dcc455b5382be2fdbfb
+        with:
+          cache-disabled: true
+      - name: Verify the .NET SDK
+        shell: pwsh
+        run: |
+          if ((dotnet --version) -ne "10.0.302") { throw "expected .NET SDK 10.0.302" }
+      - name: Build the unsigned plugin and Rider frontend
+        shell: pwsh
+        run: >-
+          .\gradlew.bat --no-daemon --no-build-cache --dependency-verification strict
+          clean :rider-frontend:test buildPlugin -PriderConfiguration=Release
+      - name: Restore locked Rider tests
+        shell: pwsh
+        run: >-
+          dotnet restore src/dotnet/PerfSentinel.Rider.Tests/PerfSentinel.Rider.Tests.csproj
+          --locked-mode --configfile src/dotnet/NuGet.Config
+      - name: Run Rider backend tests with coverage
+        shell: pwsh
+        run: >-
+          dotnet test src/dotnet/PerfSentinel.Rider.Tests/PerfSentinel.Rider.Tests.csproj
+          --configuration Release --no-restore
+          --settings src/dotnet/coverage.runsettings
+          --results-directory build/dotnet/TestResults
+          --collect:"XPlat Code Coverage" --logger "trx;LogFileName=tests.trx"
+      - name: Require the semantic navigation fixture
+        shell: pwsh
+        run: |
+          [xml]$trx = Get-Content -Raw build/dotnet/TestResults/tests.trx
+          $results = @($trx.SelectNodes("//*[local-name()='UnitTestResult' and contains(@testName,'CSharpSymbolResolverTests')]"))
+          if ($results.Count -eq 0 -or @($results | Where-Object outcome -ne "Passed").Count -ne 0) {
+            throw "CSharpSymbolResolverTests did not run successfully"
+          }
+      - name: Inspect archive and coverage input
+        shell: pwsh
+        run: |
+          $archives = @(Get-ChildItem build/distributions/perf-sentinel-*.zip)
+          if ($archives.Count -ne 1) { throw "expected exactly one plugin archive" }
+          $coverage = @(Get-ChildItem build/dotnet/TestResults -Recurse -Filter coverage.cobertura.xml)
+          if ($coverage.Count -ne 1) { throw "expected exactly one Cobertura report" }
+          $evidence = "build/windows-${{ matrix.build }}"
+          New-Item -ItemType Directory -Path $evidence | Out-Null
+          Copy-Item $archives[0].FullName "$evidence/perf-sentinel.zip"
+          Copy-Item $coverage[0].FullName "$evidence/rider-coverage.xml"
+          Copy-Item config/coverage-baseline.json "$evidence/rider-baseline.json"
+          python scripts/inspect-plugin-zip.py "$evidence/perf-sentinel.zip" --manifest "$evidence/plugin.manifest.json"
+          python scripts/check-coverage.py --surface rider --current-report "$evidence/rider-coverage.xml" --establish-baseline --baseline-file "$evidence/rider-baseline.json"
+      - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a
+        with:
+          name: windows-rider-${{ matrix.build }}
+          if-no-files-found: error
+          retention-days: 1
+          path: build/windows-${{ matrix.build }}/
+
+  windows-rider:
+    name: Windows Rider
+    needs: [changes, windows-rider-build]
+    if: always() && needs.changes.outputs.scope != 'docs'
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
+        with:
+          ref: ${{ needs.changes.outputs.target-sha }}
+          persist-credentials: false
+      - uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c
+        with:
+          name: windows-rider-a
+          path: build/windows/a
+      - uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c
+        with:
+          name: windows-rider-b
+          path: build/windows/b
+      - name: Compare unsigned builds and coverage
+        run: |
+          python3 scripts/compare-plugin-builds.py \
+            --archive-a build/windows/a/perf-sentinel.zip \
+            --manifest-a build/windows/a/plugin.manifest.json \
+            --archive-b build/windows/b/perf-sentinel.zip \
+            --manifest-b build/windows/b/plugin.manifest.json
+          cmp build/windows/a/rider-baseline.json build/windows/b/rider-baseline.json
+          cmp config/coverage-baseline.json build/windows/a/rider-baseline.json
+
   gate:
     name: Gate
     if: always()
-    needs: [changes, jvm, python, php, rust, ruby, javascript, go, rider-frontend, plugin-verifier, zip, dependency-review, workflow-security, sonar-jvm, qodana-jvm]
+    needs: [changes, jvm, python, php, rust, ruby, javascript, go, rider-frontend, plugin-verifier, zip, dependency-review, workflow-security, sonar-jvm, qodana-jvm, windows-rider]
     runs-on: ubuntu-24.04
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
@@ -391,10 +506,11 @@ jobs:
           WORKFLOW_SECURITY: ${{ needs.workflow-security.result }}
           SONAR_JVM: ${{ needs.sonar-jvm.result }}
           QODANA_JVM: ${{ needs.qodana-jvm.result }}
+          RIDER_WINDOWS: ${{ needs.windows-rider.result }}
         run: |
           python3 - <<'PY'
           import json, os
-          names = ["jvm", "python", "php", "rust", "ruby", "javascript", "go", "rider_frontend", "plugin_verifier", "zip", "dependency_review", "workflow_security", "sonar_jvm", "qodana_jvm"]
+          names = ["jvm", "python", "php", "rust", "ruby", "javascript", "go", "rider_frontend", "plugin_verifier", "zip", "dependency_review", "workflow_security", "sonar_jvm", "qodana_jvm", "rider_windows"]
           payload = {"schema_version": 1, "change_scope": os.environ["SCOPE"], "results": {name: os.environ[name.upper()] for name in names}}
           with open("ci-results.json", "w", encoding="utf-8") as stream:
               json.dump(payload, stream, sort_keys=True)

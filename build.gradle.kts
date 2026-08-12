@@ -98,6 +98,10 @@ val runRider262 = intellijPlatformTesting.runIde.register("runRider262") {
 }
 
 val dotnetExecutable = "dotnet"
+val riderConfiguration = providers.gradleProperty("riderConfiguration").orElse("Debug")
+require(riderConfiguration.get() in setOf("Debug", "Release")) {
+    "unknown riderConfiguration: ${riderConfiguration.get()}"
+}
 
 val compileRiderBackend = tasks.register<Exec>("compileRiderBackend") {
     description = "Builds the Rider ReSharper backend."
@@ -107,7 +111,7 @@ val compileRiderBackend = tasks.register<Exec>("compileRiderBackend") {
         "build",
         "src/dotnet/PerfSentinel.Rider/PerfSentinel.Rider.csproj",
         "--configuration",
-        "Debug",
+        riderConfiguration.get(),
     )
 }
 
@@ -121,7 +125,7 @@ val testRiderBackend = tasks.register<Exec>("testRiderBackend") {
         "test",
         "src/dotnet/PerfSentinel.Rider.Tests/PerfSentinel.Rider.Tests.csproj",
         "--configuration",
-        "Debug",
+        riderConfiguration.get(),
     )
 }
 
@@ -254,7 +258,7 @@ tasks.withType<PrepareSandboxTask>().configureEach {
     from(project(":rider-frontend").layout.buildDirectory.file("libs/perf-sentinel-rider-frontend.jar")) {
         into("${rootProject.name}/lib")
     }
-    from(layout.buildDirectory.dir("dotnet/bin/PerfSentinel.Rider/Debug")) {
+    from(layout.buildDirectory.dir("dotnet/bin/PerfSentinel.Rider/${riderConfiguration.get()}")) {
         include("PerfSentinel.Rider.dll", "PerfSentinel.Rider.pdb")
         into("${rootProject.name}/dotnet")
     }
