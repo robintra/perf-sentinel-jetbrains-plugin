@@ -1,0 +1,208 @@
+name: Security Audit
+
+on:
+  schedule:
+    - cron: '17 5 * * *'
+  push:
+    branches: [main]
+
+permissions: {}
+
+concurrency:
+  group: security-audit-${{ github.ref }}
+  cancel-in-progress: false
+
+jobs:
+  osv:
+    name: OSV dependency audit
+    uses: google/osv-scanner-action/.github/workflows/osv-scanner-reusable.yml@8deb546fdb875b9996d27d4950be7312dac076a1
+    permissions:
+      actions: read
+      contents: read
+      security-events: write
+    with:
+      scan-args: |-
+        --recursive
+        ./
+      results-file-name: osv.sarif
+      fail-on-vuln: true
+
+  dependencies:
+    name: Dependencies and workflows
+    runs-on: ubuntu-24.04
+    timeout-minutes: 30
+    permissions:
+      contents: read
+      security-events: write
+    steps:
+      - uses: step-security/harden-runner@b09bb98e06d4d774595224525879c09bc6e98c40
+        with: {egress-policy: audit}
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
+        with:
+          fetch-depth: 0
+          persist-credentials: false
+      - uses: actions/setup-java@b6effb05e454b25005698d916606bdc6ffcbf961
+        with: {distribution: temurin, java-version: "21"}
+      - uses: actions/setup-dotnet@a98b56852c35b8e3190ac28c8c2271da59106c68
+        with: {dotnet-version: 10.0.302}
+      - uses: gradle/actions/setup-gradle@9c971963bec38e04b3d30dcc455b5382be2fdbfb
+        with: {cache-read-only: true}
+      - name: Validate immutable inputs and Gradle dependencies
+        run: |
+          mkdir -p build/security
+          python3 scripts/check-supply-chain.py
+          ./gradlew --no-daemon --dependency-verification strict dependencies :protocol:dependencies :rider-frontend:dependencies --configuration runtimeClasspath
+      - name: Audit locked NuGet dependencies
+        run: |
+          dotnet restore src/dotnet/PerfSentinel.Rider/PerfSentinel.Rider.csproj --locked-mode --configfile src/dotnet/NuGet.Config -p:NuGetAudit=true -p:NuGetAuditMode=all -p:TreatWarningsAsErrors=true
+          dotnet restore src/dotnet/PerfSentinel.Rider.Tests/PerfSentinel.Rider.Tests.csproj --locked-mode --configfile src/dotnet/NuGet.Config -p:NuGetAudit=true -p:NuGetAuditMode=all -p:TreatWarningsAsErrors=true
+      - uses: gitleaks/gitleaks-action@e0c47f4f8be36e29cdc102c57e68cb5cbf0e8d1e
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
+      - uses: zizmorcore/zizmor-action@3dc1ecc9bcb9e94e9b2c709687979e1298497054
+        with:
+          version: 1.29.0
+          collect: workflows
+          online-audits: false
+          advanced-security: false
+          annotations: true
+      - uses: anchore/sbom-action@e22c389904149dbc22b58101806040fa8d37a610
+        with:
+          path: .
+          format: spdx-json
+          output-file: build/security/source.spdx.json
+          artifact-name: plugin-source-sbom.spdx.json
+          syft-version: 1.51.0
+          dependency-snapshot: false
+          upload-artifact: false
+          upload-release-assets: false
+      - name: Enforce the SPDX license and package-source policy
+        uses: google/osv-scanner-action/osv-scanner-action@8deb546fdb875b9996d27d4950be7312dac076a1
+        with:
+          scan-args: |-
+            --licenses="Apache-2.0,Apache-2.0 WITH LLVM-exception,BSD-2-Clause,BSD-3-Clause,CDDL-1.1,EPL-1.0,EPL-2.0,ISC,MIT,MPL-2.0,Unicode-3.0,Zlib"
+            build/security/source.spdx.json
+
+  scorecard:
+    name: OpenSSF Scorecard
+    runs-on: ubuntu-24.04
+    timeout-minutes: 20
+    permissions:
+      contents: read
+      id-token: write
+      security-events: write
+    steps:
+      - uses: step-security/harden-runner@b09bb98e06d4d774595224525879c09bc6e98c40
+        with: {egress-policy: audit}
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
+        with:
+          persist-credentials: false
+      - run: mkdir -p build/security
+      - uses: ossf/scorecard-action@2d1146689b8cda280b9bc96326124645441f03bc
+        with:
+          results_file: build/security/scorecard.sarif
+          results_format: sarif
+          repo_token: ${{ github.token }}
+          publish_results: true
+      - uses: github/codeql-action/upload-sarif@5595ccaf912efad79be6eef63a5619ff05969be3
+        with:
+          sarif_file: build/security/scorecard.sarif
+          category: security-audit/scorecard
+
+  qodana-jvm:
+    name: Qodana JVM
+    runs-on: ubuntu-24.04
+    timeout-minutes: 40
+    permissions:
+      contents: read
+      security-events: write
+    env:
+      QODANA_TOKEN: ${{ secrets.QODANA_TOKEN }}
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
+        with: {persist-credentials: false}
+      - uses: JetBrains/qodana-action@b588768b6e7e6da579e518bc584f79de0d243692
+        with:
+          args: --config qodana.yml
+          results-dir: build/security/qodana-jvm
+          upload-result: false
+          use-caches: false
+          use-annotations: false
+          post-pr-comment: false
+          push-fixes: none
+      - uses: github/codeql-action/upload-sarif@5595ccaf912efad79be6eef63a5619ff05969be3
+        with:
+          sarif_file: build/security/qodana-jvm/qodana.sarif.json
+          category: qodana-jvm
+
+  qodana-rider:
+    name: Qodana Rider
+    runs-on: windows-2025
+    timeout-minutes: 40
+    permissions:
+      contents: read
+      security-events: write
+    env:
+      QODANA_TOKEN: ${{ secrets.QODANA_TOKEN }}
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
+        with: {persist-credentials: false}
+      - uses: actions/setup-dotnet@a98b56852c35b8e3190ac28c8c2271da59106c68
+        with: {dotnet-version: 10.0.302}
+      - uses: actions/setup-java@b6effb05e454b25005698d916606bdc6ffcbf961
+        with: {distribution: temurin, java-version: "21"}
+      - uses: gradle/actions/setup-gradle@9c971963bec38e04b3d30dcc455b5382be2fdbfb
+        with: {cache-read-only: true}
+      - run: .\gradlew.bat --no-daemon --dependency-verification strict :protocol:rdgen
+      - run: dotnet restore src/dotnet/PerfSentinel.Rider.Tests/PerfSentinel.Rider.Tests.csproj --locked-mode --configfile src/dotnet/NuGet.Config
+      - uses: JetBrains/qodana-action@b588768b6e7e6da579e518bc584f79de0d243692
+        with:
+          args: --config qodana-dotnet.yml
+          results-dir: build/security/qodana-rider
+          upload-result: false
+          use-caches: false
+          use-annotations: false
+          post-pr-comment: false
+          push-fixes: none
+      - uses: github/codeql-action/upload-sarif@5595ccaf912efad79be6eef63a5619ff05969be3
+        with:
+          sarif_file: build/security/qodana-rider/qodana.sarif.json
+          category: qodana-rider
+
+  notify:
+    name: Reconcile scheduled audit alert
+    needs: [osv, dependencies, scorecard, qodana-jvm, qodana-rider]
+    if: ${{ always() && github.event_name == 'schedule' }}
+    runs-on: ubuntu-24.04
+    timeout-minutes: 5
+    permissions:
+      contents: read
+      issues: write
+    steps:
+      - uses: actions/github-script@3a2844b7e9c422d3c10d287c895573f7108da1b3
+        env:
+          NEEDS_JSON: ${{ toJSON(needs) }}
+        with:
+          github-token: ${{ github.token }}
+          script: |
+            const needs = JSON.parse(process.env.NEEDS_JSON);
+            const expected = ['dependencies', 'osv', 'qodana-jvm', 'qodana-rider', 'scorecard'];
+            if (Object.keys(needs).sort().join(',') !== expected.join(',')) throw new Error('audit results are incomplete');
+            const failed = expected.filter(name => needs[name].result !== 'success');
+            const title = '[Security Audit] scheduled failure';
+            const all = await github.paginate(github.rest.issues.listForRepo, {...context.repo, state: 'all', labels: 'security-audit', per_page: 100});
+            const matches = all.filter(issue => !issue.pull_request && issue.title === title).sort((a, b) => a.number - b.number);
+            if (!failed.length) {
+              for (const issue of matches.filter(issue => issue.state === 'open')) await github.rest.issues.update({...context.repo, issue_number: issue.number, state: 'closed', state_reason: 'completed'});
+              return;
+            }
+            try {
+              await github.rest.issues.getLabel({...context.repo, name: 'security-audit'});
+            } catch (error) {
+              if (error.status !== 404) throw error;
+              await github.rest.issues.createLabel({...context.repo, name: 'security-audit', color: 'b60205', description: 'Automated security audit alert'});
+            }
+            const body = `Daily audit failed or was incomplete.\n\nJobs: ${failed.join(', ')}\nRun: ${context.serverUrl}/${context.repo.owner}/${context.repo.repo}/actions/runs/${context.runId}`;
+            if (!matches.length) await github.rest.issues.create({...context.repo, title, body, labels: ['security-audit']});
+            else await github.rest.issues.update({...context.repo, issue_number: matches[0].number, body, labels: ['security-audit'], state: 'open'});
+            for (const duplicate of matches.slice(1).filter(issue => issue.state === 'open')) await github.rest.issues.update({...context.repo, issue_number: duplicate.number, state: 'closed', state_reason: 'not_planned'});

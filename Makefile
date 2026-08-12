@@ -54,7 +54,10 @@ endif
 	@$(MAKE) --no-print-directory check-locks
 
 security: check-disk
-	@cd "$(ROOT)" && $(OSV_SCANNER) scan source --recursive .
+	@cd "$(ROOT)" && $(OSV_SCANNER) scan source --recursive --licenses='Apache-2.0,Apache-2.0 WITH LLVM-exception,BSD-2-Clause,BSD-3-Clause,CDDL-1.1,EPL-1.0,EPL-2.0,ISC,MIT,MPL-2.0,Unicode-3.0,Zlib' .
+	@cd "$(ROOT)" && $(PYTHON) scripts/check-supply-chain.py
+	@cd "$(ROOT)" && $(PYTHON) scripts/check-analysis-config.py
+	@cd "$(ROOT)" && $(GRADLE) $(GRADLE_FLAGS) dependencies :protocol:dependencies :rider-frontend:dependencies --configuration runtimeClasspath
 	@cd "$(ROOT)" && $(DOTNET) restore src/dotnet/PerfSentinel.Rider/PerfSentinel.Rider.csproj --locked-mode --configfile "$(NUGET_CONFIG)" -p:NuGetAudit=true -p:NuGetAuditMode=all -p:TreatWarningsAsErrors=true
 	@cd "$(ROOT)" && $(DOTNET) restore "$(RIDER_PROJECT)" --locked-mode --configfile "$(NUGET_CONFIG)" -p:NuGetAudit=true -p:NuGetAuditMode=all -p:TreatWarningsAsErrors=true
 	@cd "$(ROOT)" && $(GITLEAKS) git --redact --no-banner --exit-code=1

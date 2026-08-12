@@ -41,7 +41,7 @@ class SupplyChainCheckerTest(unittest.TestCase):
         }
         required_actions = (
             "actions/checkout", "actions/setup-java", "actions/setup-dotnet", "actions/setup-python",
-            "actions/upload-artifact", "actions/download-artifact", "actions/attest-build-provenance",
+            "actions/upload-artifact", "actions/github-script", "actions/download-artifact", "actions/attest-build-provenance",
             "actions/attest", "actions/dependency-review-action", "github/codeql-action",
             "JetBrains/qodana-action", "SonarSource/sonarqube-scan-action", "anchore/sbom-action",
             "ossf/scorecard-action", "step-security/harden-runner", "google/osv-scanner-action",

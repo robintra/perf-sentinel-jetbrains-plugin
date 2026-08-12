@@ -90,7 +90,7 @@ class VerificationCommandTests(unittest.TestCase):
         result = self.dry_run("security")
         self.assertEqual(0, result.returncode, result.stderr)
         for expected in (
-            "osv-scanner scan source --recursive .",
+            "osv-scanner scan source --recursive --licenses='Apache-2.0,Apache-2.0 WITH LLVM-exception,BSD-2-Clause,BSD-3-Clause,CDDL-1.1,EPL-1.0,EPL-2.0,ISC,MIT,MPL-2.0,Unicode-3.0,Zlib' .",
             "dotnet restore",
             "NuGetAuditMode=all",
             "TreatWarningsAsErrors=true",
@@ -98,6 +98,8 @@ class VerificationCommandTests(unittest.TestCase):
             "actionlint",
             "zizmor --offline --strict-collection --collect=workflows",
             "check-supply-chain.py --online",
+            "--configuration runtimeClasspath",
+            "check-analysis-config.py",
         ):
             self.assertIn(expected, result.stdout)
 
