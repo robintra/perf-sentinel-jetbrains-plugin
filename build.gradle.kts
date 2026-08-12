@@ -10,6 +10,7 @@ import org.jetbrains.kotlin.gradle.dsl.JvmDefaultMode
 plugins {
     id("idea")
     id("org.jetbrains.kotlin.jvm")
+    alias(libs.plugins.kover)
     id("org.jetbrains.changelog")
     id("org.jetbrains.qodana")
     id("org.jetbrains.intellij.platform")
@@ -35,6 +36,7 @@ dependencies {
     compileOnly(libs.gson)
     testImplementation(platform(libs.jackson.bom))
     testImplementation(libs.junit)
+    kover(project(":rider-frontend"))
 
     // IntelliJ Platform Gradle Plugin Dependencies Extension - read more: https://plugins.jetbrains.com/docs/intellij/tools-intellij-platform-gradle-plugin-dependencies-extension.html
     intellijPlatform {
@@ -44,6 +46,16 @@ dependencies {
         bundledPlugin("com.intellij.java")
         bundledPlugin("org.jetbrains.kotlin")
 
+    }
+}
+
+kover {
+    reports {
+        filters {
+            excludes {
+                classes("io.github.robintra.perfsentinel.rider.model.*")
+            }
+        }
     }
 }
 

@@ -144,6 +144,26 @@ class SupplyChainCheckerTest(unittest.TestCase):
         self.write_inventory()
         self.assert_rejected("prerelease version")
 
+    def test_rejects_uninventoried_kover_plugin_declaration(self):
+        (self.root / "gradle" / "libs.versions.toml").write_text(
+            '[versions]\nkover="0.9.9"\n[plugins]\nkover={id="org.jetbrains.kotlinx.kover",version.ref="kover"}',
+            encoding="utf-8",
+        )
+        (self.root / "build.gradle.kts").write_text(
+            'plugins { alias(libs.plugins.kover) }\n'
+            'allprojects { dependencyLocking { lockAllConfigurations() } }\n'
+            'implementation("example:library:1.2.3")', encoding="utf-8"
+        )
+        self.assert_rejected("Kover declaration missing from inventory")
+
+    def test_rejects_uninventoried_coverlet_collector_declaration(self):
+        (self.root / "src" / "dotnet" / "PerfSentinel.Rider.Tests" / "PerfSentinel.Rider.Tests.csproj").write_text(
+            '<Project><ItemGroup><PackageReference Include="coverlet.collector" Version="10.0.1" />'
+            '</ItemGroup></Project>',
+            encoding="utf-8",
+        )
+        self.assert_rejected("coverlet.collector declaration missing from inventory")
+
     def test_rejects_mutable_ide_version(self):
         (self.root / "build.gradle.kts").write_text(
             "intellijPlatform { pluginVerification { ides { latest() } } }", encoding="utf-8"
