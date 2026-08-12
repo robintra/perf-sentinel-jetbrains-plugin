@@ -41,7 +41,7 @@ REQUIRED_NUGET_LOCKS = (
     "src/dotnet/PerfSentinel.Rider.Tests/packages.lock.json",
 )
 REQUIRED_ACTIONS = set("""
-actions/checkout actions/setup-java actions/setup-dotnet actions/setup-python actions/upload-artifact
+actions/checkout actions/setup-java actions/setup-dotnet actions/setup-python actions/upload-artifact actions/github-script
 actions/download-artifact actions/attest-build-provenance actions/attest actions/dependency-review-action github/codeql-action
 JetBrains/qodana-action SonarSource/sonarqube-scan-action anchore/sbom-action ossf/scorecard-action step-security/harden-runner
 google/osv-scanner-action gitleaks/gitleaks-action zizmorcore/zizmor-action slsa-framework/slsa-github-generator gradle/actions

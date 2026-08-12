@@ -1,0 +1,26 @@
+name: Dependency Submission
+
+on:
+  push:
+    branches: [main]
+  schedule:
+    - cron: '53 5 * * *'
+
+permissions:
+  contents: write
+
+jobs:
+  gradle:
+    name: Gradle dependency graph
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
+        with: {persist-credentials: false}
+      - uses: actions/setup-java@b6effb05e454b25005698d916606bdc6ffcbf961
+        with: {distribution: temurin, java-version: "21"}
+      - uses: gradle/actions/dependency-submission@9c971963bec38e04b3d30dcc455b5382be2fdbfb
+        with:
+          dependency-graph: generate-and-submit
+          dependency-resolution-task: dependencies :protocol:dependencies :rider-frontend:dependencies
+          additional-arguments: --configuration runtimeClasspath --dependency-verification strict
+          validate-wrappers: true
