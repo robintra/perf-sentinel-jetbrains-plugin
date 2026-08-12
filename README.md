@@ -1,5 +1,23 @@
 # Perf Sentinel for JetBrains IDEs
 
+[![CI](https://github.com/robintra/perf-sentinel-jetbrains-plugin/actions/workflows/ci.yml/badge.svg)](https://github.com/robintra/perf-sentinel-jetbrains-plugin/actions/workflows/ci.yml)
+[![Sonar JVM](https://sonarcloud.io/api/project_badges/measure?project=robintrassard_perf-sentinel-jetbrains-plugin-jvm&metric=alert_status)](https://sonarcloud.io/summary/new_code?id=robintrassard_perf-sentinel-jetbrains-plugin-jvm)
+[![Sonar Rider](https://sonarcloud.io/api/project_badges/measure?project=robintrassard_perf-sentinel-jetbrains-plugin-rider&metric=alert_status)](https://sonarcloud.io/summary/new_code?id=robintrassard_perf-sentinel-jetbrains-plugin-rider)
+[![Qodana](https://img.shields.io/badge/Qodana-configured-lightgrey)](https://github.com/robintra/perf-sentinel-jetbrains-plugin/actions/workflows/ci.yml)
+[![CodeQL](https://github.com/robintra/perf-sentinel-jetbrains-plugin/actions/workflows/codeql.yml/badge.svg)](https://github.com/robintra/perf-sentinel-jetbrains-plugin/actions/workflows/codeql.yml)
+[![Daily audit](https://github.com/robintra/perf-sentinel-jetbrains-plugin/actions/workflows/security-audit.yml/badge.svg)](https://github.com/robintra/perf-sentinel-jetbrains-plugin/actions/workflows/security-audit.yml)
+[![OpenSSF Scorecard](https://api.securityscorecards.dev/projects/github.com/robintra/perf-sentinel-jetbrains-plugin/badge)](https://securityscorecards.dev/viewer/?uri=github.com/robintra/perf-sentinel-jetbrains-plugin)
+[![Latest release](https://img.shields.io/github/v/release/robintra/perf-sentinel-jetbrains-plugin?display_name=tag&sort=semver)](https://github.com/robintra/perf-sentinel-jetbrains-plugin/releases/latest)
+[![JetBrains compatibility](https://img.shields.io/badge/JetBrains-2025.3%20%7C%202026.2-087CFA)](https://github.com/robintra/perf-sentinel-jetbrains-plugin/actions/workflows/ci.yml)
+[![Signed ZIP](https://img.shields.io/badge/JetBrains%20ZIP%20signature-configured-lightgrey)](https://github.com/robintra/perf-sentinel-jetbrains-plugin/actions/workflows/release.yml)
+[![License](https://img.shields.io/github/license/robintra/perf-sentinel-jetbrains-plugin)](https://github.com/robintra/perf-sentinel-jetbrains-plugin/blob/main/LICENSE)
+
+The badges link to workflows, analysis projects, release destinations, and
+committed evidence. They become observed public evidence only after public
+activation. Qodana and ZIP signing deliberately say `configured` until then.
+Marketplace version and download badges are omitted until JetBrains assigns the
+real numeric listing ID.
+
 ## Overview
 
 Perf Sentinel displays performance findings from a running `perf-sentinel` daemon directly in JetBrains IDEs. It provides a read-only findings tool window, project-local daemon settings, generic `filepath:lineno` navigation and highlighting, and optional semantic symbol resolution for Java, Kotlin, Python, PHP, Rust, Ruby, JavaScript, TypeScript, Node.js, Go, and C# in Rider.
@@ -25,12 +43,16 @@ Perf Sentinel defines no default keyboard shortcut; open it from the tool window
 
 Product compatibility is verified against the stable 2025.3 and 2026.2 releases of IntelliJ IDEA, Rider, PyCharm, PhpStorm, RustRover, RubyMine, WebStorm, and GoLand. Language integrations are optional. The generated ZIP contains only Perf Sentinel code and loads without unavailable language plugins.
 
-Run the complete local verification:
+The stable local entry points are:
 
 ```text
-./gradlew check buildPlugin verifyPluginStructure verifyPluginProjectConfiguration verifyPlugin
-./gradlew qodanaScan
+make verify-fast
+make security
+make release-check VERSION=0.1.0
 ```
+
+The Rider part of `verify-fast` and the release check requires Windows. CI is
+the authoritative cross-platform execution environment.
 
 For the Rider smoke test, serve the tracked C# finding and launch the Rider development instance:
 
@@ -48,7 +70,13 @@ The installable ZIP is generated in `build/distributions/` by `buildPlugin`.
 Stable releases use `0.MINOR.PATCH` versions. GitHub builds the plugin twice on
 Windows, compares the unsigned archives byte for byte, signs the verified ZIP
 with the native JetBrains format, and uploads the same author-signed bytes to
-JetBrains Marketplace and GitHub. Marketplace then adds its own signature.
+JetBrains Marketplace and GitHub. Marketplace adds its own signature. Stable
+`0.x.y` releases have no prerelease suffix, but they still indicate pre-1.0
+maturity and may change compatibility between minor versions.
+
+Public verification checks the author certificate and every plugin entry.
+Marketplace appends a second JetBrains signature, so the full ZIP hashes differ
+while the plugin entries remain identical.
 See [RELEASING.md](RELEASING.md) for the activation checklist, release steps,
 public verification, rotation, and rollback procedures.
 

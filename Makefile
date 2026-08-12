@@ -24,7 +24,10 @@ RIDER_PROJECT := src/dotnet/PerfSentinel.Rider.Tests/PerfSentinel.Rider.Tests.cs
 NUGET_CONFIG := src/dotnet/NuGet.Config
 LOCK_INPUTS := gradle.lockfile protocol/gradle.lockfile rider-frontend/gradle.lockfile gradle/verification-metadata.xml src/dotnet/PerfSentinel.Rider/packages.lock.json src/dotnet/PerfSentinel.Rider.Tests/packages.lock.json
 
-.PHONY: check-disk check-locks verify-fast verify security release-check
+.PHONY: badge-check check-disk check-locks verify-fast verify security release-check
+
+badge-check:
+	@cd "$(ROOT)" && $(PYTHON) scripts/check-badges.py
 
 check-disk:
 	@$(PYTHON) -c 'import shutil,sys; free=shutil.disk_usage(sys.argv[1]).free; print(f"Disk guard: {free // (1024**3)} GiB free"); sys.exit(0 if free >= 25 * 1024**3 else "At least 25 GiB free are required")' "$(ROOT)"
@@ -32,7 +35,7 @@ check-disk:
 check-locks:
 	@cd "$(ROOT)" && git diff HEAD --exit-code -- $(LOCK_INPUTS)
 
-verify-fast: check-disk
+verify-fast: check-disk badge-check
 	@if [ "$(OS)" != "Windows_NT" ]; then echo "Rider verification requires Windows; pending_windows remains blocking." >&2; exit 1; fi
 	@cd "$(ROOT)" && $(PYTHON) -B -m unittest discover -s scripts/tests -p 'test_*.py'
 	@cd "$(ROOT)" && $(GRADLE) $(GRADLE_FLAGS) compileKotlin :rider-frontend:compileKotlin test $(LANGUAGE_TESTS) koverXmlReport buildPlugin
