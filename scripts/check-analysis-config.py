@@ -24,7 +24,8 @@ IMAGE = re.compile(r"^(jetbrains/[a-z0-9-]+):(\d{4}\.\d+)@(sha256:[0-9a-f]{64})$
 PROPERTY_KEY = re.compile(r"^[A-Za-z][A-Za-z0-9_.-]*$")
 YAML_KEY = re.compile(r"^([A-Za-z][A-Za-z0-9]*):(?: (.*))?$")
 DRIVE_PATH = re.compile(r"^[A-Za-z]:/")
-SECRET_REFERENCE = re.compile(r"\bsecrets\.([A-Za-z_][A-Za-z0-9_]*)\b")
+WORKFLOW_EXPRESSION = re.compile(r"\$\{\{(.*?)\}\}", re.DOTALL)
+STATIC_SECRET = re.compile(r"\s*secrets\s*\.\s*([A-Za-z_][A-Za-z0-9_]*)\s*")
 SECRET_VALUE = re.compile(r"(?:gh[pousr]_[A-Za-z0-9]{20,}|sk-[A-Za-z0-9_-]{20,}|[A-Fa-f0-9]{40,})")
 FORBIDDEN_XML = re.compile(r"<!\s*(?:DOCTYPE|ENTITY)\b", re.IGNORECASE)
 
@@ -451,9 +452,17 @@ def validate_workflow_secrets(root: Path, inventory_names: set[str]) -> None:
         total += len(text.encode("utf-8"))
         if total > 4 * MAX_WORKFLOW_BYTES:
             raise AnalysisError("workflow configuration exceeds aggregate size bound")
-        if re.search(r"\bsecrets\s*\[|\bsecrets\s*:\s*inherit\b|\btoJSON\(\s*secrets\s*\)|\$\{\{\s*secrets\s*\}\}", text):
+        if re.search(r"\bsecrets\s*:\s*inherit\b", text):
             raise AnalysisError(f"workflow secret reference in {path.name} must be static and inventoried")
-        unknown = set(SECRET_REFERENCE.findall(text)) - inventory_names
+        references = set()
+        for expression in WORKFLOW_EXPRESSION.findall(text):
+            if re.search(r"\bsecrets\b", expression) is None:
+                continue
+            static = STATIC_SECRET.fullmatch(expression)
+            if static is None:
+                raise AnalysisError(f"workflow secret reference in {path.name} must be static and inventoried")
+            references.add(static.group(1))
+        unknown = references - inventory_names
         if unknown:
             raise AnalysisError(f"workflow secret reference is absent from inventory: {', '.join(sorted(unknown))}")
         references = list(re.finditer(r"(?<![\w.-])(qodana-dotnet\.yml|qodana\.yml)(?![\w.-])", text))
@@ -471,9 +480,33 @@ def validate_workflow_secrets(root: Path, inventory_names: set[str]) -> None:
             tail = segment[upload.end():]
             next_step = re.search(rf"(?m)^{re.escape(upload.group('indent'))}-[ \t]+", tail)
             upload_block = tail[:next_step.start()] if next_step else tail
-            with_fields = list(re.finditer(r"(?m)^[ \t]+with:[ \t]*$", upload_block))
-            found_categories = re.findall(r"(?m)^[ \t]+category:[ \t]*([A-Za-z0-9_-]+)[ \t]*$", upload_block)
-            if len(with_fields) != 1 or found_categories != [categories[reference.group(1)]]:
+            lines = []
+            for line in upload_block.splitlines():
+                stripped = line.strip()
+                if not stripped or stripped.startswith("#") or "\t" in line:
+                    continue
+                indentation = len(line) - len(line.lstrip(" "))
+                if indentation > len(upload.group("indent")):
+                    lines.append((indentation, stripped))
+            direct_indent = min((indentation for indentation, _ in lines), default=-1)
+            with_indexes = [
+                index for index, (indentation, value) in enumerate(lines)
+                if indentation == direct_indent and value == "with:"
+            ]
+            if len(with_indexes) != 1:
+                raise AnalysisError("Qodana JVM and Rider uploads require distinct Qodana SARIF categories")
+            with_values = []
+            for indentation, value in lines[with_indexes[0] + 1:]:
+                if indentation <= direct_indent:
+                    break
+                with_values.append((indentation, value))
+            child_indent = min((indentation for indentation, _ in with_values), default=-1)
+            found_categories = [
+                value.split(":", 1)[1].strip()
+                for indentation, value in with_values
+                if indentation == child_indent and value.startswith("category:")
+            ]
+            if found_categories != [categories[reference.group(1)]]:
                 raise AnalysisError("Qodana JVM and Rider uploads require distinct Qodana SARIF categories")
 
 
