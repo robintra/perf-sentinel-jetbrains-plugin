@@ -2,6 +2,7 @@ import os
 import subprocess
 import tempfile
 import unittest
+import xml.etree.ElementTree as ElementTree
 from pathlib import Path
 
 
@@ -9,6 +10,46 @@ REPOSITORY = Path(__file__).resolve().parents[2]
 
 
 class VerificationCommandTests(unittest.TestCase):
+    def test_verification_metadata_covers_every_hosted_ide_installer(self):
+        namespace = {"v": "https://schema.gradle.org/dependency-verification"}
+        root = ElementTree.parse(REPOSITORY / "gradle" / "verification-metadata.xml").getroot()
+        hosted_groups = {"go", "idea", "python", "ruby", "rustrover", "webide", "webstorm"}
+        actual = set()
+        for component in root.findall(".//v:component", namespace):
+            if component.get("group") not in hosted_groups:
+                continue
+            for artifact in component.findall("v:artifact", namespace):
+                artifact_name = artifact.get("name")
+                if not artifact_name.endswith((".tar.gz", ".win.zip")):
+                    continue
+                self.assertEqual(1, len(artifact.findall("v:sha256", namespace)))
+                actual.add(
+                    (
+                        component.get("group"),
+                        component.get("name"),
+                        component.get("version"),
+                        artifact_name,
+                    )
+                )
+        expected = {
+            ("idea", "idea", "2025.3.6.1", "idea-2025.3.6.1.tar.gz"),
+            ("idea", "idea", "2025.3.6.1", "idea-2025.3.6.1.win.zip"),
+            ("idea", "idea", "2026.2.1", "idea-2026.2.1.tar.gz"),
+            ("python", "pycharm-professional", "2025.3.6.1", "pycharm-professional-2025.3.6.1.tar.gz"),
+            ("python", "pycharm-professional", "2026.2.0.1", "pycharm-professional-2026.2.0.1.tar.gz"),
+            ("webide", "PhpStorm", "2025.3.6.1", "PhpStorm-2025.3.6.1.tar.gz"),
+            ("webide", "PhpStorm", "2026.2.1", "PhpStorm-2026.2.1.tar.gz"),
+            ("rustrover", "RustRover", "2025.3.7", "RustRover-2025.3.7.tar.gz"),
+            ("rustrover", "RustRover", "2026.2.1", "RustRover-2026.2.1.tar.gz"),
+            ("ruby", "RubyMine", "2025.3.6.1", "RubyMine-2025.3.6.1.tar.gz"),
+            ("ruby", "RubyMine", "2026.2.1", "RubyMine-2026.2.1.tar.gz"),
+            ("webstorm", "WebStorm", "2025.3.6.1", "WebStorm-2025.3.6.1.tar.gz"),
+            ("webstorm", "WebStorm", "2026.2.1", "WebStorm-2026.2.1.tar.gz"),
+            ("go", "goland", "2025.3.5.1", "goland-2025.3.5.1.tar.gz"),
+            ("go", "goland", "2026.2.1", "goland-2026.2.1.tar.gz"),
+        }
+        self.assertEqual(expected, actual)
+
     def test_hosted_workflows_use_the_action_managed_gradle_distribution(self):
         for workflow in sorted((REPOSITORY / ".github" / "workflows").glob("*.yml")):
             text = workflow.read_text(encoding="utf-8")
