@@ -1,0 +1,34 @@
+# This is a Gradle generated file for dependency locking.
+# Manual edits can break the build and are not advised.
+# This file is expected to be part of source control.
+# To regenerate this file, run: ./gradlew :protocol:dependencies --write-locks
+com.jetbrains.rd:rd-core:2026.2.5=runtimeClasspath
+com.jetbrains.rd:rd-gen:2026.2.5=compileClasspath,runtimeClasspath
+commons-logging:commons-logging:1.2=runtimeClasspath
+org.jetbrains.intellij.deps:trove4j:1.0.20200330=runtimeClasspath
+org.jetbrains.kotlin:kotlin-build-tools-api:2.4.10=kotlinBuildToolsApiClasspath
+org.jetbrains.kotlin:kotlin-build-tools-compat:2.4.10=kotlinBuildToolsApiClasspath
+org.jetbrains.kotlin:kotlin-build-tools-cri-impl:2.4.10=kotlinBuildToolsApiClasspath
+org.jetbrains.kotlin:kotlin-build-tools-impl:2.4.10=kotlinBuildToolsApiClasspath
+org.jetbrains.kotlin:kotlin-compiler-embeddable:2.4.10=kotlinBuildToolsApiClasspath
+org.jetbrains.kotlin:kotlin-compiler-runner:2.4.10=kotlinBuildToolsApiClasspath
+org.jetbrains.kotlin:kotlin-daemon-client:2.4.10=kotlinBuildToolsApiClasspath
+org.jetbrains.kotlin:kotlin-daemon-embeddable:2.4.10=kotlinBuildToolsApiClasspath
+org.jetbrains.kotlin:kotlin-reflect:1.6.10=kotlinBuildToolsApiClasspath
+org.jetbrains.kotlin:kotlin-reflect:1.8.10=runtimeClasspath
+org.jetbrains.kotlin:kotlin-script-runtime:2.4.10=kotlinBuildToolsApiClasspath,kotlinCompilerPluginClasspathMain
+org.jetbrains.kotlin:kotlin-scripting-common:2.4.10=kotlinCompilerPluginClasspathMain
+org.jetbrains.kotlin:kotlin-scripting-compiler-embeddable:2.4.10=kotlinCompilerPluginClasspathMain
+org.jetbrains.kotlin:kotlin-scripting-compiler-impl-embeddable:2.4.10=kotlinCompilerPluginClasspathMain
+org.jetbrains.kotlin:kotlin-scripting-jvm:2.4.10=kotlinCompilerPluginClasspathMain
+org.jetbrains.kotlin:kotlin-stdlib-common:1.8.10=runtimeClasspath
+org.jetbrains.kotlin:kotlin-stdlib-jdk7:1.8.10=runtimeClasspath
+org.jetbrains.kotlin:kotlin-stdlib-jdk8:1.8.10=runtimeClasspath
+org.jetbrains.kotlin:kotlin-stdlib:1.8.10=runtimeClasspath
+org.jetbrains.kotlin:kotlin-stdlib:2.4.10=compileClasspath,kotlinBuildToolsApiClasspath,kotlinCompilerPluginClasspathMain
+org.jetbrains.kotlin:kotlin-tooling-core:2.4.10=kotlinBuildToolsApiClasspath
+org.jetbrains.kotlinx:kotlinx-coroutines-bom:1.6.4=runtimeClasspath
+org.jetbrains.kotlinx:kotlinx-coroutines-core-jvm:1.6.4=runtimeClasspath
+org.jetbrains.kotlinx:kotlinx-coroutines-core-jvm:1.8.0=kotlinBuildToolsApiClasspath
+org.jetbrains:annotations:13.0=compileClasspath,kotlinBuildToolsApiClasspath,kotlinCompilerPluginClasspathMain,runtimeClasspath
+empty=kotlinScriptDefExtensions,testKotlinScriptDefExtensions

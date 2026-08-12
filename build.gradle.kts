@@ -13,6 +13,12 @@ plugins {
     id("org.jetbrains.intellij.platform")
 }
 
+allprojects {
+    dependencyLocking {
+        lockAllConfigurations()
+    }
+}
+
 val ideaTestRuntime = providers.provider {
     extensions.getByType<IntelliJPlatformExtension>().platformPath.resolve("lib/idea_rt.jar").toFile()
 }

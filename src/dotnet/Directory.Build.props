@@ -1,7 +1,10 @@
 <Project>
   <PropertyGroup>
-    <LangVersion>latest</LangVersion>
+    <LangVersion>14.0</LangVersion>
     <Nullable>enable</Nullable>
+    <RestorePackagesWithLockFile>true</RestorePackagesWithLockFile>
+    <RestoreLockedMode Condition="'$(ContinuousIntegrationBuild)' == 'true'">true</RestoreLockedMode>
+    <RestoreConfigFile>$(MSBuildThisFileDirectory)NuGet.Config</RestoreConfigFile>
     <!-- The 2025.3 JetBrains feed omits the declared 253.0.0 lower-bound native packages but resolves in-range builds. -->
     <NoWarn>MSB3277;NU1603</NoWarn>
     <NoPackageAnalysis>true</NoPackageAnalysis>
