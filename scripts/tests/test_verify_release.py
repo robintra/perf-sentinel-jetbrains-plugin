@@ -342,7 +342,7 @@ class ReleaseWorkflowTests(unittest.TestCase):
         self.assertIn("expected exactly four GitHub release assets", text)
         self.assertIn("--max-filesize 419430400", text)
         self.assertIn("release asset set or size is invalid", text)
-        resolve = text.index("./gradlew --no-daemon --dependency-verification strict help")
+        resolve = text.index("gradle --no-daemon --dependency-verification strict help")
         verify = text.index("scripts/verify-release.py verify")
         self.assertLess(resolve, verify)
         self.assertNotIn("secrets.", text)
