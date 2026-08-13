@@ -3,6 +3,10 @@
    <configuration>
       <verify-metadata>true</verify-metadata>
       <verify-signatures>false</verify-signatures>
+      <trusted-artifacts>
+         <trust group="bundledPlugin" file=".*[.]xml" regex="true" reason="Ivy descriptors are generated locally from the already verified IDE archive and embed absolute paths, so their checksums differ per machine"/>
+         <trust group="bundledModule" file=".*[.]xml" regex="true" reason="Ivy descriptors are generated locally from the already verified IDE archive and embed absolute paths, so their checksums differ per machine"/>
+      </trusted-artifacts>
    </configuration>
    <components>
       <component group="bundledModule" name="intellij-platform-test-runtime" version="GO-253.33813.70">
