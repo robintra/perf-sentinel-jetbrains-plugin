@@ -313,6 +313,7 @@ intellijPlatform {
         }
     }
     pluginVerification {
+        ignoredProblemsFile = file("gradle/verifier-ignored-problems.txt")
         ides {
             if (verifyTarget("idea-253")) create(IntelliJPlatformType.IntellijIdea, "2025.3.6.1")
             if (verifyTarget("idea-262")) create(IntelliJPlatformType.IntellijIdea, "2026.2.1")

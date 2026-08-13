@@ -1,0 +1,33 @@
+// Java PSI classes reached only from the optional com.intellij.java module.
+//
+// JavaAnchorResolver and JpaTableAnchorResolver are registered exclusively in
+// META-INF/perf-sentinel-java.xml, which the platform loads only when
+// com.intellij.java is present. IDEs without Java support never load them, so
+// these classes can never be reached at runtime there.
+//
+// The Plugin Verifier still scans the whole jar and cannot resolve the classes
+// against an IDE that does not ship the Java module, so it reports them as
+// compatibility problems. IDEs that do bundle the Java module resolve them and
+// report nothing, which is why only the 253 targets without Java are affected.
+//
+// Every class is listed on its own line on purpose. A broad com.intellij.psi.*
+// pattern would also hide genuine problems on platform PSI classes, and a new
+// Java class reached from the core would silently stop being reported.
+//
+// Format: <plugin_xml_id>:<plugin_version>:<problem_description_regexp>
+io.github.robintra.perfsentinel::.*com\.intellij\.psi\.JavaPsiFacade.*
+io.github.robintra.perfsentinel::.*com\.intellij\.psi\.PsiAnnotation.*
+io.github.robintra.perfsentinel::.*com\.intellij\.psi\.PsiAnnotationMemberValue.*
+io.github.robintra.perfsentinel::.*com\.intellij\.psi\.PsiClass.*
+io.github.robintra.perfsentinel::.*com\.intellij\.psi\.PsiClassType.*
+io.github.robintra.perfsentinel::.*com\.intellij\.psi\.PsiConstantEvaluationHelper.*
+io.github.robintra.perfsentinel::.*com\.intellij\.psi\.PsiMethod.*
+io.github.robintra.perfsentinel::.*com\.intellij\.psi\.PsiModifierList.*
+io.github.robintra.perfsentinel::.*com\.intellij\.psi\.PsiReferenceExpression.*
+io.github.robintra.perfsentinel::.*com\.intellij\.psi\.PsiSubstitutor.*
+io.github.robintra.perfsentinel::.*com\.intellij\.psi\.PsiTypeParameter.*
+io.github.robintra.perfsentinel::.*com\.intellij\.psi\.PsiVariable.*
+io.github.robintra.perfsentinel::.*com\.intellij\.psi\.search\.searches\.AnnotatedElementsSearch.*
+io.github.robintra.perfsentinel::.*com\.intellij\.psi\.search\.searches\.ClassInheritorsSearch.*
+io.github.robintra.perfsentinel::.*com\.intellij\.psi\.util\.TypeConversionUtil.*
+io.github.robintra.perfsentinel::.*Package 'com\.intellij\.lang\.java' is not found.*
