@@ -43,11 +43,11 @@ REQUIRED_NUGET_LOCKS = (
 REQUIRED_ACTIONS = set("""
 actions/checkout actions/setup-java actions/setup-dotnet actions/setup-python actions/upload-artifact actions/github-script
 actions/download-artifact actions/dependency-review-action github/codeql-action
-JetBrains/qodana-action SonarSource/sonarqube-scan-action anchore/sbom-action ossf/scorecard-action step-security/harden-runner
+JetBrains/qodana-action anchore/sbom-action ossf/scorecard-action step-security/harden-runner
 google/osv-scanner-action gitleaks/gitleaks-action zizmorcore/zizmor-action gradle/actions
 """.split())
 REQUIRED_TOOLS = {
-    "SonarScanner for Gradle", "Kover", "OSV-Scanner", "Gitleaks", "TruffleHog", "Zizmor",
+    "Kover", "OSV-Scanner", "Gitleaks", "TruffleHog", "Zizmor",
     "Syft", "actionlint", "Marketplace ZIP Signer", "Qodana CLI", "Qodana JVM Community image",
     "Qodana .NET image",
 }
@@ -88,7 +88,6 @@ src/dotnet/PerfSentinel.Rider.Tests/PerfSentinel.Rider.Tests.csproj#Microsoft.NE
 OPTIONAL_DIRECT_DECLARATIONS = {
     "gradle/libs.versions.toml#kover",
     "src/dotnet/PerfSentinel.Rider.Tests/PerfSentinel.Rider.Tests.csproj#coverlet.collector",
-    "sonar-rider.properties#scanner.dotnet.version",
 }
 PLUGIN_IDS = {
     "Kotlin Gradle plugin": "org.jetbrains.kotlin.jvm",
@@ -96,7 +95,6 @@ PLUGIN_IDS = {
     "JetBrains Changelog plugin": "org.jetbrains.changelog",
     "JetBrains Qodana Gradle plugin": "org.jetbrains.qodana",
     "Foojay toolchain resolver": "org.gradle.toolchains.foojay-resolver-convention",
-    "SonarScanner for Gradle": "org.sonarqube",
     "Kover": "org.jetbrains.kotlinx.kover",
 }
 MAVEN_COORDINATES = {
@@ -113,7 +111,6 @@ NUGET_PACKAGES = {
     "Microsoft.NET.Test.Sdk": "Microsoft.NET.Test.Sdk",
     "NUnit3TestAdapter": "NUnit3TestAdapter",
     "coverlet.collector": "coverlet.collector",
-    "SonarScanner for .NET": "dotnet-sonarscanner",
 }
 GITHUB_REPOS = {
     "OSV-Scanner": "google/osv-scanner",
@@ -453,9 +450,6 @@ def declared_versions(root, declaration):
     if relative == "qodana.yml":
         match = re.search(r"^linter:\s*jetbrains/qodana-jvm-community:([^@\s]+)@(sha256:[0-9a-f]{64})$", text, re.M)
         return [f"{match.group(1)}@{match.group(2)}"] if match else []
-    if relative == "sonar-rider.properties" and selector == "scanner.dotnet.version":
-        match = re.search(r"^scanner\.dotnet\.version=([^\s]+)$", text, re.M)
-        return [match.group(1)] if match else []
     return []
 
 

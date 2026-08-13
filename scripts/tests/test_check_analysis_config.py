@@ -11,7 +11,6 @@ CHECKER = REPOSITORY / "scripts" / "check-analysis-config.py"
 
 JVM_DIGEST = "sha256:8ff36b5cebc0a6d720f77dcf3e0a94a03c39b4c42c3724a99ce5f7e462e42f99"
 DOTNET_DIGEST = "sha256:083e222c54d976b29a3118036559340a18e804f82d30947548468443ca60de59"
-DOTNET_SCANNER_VERSION = "11.2.1"
 
 
 def jvm_qodana():
@@ -60,41 +59,6 @@ failThreshold: 0
 '''
 
 
-def sonar_jvm():
-    return '''sonar.projectKey=robintrassard_perf-sentinel-jetbrains-plugin-jvm
-sonar.projectName=Perf Sentinel JetBrains Plugin JVM
-sonar.sourceEncoding=UTF-8
-sonar.sources=src/main/kotlin,protocol/src/main/kotlin,rider-frontend/src/main/kotlin
-sonar.tests=src/test/kotlin,rider-frontend/src/test/kotlin
-sonar.exclusions=build/**,protocol/build/**,rider-frontend/build/**
-sonar.coverage.jacoco.xmlReportPaths=build/reports/kover/report.xml
-sonar.junit.reportPaths=build/test-results/test,build/test-results/testGoLand253,build/test-results/testPhpStorm253,build/test-results/testPyCharm253,build/test-results/testRubyMine253,build/test-results/testRustRover253,build/test-results/testRustRover262,build/test-results/testWebStorm253,rider-frontend/build/test-results/test
-sonar.qualitygate.wait=true
-sonar.qualitygate.timeout=600
-'''
-
-
-def sonar_rider():
-    return '''scanner.dotnet.version=11.2.1
-scanner.dotnet.testProject=src/dotnet/PerfSentinel.Rider.Tests/PerfSentinel.Rider.Tests.csproj
-scanner.dotnet.configuration=Release
-scanner.dotnet.lockedMode=true
-scanner.dotnet.runSettings=src/dotnet/coverage.runsettings
-scanner.dotnet.resultsDirectory=build/dotnet/TestResults
-scanner.dotnet.collect=XPlat Code Coverage
-scanner.dotnet.logger=trx
-sonar.projectKey=robintrassard_perf-sentinel-jetbrains-plugin-rider
-sonar.projectName=Perf Sentinel JetBrains Plugin Rider
-sonar.sourceEncoding=UTF-8
-sonar.exclusions=build/generated/rd/csharp/**,build/dotnet/**
-sonar.coverage.exclusions=build/generated/rd/csharp/**
-sonar.cs.cobertura.reportsPaths=build/dotnet/TestResults/**/coverage.cobertura.xml
-sonar.cs.vstest.reportsPaths=build/dotnet/TestResults/**/*.trx
-sonar.qualitygate.wait=true
-sonar.qualitygate.timeout=600
-'''
-
-
 class AnalysisConfigCheckerTests(unittest.TestCase):
     def setUp(self):
         self.temp_dir = tempfile.TemporaryDirectory()
@@ -105,8 +69,6 @@ class AnalysisConfigCheckerTests(unittest.TestCase):
         (self.root / "src" / "dotnet" / "PerfSentinel.Rider.Tests").mkdir(parents=True)
         self.write("qodana.yml", jvm_qodana())
         self.write("qodana-dotnet.yml", dotnet_qodana())
-        self.write("sonar-jvm.properties", sonar_jvm())
-        self.write("sonar-rider.properties", sonar_rider())
         self.secret_inventory = {
             "schemaVersion": 1,
             "secrets": [
@@ -116,13 +78,6 @@ class AnalysisConfigCheckerTests(unittest.TestCase):
                     "trustedJobScope": ["qodana-jvm", "qodana-rider"],
                     "purpose": "Authenticate trusted Qodana analysis uploads for the two isolated surfaces.",
                     "rotationProcedure": "Revoke the project token, create its replacement, and update the repository secret before re-enabling trusted analysis.",
-                },
-                {
-                    "name": "SONAR_TOKEN",
-                    "owner": "Maintainers",
-                    "trustedJobScope": ["sonar-jvm", "sonar-rider"],
-                    "purpose": "Authenticate trusted Sonar analysis for the two isolated projects.",
-                    "rotationProcedure": "Revoke the analysis token, create its replacement, and update the repository secret before re-enabling trusted analysis.",
                 },
                 *[
                     {
@@ -158,13 +113,6 @@ class AnalysisConfigCheckerTests(unittest.TestCase):
                     "version": DOTNET_DIGEST,
                     "release": "2026.2",
                     "source": "https://hub.docker.com/r/jetbrains/qodana-dotnet",
-                },
-                {
-                    "name": "SonarScanner for .NET",
-                    "kind": "nuget",
-                    "version": DOTNET_SCANNER_VERSION,
-                    "source": f"https://www.nuget.org/packages/dotnet-sonarscanner/{DOTNET_SCANNER_VERSION}",
-                    "declaration": "sonar-rider.properties#scanner.dotnet.version",
                 },
             ]
         }
@@ -267,71 +215,15 @@ class AnalysisConfigCheckerTests(unittest.TestCase):
                 self.write("qodana-dotnet.yml", dotnet_qodana().replace(old, new))
                 self.assert_rejected("Qodana .NET")
 
-    def test_rejects_rider_scanner_or_locked_release_execution_drift(self):
+    def test_rejects_drive_paths_in_exclusions(self):
         cases = (
-            ("scanner.dotnet.version=11.2.1", "scanner.dotnet.version=latest", "pinned SonarScanner for .NET"),
-            ("scanner.dotnet.configuration=Release", "scanner.dotnet.configuration=Debug", "locked Release"),
-            ("scanner.dotnet.lockedMode=true", "scanner.dotnet.lockedMode=false", "locked Release"),
-            ("scanner.dotnet.collect=XPlat Code Coverage", "scanner.dotnet.collect=None", "coverage collection"),
-            ("scanner.dotnet.logger=trx", "scanner.dotnet.logger=console", "VSTest logger"),
-        )
-        for old, new, message in cases:
-            with self.subTest(new=new):
-                self.write("sonar-rider.properties", sonar_rider().replace(old, new))
-                self.assert_rejected(message)
-
-    def test_rejects_shared_sonar_project_keys(self):
-        self.write(
-            "sonar-rider.properties",
-            sonar_rider().replace(
-                "robintrassard_perf-sentinel-jetbrains-plugin-rider",
-                "robintrassard_perf-sentinel-jetbrains-plugin-jvm",
-            ),
-        )
-        self.assert_rejected("Sonar project keys must be distinct")
-
-    def test_rejects_missing_surface_coverage_report(self):
-        cases = (
-            ("sonar-jvm.properties", "sonar.coverage.jacoco.xmlReportPaths=build/reports/kover/report.xml\n", "Kover XML"),
-            ("sonar-rider.properties", "sonar.cs.cobertura.reportsPaths=build/dotnet/TestResults/**/coverage.cobertura.xml\n", "Cobertura"),
-        )
-        for relative, line, message in cases:
-            with self.subTest(relative=relative):
-                original = (self.root / relative).read_text(encoding="utf-8")
-                self.write(relative, original.replace(line, ""))
-                self.assert_rejected(message)
-                self.write(relative, original)
-
-    def test_rejects_ignored_or_unbounded_quality_gate_waits(self):
-        for relative, factory in (("sonar-jvm.properties", sonar_jvm), ("sonar-rider.properties", sonar_rider)):
-            for old, new in (("sonar.qualitygate.wait=true", "sonar.qualitygate.wait=false"), ("sonar.qualitygate.timeout=600", "sonar.qualitygate.timeout=0")):
-                with self.subTest(relative=relative, new=new):
-                    self.write(relative, factory().replace(old, new))
-                    self.assert_rejected("quality gate")
-
-    def test_rejects_source_exclusions_outside_generated_or_build_paths(self):
-        self.write(
-            "sonar-jvm.properties",
-            sonar_jvm().replace("rider-frontend/build/**", "rider-frontend/src/main/kotlin/**"),
-        )
-        self.assert_rejected("source exclusion")
-
-    def test_rejects_drive_paths_and_post_normalization_duplicates(self):
-        cases = (
-            ("build/**,protocol/build/**", "C:/build/**,protocol/build/**", "stable repository path"),
-            ("build/**,protocol/build/**", "build/./**,protocol/build/**", "stable repository path"),
-            ("build/**,protocol/build/**", "cafe\u0301/build/**,caf\u00e9/build/**", "duplicate normalized path"),
+            ("      - build\n", "      - C:/build\n", "stable repository path"),
+            ("      - build\n", "      - build/./\n", "stable repository path"),
         )
         for old, new, message in cases:
             with self.subTest(message=message):
-                self.write("sonar-jvm.properties", sonar_jvm().replace(old, new))
+                self.write("qodana.yml", jvm_qodana().replace(old, new))
                 self.assert_rejected(message)
-
-    def test_rejects_duplicate_or_unknown_properties(self):
-        self.write("sonar-jvm.properties", sonar_jvm() + "sonar.projectKey=duplicate\n")
-        self.assert_rejected("duplicate property")
-        self.write("sonar-jvm.properties", sonar_jvm() + "sonar.unknown=fixture\n")
-        self.assert_rejected("unknown property")
 
     def test_rejects_secret_inventory_schema_and_name_drift(self):
         cases = (
@@ -379,7 +271,7 @@ class AnalysisConfigCheckerTests(unittest.TestCase):
     def test_accepts_static_inventoried_workflow_secret_references(self):
         self.write(
             ".github/workflows/analysis.yml",
-            "env:\n  SONAR_TOKEN: ${{ secrets . SONAR_TOKEN }}\n  QODANA_TOKEN: ${{ secrets.QODANA_TOKEN }}\n",
+            "env:\n  QODANA_TOKEN: ${{ secrets.QODANA_TOKEN }}\n",
         )
         result = self.run_checker()
         self.assertEqual(0, result.returncode, result.stderr)
@@ -478,7 +370,7 @@ class AnalysisConfigCheckerTests(unittest.TestCase):
         self.assert_rejected("distinct Qodana SARIF categories")
 
     def test_rejects_missing_task4_supply_chain_bindings(self):
-        for dependency in ("Qodana .NET image", "SonarScanner for .NET"):
+        for dependency in ("Qodana .NET image",):
             with self.subTest(dependency=dependency):
                 value = json.loads(json.dumps(self.supply_chain))
                 value["dependencies"] = [item for item in value["dependencies"] if item["name"] != dependency]
@@ -504,14 +396,11 @@ class AnalysisConfigCheckerTests(unittest.TestCase):
         self.assert_rejected("strict UTF-8")
         inventory.write_text('{"schemaVersion":1,"schemaVersion":1,"secrets":[]}', encoding="utf-8")
         self.assert_rejected("duplicate key")
-        self.write("sonar-jvm.properties", "#" + "x" * (256 * 1024))
+        self.write("qodana.yml", "#" + "x" * (256 * 1024))
         self.assert_rejected("size bound")
 
     def test_rejects_control_characters_in_text_configs(self):
-        self.write(
-            "sonar-rider.properties",
-            sonar_rider().replace("Plugin Rider", "Plugin\x01Rider"),
-        )
+        self.write("qodana.yml", jvm_qodana().replace("  - name: All", "  - name: A\x01ll"))
         self.assert_rejected("control character")
 
 

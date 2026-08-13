@@ -16,7 +16,6 @@ SECRETS = (
     "PRIVATE_KEY_PASSWORD",
     "PUBLISH_TOKEN",
     "QODANA_TOKEN",
-    "SONAR_TOKEN",
 )
 
 
@@ -250,7 +249,7 @@ class RepositoryPolicyTests(unittest.TestCase):
                 self.assert_drift(api, field)
 
     def test_requires_the_single_ci_gate(self):
-        for checks in ([], [{"context": "CI / Gate"}, {"context": "Sonar JVM"}]):
+        for checks in ([], [{"context": "CI / Gate"}, {"context": "Qodana JVM"}]):
             with self.subTest(checks=checks):
                 api = public_api_fixture()
                 api["ruleset:101"]["body"]["rules"][-1]["parameters"]["required_status_checks"] = checks

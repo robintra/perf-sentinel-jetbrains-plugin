@@ -76,7 +76,7 @@ class DailySecurityWorkflowTests(unittest.TestCase):
         self.assertIn("getLabel", self.text)
         self.assertIn("createLabel", self.text)
         self.assertIn("name: 'security-audit'", self.text)
-        for forbidden in ("sarif", "QODANA_TOKEN", "SONAR_TOKEN"):
+        for forbidden in ("sarif", "QODANA_TOKEN"):
             notify = self.text.split("  notify:\n", 1)[1]
             self.assertNotIn(forbidden, notify)
 
