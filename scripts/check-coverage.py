@@ -515,7 +515,7 @@ def write_baseline(path: Path, jvm: Decimal, rider: Decimal | None) -> None:
     )
     try:
         path.parent.mkdir(parents=True, exist_ok=True)
-        path.write_text(payload, encoding="utf-8")
+        path.write_text(payload, encoding="utf-8", newline="\n")
     except OSError as error:
         raise CoverageError(f"{path}: unable to write coverage baseline") from error
 
