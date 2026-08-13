@@ -6,6 +6,7 @@
       <trusted-artifacts>
          <trust group="bundledPlugin" file=".*[.]xml" regex="true" reason="Ivy descriptors are generated locally from the already verified IDE archive and embed absolute paths, so their checksums differ per machine"/>
          <trust group="bundledModule" file=".*[.]xml" regex="true" reason="Ivy descriptors are generated locally from the already verified IDE archive and embed absolute paths, so their checksums differ per machine"/>
+         <trust file=".*-(sources|javadoc)[.]jar" regex="true" reason="Qodana downloads these to navigate dependency code, they are never compiled or executed, and the matching binary jar stays verified"/>
       </trusted-artifacts>
    </configuration>
    <components>
