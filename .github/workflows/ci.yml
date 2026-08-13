@@ -452,8 +452,11 @@ jobs:
       - name: Require the semantic navigation fixture
         shell: pwsh
         run: |
+          # NUnit records the fixture name in TestMethod/@className, never in
+          # UnitTestResult/@testName, which only carries the method and its TestCase arguments.
           [xml]$trx = Get-Content -Raw build/dotnet/TestResults/tests.trx
-          $results = @($trx.SelectNodes("//*[local-name()='UnitTestResult' and contains(@testName,'CSharpSymbolResolverTests')]"))
+          $ids = @($trx.SelectNodes("//*[local-name()='UnitTest'][*[local-name()='TestMethod'][contains(@className,'CSharpSymbolResolverTests')]]") | ForEach-Object { $_.id })
+          $results = @($trx.SelectNodes("//*[local-name()='UnitTestResult']") | Where-Object { $ids -contains $_.testId })
           if ($results.Count -eq 0 -or @($results | Where-Object outcome -ne "Passed").Count -ne 0) {
             throw "CSharpSymbolResolverTests did not run successfully"
           }
