@@ -11,25 +11,11 @@ from pathlib import Path
 
 REPO_URL = "https://github.com/robintra/perf-sentinel-jetbrains-plugin"
 LICENSE_SHA256 = "8486a10c4393cee1c25392769ddd3b2d6c242d6ec7928e1414efff7dfb2f07ef"
-SONAR_KEYS = {
-    "Sonar JVM": ("sonar-jvm.properties", "robintrassard_perf-sentinel-jetbrains-plugin-jvm"),
-    "Sonar Rider": ("sonar-rider.properties", "robintrassard_perf-sentinel-jetbrains-plugin-rider"),
-}
 BADGES = {
     "CI": (
         f"{REPO_URL}/actions/workflows/ci.yml/badge.svg",
         f"{REPO_URL}/actions/workflows/ci.yml",
         ".github/workflows/ci.yml",
-    ),
-    "Sonar JVM": (
-        "https://sonarcloud.io/api/project_badges/measure?project=robintrassard_perf-sentinel-jetbrains-plugin-jvm&metric=alert_status",
-        "https://sonarcloud.io/summary/new_code?id=robintrassard_perf-sentinel-jetbrains-plugin-jvm",
-        "sonar-jvm.properties",
-    ),
-    "Sonar Rider": (
-        "https://sonarcloud.io/api/project_badges/measure?project=robintrassard_perf-sentinel-jetbrains-plugin-rider&metric=alert_status",
-        "https://sonarcloud.io/summary/new_code?id=robintrassard_perf-sentinel-jetbrains-plugin-rider",
-        "sonar-rider.properties",
     ),
     "Qodana": (
         "https://img.shields.io/badge/Qodana-configured-lightgrey",
@@ -144,11 +130,6 @@ def validate(root):
     for _, _, evidence in BADGES.values():
         if not (root / evidence).is_file():
             errors.append(f"missing local evidence: {evidence}")
-    for label, (path, key) in SONAR_KEYS.items():
-        if (root / path).read_text(encoding="utf-8").splitlines().count(
-            f"sonar.projectKey={key}"
-        ) != 1:
-            errors.append(f"{label} badge differs from its project key")
     if hashlib.sha256((root / "LICENSE").read_bytes()).hexdigest() != LICENSE_SHA256:
         errors.append("License badge differs from canonical AGPL-3.0-only")
     return errors

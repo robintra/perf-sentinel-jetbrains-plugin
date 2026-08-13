@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Validate the closed Qodana, Sonar, and analysis-secret contracts."""
+"""Validate the closed Qodana and analysis-secret contracts."""
 
 from __future__ import annotations
 
@@ -19,7 +19,6 @@ MAX_WORKFLOW_BYTES = 1024 * 1024
 MAX_LINE_LENGTH = 4096
 JVM_DIGEST = "sha256:8ff36b5cebc0a6d720f77dcf3e0a94a03c39b4c42c3724a99ce5f7e462e42f99"
 DOTNET_DIGEST = "sha256:083e222c54d976b29a3118036559340a18e804f82d30947548468443ca60de59"
-DOTNET_SCANNER_VERSION = "11.2.1"
 IMAGE = re.compile(r"^(jetbrains/[a-z0-9-]+):(\d{4}\.\d+)@(sha256:[0-9a-f]{64})$")
 PROPERTY_KEY = re.compile(r"^[A-Za-z][A-Za-z0-9_.-]*$")
 YAML_KEY = re.compile(r"^([A-Za-z][A-Za-z0-9]*):(?: (.*))?$")
@@ -286,122 +285,6 @@ def validate_dotnet_qodana(config: dict) -> None:
         raise AnalysisError("Qodana .NET failThreshold must be integer zero")
 
 
-def parse_properties(path: Path, label: str) -> dict[str, str]:
-    result = {}
-    for number, line in enumerate(read_utf8(path, MAX_CONFIG_BYTES, label).splitlines(), 1):
-        if not line or line.startswith("#"):
-            continue
-        if line.strip() != line or "=" not in line:
-            raise AnalysisError(f"{label}:{number} is not a canonical property")
-        key, value = line.split("=", 1)
-        if PROPERTY_KEY.fullmatch(key) is None or not value:
-            raise AnalysisError(f"{label}:{number} is not a canonical property")
-        if key in result:
-            raise AnalysisError(f"{label} has duplicate property {key}")
-        result[key] = value
-    return result
-
-
-def csv_paths(value: str, label: str) -> list[str]:
-    paths = value.split(",")
-    if not paths or any(not path or path.strip() != path for path in paths) or len(paths) != len(set(paths)):
-        raise AnalysisError(f"{label} must be a unique path list")
-    normalized = [normalized_path(path, label) for path in paths]
-    keys = [path.casefold() for path in normalized]
-    if len(keys) != len(set(keys)):
-        raise AnalysisError(f"{label} contains a duplicate normalized path")
-    return normalized
-
-
-def validate_quality_gate(properties: dict[str, str], label: str) -> None:
-    if properties.get("sonar.qualitygate.wait") != "true":
-        raise AnalysisError(f"{label} must wait for the quality gate")
-    timeout = properties.get("sonar.qualitygate.timeout", "")
-    if re.fullmatch(r"[1-9][0-9]*", timeout) is None or not 1 <= int(timeout) <= 600:
-        raise AnalysisError(f"{label} quality gate timeout must be between 1 and 600 seconds")
-
-
-def validate_exclusions(properties: dict[str, str], label: str) -> None:
-    for key in ("sonar.exclusions", "sonar.coverage.exclusions"):
-        if key not in properties:
-            continue
-        for path in csv_paths(properties[key], key):
-            components = path.replace("**", "").split("/")
-            if not {"build", "generated"}.intersection(components):
-                raise AnalysisError(f"{label} source exclusion is outside generated/build paths")
-
-
-def validate_sonar(jvm: dict[str, str], rider: dict[str, str]) -> None:
-    if jvm.get("sonar.projectKey") == rider.get("sonar.projectKey"):
-        raise AnalysisError("Sonar project keys must be distinct")
-    jvm_fields = {
-        "sonar.projectKey", "sonar.projectName", "sonar.sourceEncoding", "sonar.sources", "sonar.tests",
-        "sonar.exclusions", "sonar.coverage.jacoco.xmlReportPaths", "sonar.junit.reportPaths",
-        "sonar.qualitygate.wait", "sonar.qualitygate.timeout",
-    }
-    rider_fields = {
-        "scanner.dotnet.version", "scanner.dotnet.testProject", "scanner.dotnet.configuration",
-        "scanner.dotnet.lockedMode", "scanner.dotnet.runSettings", "scanner.dotnet.resultsDirectory",
-        "scanner.dotnet.collect", "scanner.dotnet.logger",
-        "sonar.projectKey", "sonar.projectName", "sonar.sourceEncoding", "sonar.exclusions",
-        "sonar.coverage.exclusions", "sonar.cs.cobertura.reportsPaths", "sonar.cs.vstest.reportsPaths",
-        "sonar.qualitygate.wait", "sonar.qualitygate.timeout",
-    }
-    for properties, expected, label in ((jvm, jvm_fields, "JVM Sonar config"), (rider, rider_fields, "Rider Sonar config")):
-        unknown = set(properties) - expected
-        missing = expected - set(properties)
-        if unknown:
-            raise AnalysisError(f"{label} has unknown property: {', '.join(sorted(unknown))}")
-        if missing:
-            coverage = "Kover XML" if label.startswith("JVM") else "Cobertura"
-            if any("coverage" in key or "cobertura" in key for key in missing):
-                raise AnalysisError(f"{label} is missing its {coverage} coverage report")
-            raise AnalysisError(f"{label} is missing property: {', '.join(sorted(missing))}")
-        validate_quality_gate(properties, label)
-        validate_exclusions(properties, label)
-    if jvm["sonar.projectKey"] != "robintrassard_perf-sentinel-jetbrains-plugin-jvm":
-        raise AnalysisError("JVM Sonar project key has drifted")
-    if rider["sonar.projectKey"] != "robintrassard_perf-sentinel-jetbrains-plugin-rider":
-        raise AnalysisError("Rider Sonar project key has drifted")
-    if jvm["sonar.sourceEncoding"] != "UTF-8" or rider["sonar.sourceEncoding"] != "UTF-8":
-        raise AnalysisError("Sonar source encoding must be UTF-8")
-    if csv_paths(jvm["sonar.sources"], "JVM Sonar sources") != [
-        "src/main/kotlin", "protocol/src/main/kotlin", "rider-frontend/src/main/kotlin"
-    ] or csv_paths(jvm["sonar.tests"], "JVM Sonar tests") != [
-        "src/test/kotlin", "rider-frontend/src/test/kotlin"
-    ]:
-        raise AnalysisError("JVM Sonar source/test roots have drifted")
-    if jvm["sonar.coverage.jacoco.xmlReportPaths"] != "build/reports/kover/report.xml":
-        raise AnalysisError("JVM Sonar must consume the real Kover XML report")
-    expected_reports = [
-        "build/test-results/test", "build/test-results/testGoLand253", "build/test-results/testPhpStorm253",
-        "build/test-results/testPyCharm253", "build/test-results/testRubyMine253",
-        "build/test-results/testRustRover253", "build/test-results/testRustRover262",
-        "build/test-results/testWebStorm253", "rider-frontend/build/test-results/test",
-    ]
-    if csv_paths(jvm["sonar.junit.reportPaths"], "JVM Sonar test reports") != expected_reports:
-        raise AnalysisError("JVM Sonar must consume every Kotlin/JVM test report")
-    if rider["scanner.dotnet.version"] != DOTNET_SCANNER_VERSION:
-        raise AnalysisError("Rider analysis requires the pinned SonarScanner for .NET")
-    execution = {
-        "scanner.dotnet.testProject": "src/dotnet/PerfSentinel.Rider.Tests/PerfSentinel.Rider.Tests.csproj",
-        "scanner.dotnet.configuration": "Release",
-        "scanner.dotnet.lockedMode": "true",
-        "scanner.dotnet.runSettings": "src/dotnet/coverage.runsettings",
-        "scanner.dotnet.resultsDirectory": "build/dotnet/TestResults",
-    }
-    if any(rider[key] != value for key, value in execution.items()):
-        raise AnalysisError("Rider Sonar execution must use the locked Release test contract")
-    if rider["scanner.dotnet.collect"] != "XPlat Code Coverage":
-        raise AnalysisError("Rider Sonar execution must enable XPlat coverage collection")
-    if rider["scanner.dotnet.logger"] != "trx":
-        raise AnalysisError("Rider Sonar execution must enable the VSTest logger")
-    if rider["sonar.cs.cobertura.reportsPaths"] != "build/dotnet/TestResults/**/coverage.cobertura.xml":
-        raise AnalysisError("Rider Sonar must consume the Cobertura report")
-    if rider["sonar.cs.vstest.reportsPaths"] != "build/dotnet/TestResults/**/*.trx":
-        raise AnalysisError("Rider Sonar must consume VSTest results")
-
-
 def validate_secret_inventory(inventory) -> set[str]:
     if type(inventory) is dict:
         for secret in inventory.get("secrets", []):
@@ -418,7 +301,6 @@ def validate_secret_inventory(inventory) -> set[str]:
         "PRIVATE_KEY_PASSWORD": ["jetbrains-release"],
         "PUBLISH_TOKEN": ["jetbrains-release"],
         "QODANA_TOKEN": ["qodana-jvm", "qodana-rider"],
-        "SONAR_TOKEN": ["sonar-jvm", "sonar-rider"],
     }
     declared_names = [item.get("name") for item in inventory["secrets"] if type(item) is dict]
     if set(declared_names) != set(expected_scopes) or len(declared_names) != len(expected_scopes):
@@ -581,7 +463,7 @@ def validate_rider_contract(root: Path) -> None:
         raise AnalysisError("Rider coverage report must be deterministic")
 
 
-def validate_supply_bindings(inventory, jvm_linter: str, scanner_version: str) -> None:
+def validate_supply_bindings(inventory, jvm_linter: str) -> None:
     dependencies = inventory.get("dependencies") if type(inventory) is dict else None
     if type(dependencies) is not list:
         raise AnalysisError("supply-chain dependencies must be an array")
@@ -601,11 +483,6 @@ def validate_supply_bindings(inventory, jvm_linter: str, scanner_version: str) -
             "kind": "container", "version": DOTNET_DIGEST, "release": "2026.2",
             "source": "https://hub.docker.com/r/jetbrains/qodana-dotnet",
         },
-        "SonarScanner for .NET": {
-            "kind": "nuget", "version": scanner_version,
-            "source": f"https://www.nuget.org/packages/dotnet-sonarscanner/{scanner_version}",
-            "declaration": "sonar-rider.properties#scanner.dotnet.version",
-        },
     }
     for name, contract in expected.items():
         dependency = by_name.get(name)
@@ -618,15 +495,12 @@ def check(root: Path) -> None:
     dotnet_qodana, _ = parse_yaml(root / "qodana-dotnet.yml", "Qodana .NET config")
     validate_jvm_qodana(jvm_qodana, jvm_text)
     validate_dotnet_qodana(dotnet_qodana)
-    jvm_sonar = parse_properties(root / "sonar-jvm.properties", "JVM Sonar config")
-    rider_sonar = parse_properties(root / "sonar-rider.properties", "Rider Sonar config")
-    validate_sonar(jvm_sonar, rider_sonar)
     secret_inventory = read_json(root / "config/secret-inventory.json", MAX_CONFIG_BYTES, "secret inventory")
     inventory_names = validate_secret_inventory(secret_inventory)
     validate_workflow_secrets(root, inventory_names)
     validate_rider_contract(root)
     supply = read_json(root / "config/supply-chain.json", MAX_INVENTORY_BYTES, "supply-chain inventory")
-    validate_supply_bindings(supply, jvm_qodana["linter"], rider_sonar["scanner.dotnet.version"])
+    validate_supply_bindings(supply, jvm_qodana["linter"])
 
 
 def main() -> int:

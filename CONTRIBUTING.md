@@ -36,7 +36,7 @@ dotnet test src/dotnet/PerfSentinel.Rider.Tests/PerfSentinel.Rider.Tests.csproj 
 ```
 
 GitHub runs Plugin Verifier across the supported IDE matrix, Qodana for JVM and
-Rider, Sonar for both code surfaces, dependency review, and two independent
+Rider, dependency review, and two independent
 `windows-2025` builds. The single required result is `CI / Gate`, which
 aggregates those jobs and fails when any applicable check fails. CodeQL runs as
 a separate reporting workflow.

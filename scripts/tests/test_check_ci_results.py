@@ -43,7 +43,6 @@ class CiResultCheckerTests(unittest.TestCase):
                 "zip": "success",
                 "dependency_review": "success",
                 "workflow_security": "success",
-                "sonar_jvm": "success",
                 "qodana_jvm": "success",
                 "rider_windows": "success",
             },
@@ -69,7 +68,6 @@ class CiResultCheckerTests(unittest.TestCase):
     def test_allows_only_explicit_analysis_skips_for_forks(self):
         payload = self.success_payload()
         payload["change_scope"] = "fork"
-        payload["results"]["sonar_jvm"] = "skipped"
         payload["results"]["qodana_jvm"] = "skipped"
         result = self.run_checker(payload)
         self.assertEqual(0, result.returncode, result.stderr)
@@ -108,7 +106,7 @@ class CiWorkflowTests(unittest.TestCase):
         for job in (
             "changes", "jvm", "python", "php", "rust", "ruby", "javascript", "go",
             "rider-frontend", "plugin-verifier", "zip", "dependency-review",
-            "workflow-security", "sonar-jvm", "qodana-jvm", "gate",
+            "workflow-security", "qodana-jvm", "gate",
         ):
             self.assertIn(f"  {job}:\n", self.text)
         self.assertIn("name: CI", self.text)
@@ -145,7 +143,6 @@ class CiWorkflowTests(unittest.TestCase):
 
     def test_trusted_analysis_does_not_expose_secrets_to_forks(self):
         self.assertIn("github.event.pull_request.head.repo.full_name == github.repository", self.text)
-        self.assertIn("SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}", self.text)
         self.assertIn("QODANA_TOKEN: ${{ secrets.QODANA_TOKEN }}", self.text)
         self.assertNotIn("secrets: inherit", self.text)
 
@@ -183,13 +180,12 @@ class CiWorkflowTests(unittest.TestCase):
         self.assertIn("name: jvm-analysis-inputs", self.text)
         self.assertIn("actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a", self.text)
         self.assertIn("actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c", self.text)
-        self.assertIn("sonar.java.binaries=build/classes/kotlin/main", self.text)
         self.assertIn("zizmorcore/zizmor-action@3dc1ecc9bcb9e94e9b2c709687979e1298497054", self.text)
         self.assertIn("version: 1.29.0", self.text)
         self.assertIn("actionlint_1.7.12_linux_amd64.tar.gz", self.text)
         self.assertIn("8aca8db96f1b94770f1b0d72b6dddcb1ebb8123cb3712530b08cc387b349a3d8", self.text)
         self.assertIn("gitleaks/gitleaks-action@e0c47f4f8be36e29cdc102c57e68cb5cbf0e8d1e", self.text)
-        workflow_security = self.text.split("  workflow-security:\n", 1)[1].split("\n  sonar-jvm:\n", 1)[0]
+        workflow_security = self.text.split("  workflow-security:\n", 1)[1].split("\n  qodana-jvm:\n", 1)[0]
         self.assertIn("fetch-depth: 0", workflow_security)
         self.assertIn("permissions:\n      contents: read\n      pull-requests: read", workflow_security)
         self.assertNotIn("pull-requests: write", workflow_security)

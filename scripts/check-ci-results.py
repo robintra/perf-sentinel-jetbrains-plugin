@@ -9,10 +9,10 @@ from pathlib import Path
 JOBS = {
     "jvm", "python", "php", "rust", "ruby", "javascript", "go",
     "rider_frontend", "plugin_verifier", "zip", "dependency_review",
-    "workflow_security", "sonar_jvm", "qodana_jvm",
+    "workflow_security", "qodana_jvm",
     "rider_windows",
 }
-ANALYSIS = {"sonar_jvm", "qodana_jvm"}
+ANALYSIS = {"qodana_jvm"}
 
 
 def check(path: Path) -> None:

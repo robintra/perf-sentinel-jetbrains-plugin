@@ -25,7 +25,7 @@ host; newer stable collectors target modern .NET only and cannot run there.
 
 Every dependency pull request must update the supply-chain inventory, lock files, verification
 metadata, and immutable action pins together when applicable. The full CI gate, vulnerability audit,
-CodeQL, SonarQube, Qodana, and reproducibility checks must pass before a maintainer merges manually.
+CodeQL, Qodana, and reproducibility checks must pass before a maintainer merges manually.
 
 Renovate's custom JetBrains manager reads the official JetBrains product release service for every
 IDE version embedded in the Gradle build. Its NuGet manager covers SDK-style project files and locks;

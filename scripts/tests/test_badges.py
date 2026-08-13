@@ -15,14 +15,6 @@ BADGES = {
         f"{REPO_URL}/actions/workflows/ci.yml/badge.svg",
         f"{REPO_URL}/actions/workflows/ci.yml",
     ),
-    "Sonar JVM": (
-        "https://sonarcloud.io/api/project_badges/measure?project=robintrassard_perf-sentinel-jetbrains-plugin-jvm&metric=alert_status",
-        "https://sonarcloud.io/summary/new_code?id=robintrassard_perf-sentinel-jetbrains-plugin-jvm",
-    ),
-    "Sonar Rider": (
-        "https://sonarcloud.io/api/project_badges/measure?project=robintrassard_perf-sentinel-jetbrains-plugin-rider&metric=alert_status",
-        "https://sonarcloud.io/summary/new_code?id=robintrassard_perf-sentinel-jetbrains-plugin-rider",
-    ),
     "Qodana": (
         "https://img.shields.io/badge/Qodana-configured-lightgrey",
         f"{REPO_URL}/actions/workflows/ci.yml",
@@ -84,14 +76,6 @@ def complete_readme(listing_id=None):
 def write_root(root, readme, *, listing_id=None, missing_evidence=None, license_bytes=CANONICAL_LICENSE):
     (root / "README.md").write_text(readme, encoding="utf-8")
     (root / "LICENSE").write_bytes(license_bytes)
-    (root / "sonar-jvm.properties").write_text(
-        "sonar.projectKey=robintrassard_perf-sentinel-jetbrains-plugin-jvm\n",
-        encoding="utf-8",
-    )
-    (root / "sonar-rider.properties").write_text(
-        "sonar.projectKey=robintrassard_perf-sentinel-jetbrains-plugin-rider\n",
-        encoding="utf-8",
-    )
     (root / "qodana.yml").write_text("version: 1.0\n", encoding="utf-8")
     config = root / "config"
     config.mkdir()
@@ -208,24 +192,6 @@ class BadgeTests(unittest.TestCase):
         self.assertEqual(1, result.returncode)
         self.assertIn("missing local evidence", result.stderr)
 
-    def test_binds_sonar_keys_and_the_canonical_license(self):
-        result = run_checker(complete_readme(), license_bytes=b"MIT License\n")
-        self.assertEqual(1, result.returncode)
-        self.assertIn("canonical AGPL", result.stderr)
-
-        with tempfile.TemporaryDirectory() as directory:
-            root = Path(directory)
-            write_root(root, complete_readme())
-            (root / "sonar-rider.properties").write_text(
-                "sonar.projectKey=wrong\n", encoding="utf-8"
-            )
-            result = subprocess.run(
-                [sys.executable, str(CHECKER), "--root", str(root)],
-                text=True, capture_output=True, check=False,
-            )
-            self.assertEqual(1, result.returncode)
-            self.assertIn("Sonar Rider", result.stderr)
-
     def test_forbids_marketplace_badges_until_the_real_id_exists(self):
         variants = (
             complete_readme(12345),
@@ -289,6 +255,11 @@ class BadgeTests(unittest.TestCase):
         ):
             with self.subTest(fact=fact):
                 self.assertIn(fact, readme)
+
+    def test_binds_the_canonical_license(self):
+        result = run_checker(complete_readme(), license_bytes=b"MIT License\n")
+        self.assertEqual(1, result.returncode)
+        self.assertIn("canonical AGPL", result.stderr)
 
     def test_make_exposes_and_uses_the_badge_check(self):
         makefile = (REPOSITORY / "Makefile").read_text(encoding="utf-8")

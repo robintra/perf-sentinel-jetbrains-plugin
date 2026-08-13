@@ -43,7 +43,7 @@ class SupplyChainCheckerTest(unittest.TestCase):
             "actions/checkout", "actions/setup-java", "actions/setup-dotnet", "actions/setup-python",
             "actions/upload-artifact", "actions/github-script", "actions/download-artifact",
             "actions/dependency-review-action", "github/codeql-action",
-            "JetBrains/qodana-action", "SonarSource/sonarqube-scan-action", "anchore/sbom-action",
+            "JetBrains/qodana-action", "anchore/sbom-action",
             "ossf/scorecard-action", "step-security/harden-runner", "google/osv-scanner-action",
             "gitleaks/gitleaks-action", "zizmorcore/zizmor-action",
             "gradle/actions",
@@ -582,26 +582,16 @@ class SupplyChainCheckerTest(unittest.TestCase):
         self.write_inventory()
         self.assert_rejected("unexpected tool")
 
-    def test_accepts_task4_qodana_dotnet_and_sonar_scanner_inventory(self):
-        self.inventory["dependencies"].extend([
+    def test_accepts_task4_qodana_dotnet_inventory(self):
+        self.inventory["dependencies"].append(
             {
                 "name": "Qodana .NET image", "kind": "container",
                 "version": "sha256:" + "c" * 64, "release": "2026.1",
                 "releasedAt": "2026-04-21T09:02:03Z",
                 "source": "https://hub.docker.com/r/jetbrains/qodana-dotnet",
-            },
-            {
-                "name": "SonarScanner for .NET", "kind": "nuget",
-                "version": "11.2.1", "releasedAt": "2026-04-02T13:11:28.497Z",
-                "source": "https://www.nuget.org/packages/dotnet-sonarscanner/11.2.1",
-                "declaration": "sonar-rider.properties#scanner.dotnet.version",
-            },
-        ])
-        self.write_inventory()
-        (self.root / "sonar-rider.properties").write_text(
-            "scanner.dotnet.version=11.2.1\n",
-            encoding="utf-8",
+            }
         )
+        self.write_inventory()
         result = self.run_checker()
         self.assertEqual(0, result.returncode, result.stderr)
 

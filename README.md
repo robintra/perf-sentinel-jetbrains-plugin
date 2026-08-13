@@ -1,8 +1,6 @@
 # Perf Sentinel for JetBrains IDEs
 
 [![CI](https://github.com/robintra/perf-sentinel-jetbrains-plugin/actions/workflows/ci.yml/badge.svg)](https://github.com/robintra/perf-sentinel-jetbrains-plugin/actions/workflows/ci.yml)
-[![Sonar JVM](https://sonarcloud.io/api/project_badges/measure?project=robintrassard_perf-sentinel-jetbrains-plugin-jvm&metric=alert_status)](https://sonarcloud.io/summary/new_code?id=robintrassard_perf-sentinel-jetbrains-plugin-jvm)
-[![Sonar Rider](https://sonarcloud.io/api/project_badges/measure?project=robintrassard_perf-sentinel-jetbrains-plugin-rider&metric=alert_status)](https://sonarcloud.io/summary/new_code?id=robintrassard_perf-sentinel-jetbrains-plugin-rider)
 [![Qodana](https://img.shields.io/badge/Qodana-configured-lightgrey)](https://github.com/robintra/perf-sentinel-jetbrains-plugin/actions/workflows/ci.yml)
 [![CodeQL](https://github.com/robintra/perf-sentinel-jetbrains-plugin/actions/workflows/codeql.yml/badge.svg)](https://github.com/robintra/perf-sentinel-jetbrains-plugin/actions/workflows/codeql.yml)
 [![Daily audit](https://github.com/robintra/perf-sentinel-jetbrains-plugin/actions/workflows/security-audit.yml/badge.svg)](https://github.com/robintra/perf-sentinel-jetbrains-plugin/actions/workflows/security-audit.yml)

@@ -353,33 +353,6 @@ jobs:
           advanced-security: false
           annotations: true
 
-  sonar-jvm:
-    name: Sonar JVM
-    needs: [changes, jvm]
-    if: needs.changes.outputs.scope == 'code' && (github.event_name != 'pull_request' || github.event.pull_request.head.repo.full_name == github.repository)
-    runs-on: ubuntu-24.04
-    env:
-      SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
-      # The scanner action targets SonarQube Server unless the host is given, and SonarCloud
-      # rejects an analysis that carries no organization. Both live here rather than in
-      # sonar-jvm.properties, whose property set scripts/check-analysis-config.py pins exactly.
-      SONAR_HOST_URL: https://sonarcloud.io
-    steps:
-      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
-        with:
-          ref: ${{ needs.changes.outputs.target-sha }}
-          persist-credentials: false
-      - uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c
-        with:
-          name: jvm-analysis-inputs
-          path: .
-      - uses: SonarSource/sonarqube-scan-action@22918119ff8e1ca75a623e15c8296b6ea4fbe28f
-        with:
-          args: >-
-            -Dproject.settings=sonar-jvm.properties
-            -Dsonar.organization=robintrassard
-            -Dsonar.java.binaries=build/classes/kotlin/main,protocol/build/classes/kotlin/main,rider-frontend/build/classes/kotlin/main
-
   qodana-jvm:
     name: Qodana JVM
     needs: [changes, jvm]
@@ -533,7 +506,7 @@ jobs:
   gate:
     name: Gate
     if: always()
-    needs: [changes, jvm, python, php, rust, ruby, javascript, go, rider-frontend, plugin-verifier, zip, dependency-review, workflow-security, sonar-jvm, qodana-jvm, windows-rider]
+    needs: [changes, jvm, python, php, rust, ruby, javascript, go, rider-frontend, plugin-verifier, zip, dependency-review, workflow-security, qodana-jvm, windows-rider]
     runs-on: ubuntu-24.04
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
@@ -555,13 +528,12 @@ jobs:
           ZIP: ${{ needs.zip.result }}
           DEPENDENCY_REVIEW: ${{ needs.dependency-review.result }}
           WORKFLOW_SECURITY: ${{ needs.workflow-security.result }}
-          SONAR_JVM: ${{ needs.sonar-jvm.result }}
           QODANA_JVM: ${{ needs.qodana-jvm.result }}
           RIDER_WINDOWS: ${{ needs.windows-rider.result }}
         run: |
           python3 - <<'PY'
           import json, os
-          names = ["jvm", "python", "php", "rust", "ruby", "javascript", "go", "rider_frontend", "plugin_verifier", "zip", "dependency_review", "workflow_security", "sonar_jvm", "qodana_jvm", "rider_windows"]
+          names = ["jvm", "python", "php", "rust", "ruby", "javascript", "go", "rider_frontend", "plugin_verifier", "zip", "dependency_review", "workflow_security", "qodana_jvm", "rider_windows"]
           payload = {"schema_version": 1, "change_scope": os.environ["SCOPE"], "results": {name: os.environ[name.upper()] for name in names}}
           with open("ci-results.json", "w", encoding="utf-8") as stream:
               json.dump(payload, stream, sort_keys=True)
