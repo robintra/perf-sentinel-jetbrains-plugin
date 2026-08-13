@@ -46,7 +46,9 @@ jobs:
           - build: a
           - build: b
     env:
-      GRADLE_USER_HOME: ${{ github.workspace }}\.gradle-release-${{ matrix.build }}
+      # Kept short and off the workspace: the JetBrains Runtime unpacks under this directory and
+      # its deepest files must stay below the 260 character Windows path limit.
+      GRADLE_USER_HOME: D:\gr-${{ matrix.build }}
       BUILD_ID: ${{ matrix.build }}
       TAG_NAME: ${{ github.ref_name }}
       DOTNET_CLI_TELEMETRY_OPTOUT: "1"
