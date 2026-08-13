@@ -21,7 +21,10 @@ jobs:
       contents: read
       security-events: write
     with:
+      # The config does not propagate to child directories, and the manifests sit in three of them,
+      # so it is passed explicitly rather than copied around.
       scan-args: |-
+        --config=osv-scanner.toml
         --recursive
         ./
       results-file-name: osv.sarif

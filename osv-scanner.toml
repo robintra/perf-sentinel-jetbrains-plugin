@@ -1,0 +1,74 @@
+# Findings this repository cannot act on, reviewed on 2026-08-13.
+#
+# The published plugin bundles no third-party library: its ZIP holds the plugin jars, the
+# searchable-options jar and the Rider assembly, nothing else. Every package listed below enters
+# the build inside a JetBrains IDE distribution, through the intellijPlatformTest configurations,
+# or as Gradle tooling. None of it reaches a user and none of it can be upgraded from here.
+#
+# Entries are pinned to the exact affected version, so a future advisory against a version this
+# repository does declare still fails the audit. effectiveUntil expires each entry rather than
+# letting it be forgotten.
+
+[[PackageOverrides]]
+name = "com.fasterxml.jackson.core:jackson-core"
+version = "2.19.0"
+ecosystem = "Maven"
+vulnerability.ignore = true
+effectiveUntil = 2026-11-13
+reason = "Shipped inside the IDE distributions the intellijPlatformTest configurations resolve. The only jackson this repository declares is jackson-bom 2.22.1, already ahead of every fixed version."
+
+[[PackageOverrides]]
+name = "com.fasterxml.jackson.core:jackson-core"
+version = "2.20.2"
+ecosystem = "Maven"
+vulnerability.ignore = true
+effectiveUntil = 2026-11-13
+reason = "Recorded in gradle/verification-metadata.xml from an IDE distribution download, absent from every locked configuration."
+
+[[PackageOverrides]]
+name = "com.fasterxml.jackson.core:jackson-databind"
+version = "2.19.0"
+ecosystem = "Maven"
+vulnerability.ignore = true
+effectiveUntil = 2026-11-13
+reason = "Shipped inside the IDE distributions the intellijPlatformTest configurations resolve. The only jackson this repository declares is jackson-bom 2.22.1, already ahead of every fixed version."
+
+[[PackageOverrides]]
+name = "com.fasterxml.jackson.core:jackson-databind"
+version = "2.20.2"
+ecosystem = "Maven"
+vulnerability.ignore = true
+effectiveUntil = 2026-11-13
+reason = "Recorded in gradle/verification-metadata.xml from an IDE distribution download, absent from every locked configuration."
+
+[[PackageOverrides]]
+name = "tools.jackson.core:jackson-databind"
+version = "3.1.4"
+ecosystem = "Maven"
+vulnerability.ignore = true
+effectiveUntil = 2026-11-13
+reason = "Bundled in RustRover 2026.2, reachable only through the testRustRover262 configurations."
+
+[[PackageOverrides]]
+name = "org.jsoup:jsoup"
+version = "1.16.1"
+ecosystem = "Maven"
+vulnerability.ignore = true
+effectiveUntil = 2026-11-13
+reason = "Recorded in gradle/verification-metadata.xml from an IDE distribution download, absent from every locked configuration."
+
+[[PackageOverrides]]
+name = "io.undertow:undertow-core"
+version = "2.4.2.Final"
+ecosystem = "Maven"
+vulnerability.ignore = true
+effectiveUntil = 2026-11-13
+reason = "Recorded in gradle/verification-metadata.xml from an IDE distribution download, and no fixed version is published."
+
+[[PackageOverrides]]
+name = "org.jetbrains.kotlin:kotlin-gradle-plugin"
+version = "2.4.10"
+ecosystem = "Maven"
+vulnerability.ignore = true
+effectiveUntil = 2026-11-13
+reason = "Build tooling, never packaged. The advisory is fixed only in a 2.4.20 prerelease, which this project does not adopt. Revisit once 2.4.20 reaches a stable release."
