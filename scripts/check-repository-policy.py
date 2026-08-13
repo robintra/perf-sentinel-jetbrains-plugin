@@ -22,7 +22,7 @@ SETTINGS = {
     "allow_rebase_merge": True,
     "allow_merge_commit": False,
     "allow_auto_merge": False,
-    "delete_branch_on_merge": False,
+    "delete_branch_on_merge": True,
 }
 SECURITY = {
     "secret_scanning": True,
