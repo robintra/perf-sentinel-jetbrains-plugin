@@ -246,6 +246,7 @@ def validate_jvm_qodana(config: dict, text: str) -> None:
         "PluginXmlValidity": ["src/main/resources/META-INF/plugin.xml", "src/main/resources/META-INF/perf-sentinel-rider.xml"],
         "SpellCheckingInspection": ["src/dotnet/PerfSentinel.Rider/CSharpSymbolResolver.cs", "src/dotnet/PerfSentinel.Rider.Tests/CSharpSymbolResolverTests.cs"],
         "UnusedSymbol": ["protocol/src/main/kotlin/model/rider/PerfSentinelModel.kt"],
+        "XmlHighlighting": ["gradle/verification-metadata.xml"],
     }
     actual = {}
     for index, exclusion in enumerate(exclusions):
@@ -261,7 +262,12 @@ def validate_jvm_qodana(config: dict, text: str) -> None:
     if actual != expected:
         raise AnalysisError("JVM Qodana narrow suppression set has drifted")
     comments = suppression_comments(text)
-    markers = {"PluginXmlValidity": "Plugin Verifier", "SpellCheckingInspection": "CLR", "UnusedSymbol": "RDGen"}
+    markers = {
+        "PluginXmlValidity": "Plugin Verifier",
+        "SpellCheckingInspection": "CLR",
+        "UnusedSymbol": "RDGen",
+        "XmlHighlighting": "XSD",
+    }
     if any(marker not in comments.get(name, "") for name, marker in markers.items()):
         raise AnalysisError("JVM Qodana narrow suppression rationale is missing")
 
