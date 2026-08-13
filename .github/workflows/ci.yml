@@ -475,7 +475,10 @@ jobs:
         run: |
           $archives = @(Get-ChildItem build/distributions/perf-sentinel-*.zip)
           if ($archives.Count -ne 1) { throw "expected exactly one plugin archive" }
-          $coverage = @(Get-ChildItem build/dotnet/TestResults -Recurse -File | Where-Object Name -eq coverage.cobertura.xml)
+          # vstest keeps the data collector working copy under In\<machine>\ next to the final
+          # attachment, so the report exists twice and only the attachment must be published.
+          $coverage = @(Get-ChildItem build/dotnet/TestResults -Recurse -File |
+            Where-Object { $_.Name -eq 'coverage.cobertura.xml' -and $_.FullName -notmatch '\\In\\' })
           if ($coverage.Count -ne 1) {
             Get-ChildItem build/dotnet/TestResults -Recurse | Select-Object -ExpandProperty FullName
             throw "expected exactly one Cobertura report, found $($coverage.Count)"
