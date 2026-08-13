@@ -101,7 +101,7 @@ class CodeQLWorkflowTests(unittest.TestCase):
         self.assertEqual(2, self.text.count(f"{CODEQL}/analyze@{CODEQL_SHA}"))
         self.assertEqual(2, self.text.count("build-mode: manual"))
         self.assertEqual(2, self.text.count("queries: +security-extended"))
-        self.assertIn("gradle --no-daemon --dependency-verification strict compileKotlin :protocol:rdgen :rider-frontend:compileKotlin", self.text)
+        self.assertIn("gradle --no-daemon --no-build-cache --dependency-verification strict compileKotlin :protocol:rdgen :rider-frontend:compileKotlin", self.text)
         self.assertIn("dotnet restore src/dotnet/PerfSentinel.Rider.Tests/PerfSentinel.Rider.Tests.csproj --locked-mode", self.text)
         self.assertIn("dotnet build src/dotnet/PerfSentinel.Rider.Tests/PerfSentinel.Rider.Tests.csproj --configuration Release --no-restore", self.text)
         self.assertIn("category: /language:java-kotlin", self.text)
