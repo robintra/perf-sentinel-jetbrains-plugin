@@ -20,7 +20,7 @@ class VerificationCommandTests(unittest.TestCase):
                 continue
             for artifact in component.findall("v:artifact", namespace):
                 artifact_name = artifact.get("name")
-                if not artifact_name.endswith((".tar.gz", ".win.zip")):
+                if not artifact_name.endswith((".tar.gz", "-win.zip")):
                     continue
                 self.assertEqual(1, len(artifact.findall("v:sha256", namespace)))
                 actual.add(
@@ -33,7 +33,7 @@ class VerificationCommandTests(unittest.TestCase):
                 )
         expected = {
             ("idea", "idea", "2025.3.6.1", "idea-2025.3.6.1.tar.gz"),
-            ("idea", "idea", "2025.3.6.1", "idea-2025.3.6.1.win.zip"),
+            ("idea", "idea", "2025.3.6.1", "idea-2025.3.6.1-win.zip"),
             ("idea", "idea", "2026.2.1", "idea-2026.2.1.tar.gz"),
             ("python", "pycharm-professional", "2025.3.6.1", "pycharm-professional-2025.3.6.1.tar.gz"),
             ("python", "pycharm-professional", "2026.2.0.1", "pycharm-professional-2026.2.0.1.tar.gz"),

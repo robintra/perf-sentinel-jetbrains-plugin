@@ -594,7 +594,9 @@ def check_verification_metadata(root, locked, errors):
         errors.append("invalid verification metadata root")
     allowed_children = {
         "verification-metadata": {"configuration", "components"},
-        "configuration": {"verify-metadata", "verify-signatures"},
+        "configuration": {"verify-metadata", "verify-signatures", "trusted-artifacts"},
+        "trusted-artifacts": {"trust"},
+        "trust": set(),
         "components": {"component"},
         "component": {"artifact"},
         "artifact": {"sha256"},
@@ -605,6 +607,8 @@ def check_verification_metadata(root, locked, errors):
     allowed_attributes = {
         "verification-metadata": {"schemaLocation"},
         "configuration": set(),
+        "trusted-artifacts": set(),
+        "trust": {"group", "file", "regex", "reason"},
         "components": set(),
         "component": {"group", "name", "version"},
         "artifact": {"name"},
