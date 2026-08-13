@@ -74,7 +74,10 @@ jobs:
       - uses: gradle/actions/setup-gradle@9c971963bec38e04b3d30dcc455b5382be2fdbfb
         with:
           gradle-version: "9.7.0"
-          cache-read-only: ${{ github.event_name == 'pull_request' }}
+          # koverXmlReport aggregates :rider-frontend, so this job unpacks both IntelliJ IDEA and
+          # Rider. Restoring the Gradle cache on top of that fills the runner disk, and the cache
+          # lands after scripts/free-hosted-runner-space.sh has already run.
+          cache-disabled: true
       - run: gradle --no-daemon --dependency-verification strict test koverXmlReport
       - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a
         with:

@@ -198,8 +198,8 @@ class CiWorkflowTests(unittest.TestCase):
     def test_pr_caches_sarif_permission_and_zip_path_are_bounded(self):
         setup_count = self.text.count("uses: gradle/actions/setup-gradle@")
         self.assertGreaterEqual(setup_count, 9)
-        self.assertEqual(setup_count - 2, self.text.count("cache-read-only: ${{ github.event_name == 'pull_request' }}"))
-        self.assertEqual(2, self.text.count("cache-disabled: true"))
+        self.assertEqual(setup_count - 3, self.text.count("cache-read-only: ${{ github.event_name == 'pull_request' }}"))
+        self.assertEqual(3, self.text.count("cache-disabled: true"))
         qodana = self.text.split("  qodana-jvm:\n", 1)[1].split("\n  gate:\n", 1)[0]
         self.assertIn("security-events: write", qodana)
         self.assertNotIn("security-events: write", self.text.split("  qodana-jvm:\n", 1)[0])
