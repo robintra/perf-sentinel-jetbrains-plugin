@@ -10979,7 +10979,7 @@
          <artifact name="idea-2025.3.6.1.tar.gz">
             <sha256 value="503a010a22c9cb61e93e4afa0409285316b5769ff361bfed3fc6238129452a05" origin="Verified from JetBrains checksum"/>
          </artifact>
-         <artifact name="idea-2025.3.6.1.win.zip">
+         <artifact name="idea-2025.3.6.1-win.zip">
             <sha256 value="b9be29885c50033b51863704911e9dac05655a9d8756e6e2c1818f777fbda48e" origin="Verified from JetBrains checksum"/>
          </artifact>
       </component>
