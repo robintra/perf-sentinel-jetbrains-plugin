@@ -22,6 +22,10 @@ plugins {
 allprojects {
     dependencyLocking {
         lockAllConfigurations()
+        // The JetBrains Runtime resolves to an OS and architecture specific archive, so a single
+        // lock file cannot hold it without pinning one platform for every runner. Checksums in
+        // gradle/verification-metadata.xml still cover every platform we build on.
+        ignoredDependencies.add("com.jetbrains:jbr")
     }
     tasks.withType<AbstractArchiveTask>().configureEach {
         isPreserveFileTimestamps = false

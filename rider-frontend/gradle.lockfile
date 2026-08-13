@@ -29,7 +29,6 @@ com.jetbrains.intellij.platform:test-framework:253.33813.60=intellijPlatformTest
 com.jetbrains.intellij.platform:util-jdom:253.33813.60=intellijPlatformJavaCompiler
 com.jetbrains.intellij.rider:riderRD:2025.3.5=compileClasspath,intellijPlatformClasspath,intellijPlatformDependency,intellijPlatformDependencyArchive,intellijPlatformTestClasspath,testCompileClasspath
 com.jetbrains.intellij.tools:tests-bootstrap:253.33813.60=intellijPlatformTestClasspath,intellijPlatformTestDependencies
-com.jetbrains:jbr:jbr_jcef-21.0.11-osx-aarch64-b1163.116=jetbrainsRuntime,jetbrainsRuntimeDependency
 com.jgoodies:forms:1.1-preview=intellijPlatformJavaCompiler
 jaxen:jaxen:1.2.0=intellijPlatformJavaCompiler
 junit:junit:4.13.2=intellijPlatformTestRuntimeClasspath,testCompileClasspath,testRuntimeClasspath
