@@ -360,6 +360,10 @@ jobs:
     runs-on: ubuntu-24.04
     env:
       SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
+      # The scanner action targets SonarQube Server unless the host is given, and SonarCloud
+      # rejects an analysis that carries no organization. Both live here rather than in
+      # sonar-jvm.properties, whose property set scripts/check-analysis-config.py pins exactly.
+      SONAR_HOST_URL: https://sonarcloud.io
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
         with:
@@ -373,6 +377,7 @@ jobs:
         with:
           args: >-
             -Dproject.settings=sonar-jvm.properties
+            -Dsonar.organization=robintrassard
             -Dsonar.java.binaries=build/classes/kotlin/main,protocol/build/classes/kotlin/main,rider-frontend/build/classes/kotlin/main
 
   qodana-jvm:
