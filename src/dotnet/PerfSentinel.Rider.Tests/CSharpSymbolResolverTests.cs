@@ -53,7 +53,7 @@ public class CSharpSymbolResolverTests : BaseTestWithSingleProject
         }
 
         Assert.That(anchor, Is.Not.Null);
-        Assert.That(anchor!.Path, Does.EndWith("Symbols.cs"));
+        Assert.That(anchor.Path, Does.EndWith("Symbols.cs"));
         var source = File.ReadAllText(anchor.Path);
         Assert.That(anchor.Offset, Is.InRange(0, source.Length - _expectedText.Length));
         Assert.That(source.Substring(anchor.Offset, _expectedText.Length), Is.EqualTo(_expectedText));
