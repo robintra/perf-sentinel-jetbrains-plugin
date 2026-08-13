@@ -3,6 +3,6 @@
   "new_code_minimum": 80,
   "surfaces": {
     "jvm": {"total_line_coverage": 69.96424314660309892729439809},
-    "rider": {"status": "pending_windows"}
+    "rider": {"total_line_coverage": 84.68468468468468468468468468}
   }
 }
