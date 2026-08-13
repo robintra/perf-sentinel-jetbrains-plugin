@@ -71,12 +71,19 @@ jobs:
           distribution: temurin
           java-version: ${{ env.JAVA_VERSION }}
       - run: scripts/free-hosted-runner-space.sh
+      - name: Free the toolchains this job never calls
+        shell: bash
+        run: |
+          set -euo pipefail
+          # Unlike the verifier jobs this one runs no setup-dotnet, and nothing here touches Node,
+          # Rust or Homebrew. koverXmlReport aggregates :rider-frontend, so the job unpacks both
+          # IntelliJ IDEA and Rider and needs every spare gigabyte.
+          sudo rm -rf /usr/share/dotnet /usr/local/lib/node_modules /home/linuxbrew /usr/share/rust
+          df -h /
       - uses: gradle/actions/setup-gradle@9c971963bec38e04b3d30dcc455b5382be2fdbfb
         with:
           gradle-version: "9.7.0"
-          # koverXmlReport aggregates :rider-frontend, so this job unpacks both IntelliJ IDEA and
-          # Rider. Restoring the Gradle cache on top of that fills the runner disk, and the cache
-          # lands after scripts/free-hosted-runner-space.sh has already run.
+          # Restoring the Gradle cache lands after the cleanup steps above and refills the disk.
           cache-disabled: true
       - run: gradle --no-daemon --dependency-verification strict test koverXmlReport
       - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a
