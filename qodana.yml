@@ -33,3 +33,8 @@ exclude:
   - name: UnusedSymbol
     paths:
       - protocol/src/main/kotlin/model/rider/PerfSentinelModel.kt
+  # Gradle does not serve its own XSD, so the schemaLocation this file declares cannot resolve.
+  # Gradle validates the file on every build and check-supply-chain.py checks its element set.
+  - name: XmlHighlighting
+    paths:
+      - gradle/verification-metadata.xml
