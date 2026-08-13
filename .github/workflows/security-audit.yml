@@ -73,7 +73,7 @@ jobs:
           format: spdx-json
           output-file: build/security/source.spdx.json
           artifact-name: plugin-source-sbom.spdx.json
-          syft-version: 1.51.0
+          syft-version: v1.51.0
           dependency-snapshot: false
           upload-artifact: false
           upload-release-assets: false
