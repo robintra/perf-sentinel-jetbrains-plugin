@@ -75,6 +75,22 @@ dependencies {
 }
 
 kover {
+    currentProject {
+        instrumentation {
+            // Each of these unpacks its own IDE and already runs in a dedicated CI job. Letting a
+            // report task pull them in makes a single job download every IDE at once and fill the
+            // runner disk. Disabling instrumentation also drops the task dependency.
+            disabledForTestTasks.addAll(
+                "testGoLand253",
+                "testPhpStorm253",
+                "testPyCharm253",
+                "testRubyMine253",
+                "testRustRover253",
+                "testRustRover262",
+                "testWebStorm253",
+            )
+        }
+    }
     reports {
         filters {
             excludes {
