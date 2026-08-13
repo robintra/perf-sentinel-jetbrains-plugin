@@ -32,7 +32,9 @@ jobs:
           languages: java-kotlin
           build-mode: manual
           queries: +security-extended
-      - run: gradle --no-daemon --dependency-verification strict compileKotlin :protocol:rdgen :rider-frontend:compileKotlin
+      # CodeQL traces the compiler, so a cache hit leaves it with nothing to analyse and the
+      # database finalizes empty. Compilation has to actually run here.
+      - run: gradle --no-daemon --no-build-cache --dependency-verification strict compileKotlin :protocol:rdgen :rider-frontend:compileKotlin
       - uses: github/codeql-action/analyze@5595ccaf912efad79be6eef63a5619ff05969be3
         with:
           category: /language:java-kotlin
