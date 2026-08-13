@@ -465,8 +465,11 @@ jobs:
         run: |
           $archives = @(Get-ChildItem build/distributions/perf-sentinel-*.zip)
           if ($archives.Count -ne 1) { throw "expected exactly one plugin archive" }
-          $coverage = @(Get-ChildItem build/dotnet/TestResults -Recurse -Filter coverage.cobertura.xml)
-          if ($coverage.Count -ne 1) { throw "expected exactly one Cobertura report" }
+          $coverage = @(Get-ChildItem build/dotnet/TestResults -Recurse -File | Where-Object Name -eq coverage.cobertura.xml)
+          if ($coverage.Count -ne 1) {
+            Get-ChildItem build/dotnet/TestResults -Recurse | Select-Object -ExpandProperty FullName
+            throw "expected exactly one Cobertura report, found $($coverage.Count)"
+          }
           $evidence = "build/windows-${{ matrix.build }}"
           New-Item -ItemType Directory -Path $evidence | Out-Null
           Copy-Item $archives[0].FullName "$evidence/perf-sentinel.zip"
