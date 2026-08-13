@@ -150,7 +150,7 @@ class WindowsRiderWorkflowTests(unittest.TestCase):
         self.assertIn("runs-on: windows-2025", self.workflow)
         self.assertIn("- build: a", self.workflow)
         self.assertIn("- build: b", self.workflow)
-        self.assertIn("GRADLE_USER_HOME: ${{ github.workspace }}\\.gradle-home-${{ matrix.build }}", self.workflow)
+        self.assertIn("GRADLE_USER_HOME: D:\\gh-${{ matrix.build }}", self.workflow)
         self.assertIn("  windows-rider:\n", self.workflow)
         self.assertIn("scripts/compare-plugin-builds.py", self.workflow)
 
