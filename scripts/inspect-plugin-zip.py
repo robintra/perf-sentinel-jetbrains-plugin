@@ -415,7 +415,9 @@ def main():
         print(f"error: {exc}", file=sys.stderr)
         return 1
     destination = args.manifest or args.archive.with_suffix(".manifest.json")
-    destination.write_text(json.dumps(manifest, indent=2, sort_keys=True) + "\n", encoding="utf-8")
+    destination.write_text(
+        json.dumps(manifest, indent=2, sort_keys=True) + "\n", encoding="utf-8", newline="\n"
+    )
     print(f"Plugin ZIP is closed and reproducible: {manifest['sha256']}")
     return 0
 

@@ -166,7 +166,9 @@ def create(arguments) -> None:
             "certificate": file_record(arguments.certificate, SIGNATURE.MAX_CONFIG_BYTES, "certificate chain"),
         },
     }
-    arguments.manifest.write_text(json.dumps(value, indent=2, sort_keys=True) + "\n", encoding="utf-8")
+    arguments.manifest.write_text(
+        json.dumps(value, indent=2, sort_keys=True) + "\n", encoding="utf-8", newline="\n"
+    )
 
 
 def validate_record(value, expected_name: str, label: str) -> None:
