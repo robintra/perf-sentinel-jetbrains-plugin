@@ -27,13 +27,9 @@ BADGES = {
         f"{REPO_URL}/actions/workflows/security-audit.yml/badge.svg",
         f"{REPO_URL}/actions/workflows/security-audit.yml",
     ),
-    "OpenSSF Scorecard": (
-        "https://api.securityscorecards.dev/projects/github.com/robintra/perf-sentinel-jetbrains-plugin/badge",
-        "https://securityscorecards.dev/viewer/?uri=github.com/robintra/perf-sentinel-jetbrains-plugin",
-    ),
-    "Latest release": (
-        "https://img.shields.io/github/v/release/robintra/perf-sentinel-jetbrains-plugin?display_name=tag&sort=semver",
-        f"{REPO_URL}/releases/latest",
+    "Release": (
+        f"{REPO_URL}/actions/workflows/release.yml/badge.svg",
+        f"{REPO_URL}/actions/workflows/release.yml",
     ),
     "JetBrains compatibility": (
         "https://img.shields.io/badge/JetBrains-2025.3%20%7C%202026.2-087CFA",
@@ -42,10 +38,6 @@ BADGES = {
     "Signed ZIP": (
         "https://img.shields.io/badge/JetBrains%20ZIP%20signature-configured-lightgrey",
         f"{REPO_URL}/actions/workflows/release.yml",
-    ),
-    "License": (
-        "https://img.shields.io/github/license/robintra/perf-sentinel-jetbrains-plugin",
-        f"{REPO_URL}/blob/main/LICENSE",
     ),
 }
 

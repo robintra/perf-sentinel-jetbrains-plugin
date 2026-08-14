@@ -4,17 +4,16 @@
 [![Qodana](https://img.shields.io/badge/Qodana-configured-lightgrey)](https://github.com/robintra/perf-sentinel-jetbrains-plugin/actions/workflows/ci.yml)
 [![CodeQL](https://github.com/robintra/perf-sentinel-jetbrains-plugin/actions/workflows/codeql.yml/badge.svg)](https://github.com/robintra/perf-sentinel-jetbrains-plugin/actions/workflows/codeql.yml)
 [![Daily audit](https://github.com/robintra/perf-sentinel-jetbrains-plugin/actions/workflows/security-audit.yml/badge.svg)](https://github.com/robintra/perf-sentinel-jetbrains-plugin/actions/workflows/security-audit.yml)
-[![OpenSSF Scorecard](https://api.securityscorecards.dev/projects/github.com/robintra/perf-sentinel-jetbrains-plugin/badge)](https://securityscorecards.dev/viewer/?uri=github.com/robintra/perf-sentinel-jetbrains-plugin)
-[![Latest release](https://img.shields.io/github/v/release/robintra/perf-sentinel-jetbrains-plugin?display_name=tag&sort=semver)](https://github.com/robintra/perf-sentinel-jetbrains-plugin/releases/latest)
+[![Release](https://github.com/robintra/perf-sentinel-jetbrains-plugin/actions/workflows/release.yml/badge.svg)](https://github.com/robintra/perf-sentinel-jetbrains-plugin/actions/workflows/release.yml)
 [![JetBrains compatibility](https://img.shields.io/badge/JetBrains-2025.3%20%7C%202026.2-087CFA)](https://github.com/robintra/perf-sentinel-jetbrains-plugin/actions/workflows/ci.yml)
 [![Signed ZIP](https://img.shields.io/badge/JetBrains%20ZIP%20signature-configured-lightgrey)](https://github.com/robintra/perf-sentinel-jetbrains-plugin/actions/workflows/release.yml)
-[![License](https://img.shields.io/github/license/robintra/perf-sentinel-jetbrains-plugin)](https://github.com/robintra/perf-sentinel-jetbrains-plugin/blob/main/LICENSE)
 
-The badges link to workflows, analysis projects, release destinations, and
-committed evidence. They become observed public evidence only after public
-activation. Qodana and ZIP signing deliberately say `configured` until then.
-Marketplace version and download badges are omitted until JetBrains assigns the
-real numeric listing ID.
+The badges link to workflows, release destinations, and committed evidence. CI,
+CodeQL, and the daily audit report observed runs. The others do not: Qodana and
+ZIP signing deliberately say `configured` because nothing is published yet, and
+the release badge stays empty until the release workflow runs for the first
+time. Marketplace version and download badges are omitted until JetBrains
+assigns the real numeric listing ID.
 
 ## Overview
 
