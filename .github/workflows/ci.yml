@@ -504,7 +504,7 @@ jobs:
           cmp config/coverage-baseline.json build/windows/a/rider-baseline.json
 
   gate:
-    name: Gate
+    name: CI / Gate
     if: always()
     needs: [changes, jvm, python, php, rust, ruby, javascript, go, rider-frontend, plugin-verifier, zip, dependency-review, workflow-security, qodana-jvm, windows-rider]
     runs-on: ubuntu-24.04
