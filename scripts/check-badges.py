@@ -32,14 +32,9 @@ BADGES = {
         f"{REPO_URL}/actions/workflows/security-audit.yml",
         ".github/workflows/security-audit.yml",
     ),
-    "OpenSSF Scorecard": (
-        "https://api.securityscorecards.dev/projects/github.com/robintra/perf-sentinel-jetbrains-plugin/badge",
-        "https://securityscorecards.dev/viewer/?uri=github.com/robintra/perf-sentinel-jetbrains-plugin",
-        ".github/workflows/security-audit.yml",
-    ),
-    "Latest release": (
-        "https://img.shields.io/github/v/release/robintra/perf-sentinel-jetbrains-plugin?display_name=tag&sort=semver",
-        f"{REPO_URL}/releases/latest",
+    "Release": (
+        f"{REPO_URL}/actions/workflows/release.yml/badge.svg",
+        f"{REPO_URL}/actions/workflows/release.yml",
         ".github/workflows/release.yml",
     ),
     "JetBrains compatibility": (
@@ -51,11 +46,6 @@ BADGES = {
         "https://img.shields.io/badge/JetBrains%20ZIP%20signature-configured-lightgrey",
         f"{REPO_URL}/actions/workflows/release.yml",
         ".github/workflows/release.yml",
-    ),
-    "License": (
-        "https://img.shields.io/github/license/robintra/perf-sentinel-jetbrains-plugin",
-        f"{REPO_URL}/blob/main/LICENSE",
-        "LICENSE",
     ),
 }
 
@@ -131,7 +121,7 @@ def validate(root):
         if not (root / evidence).is_file():
             errors.append(f"missing local evidence: {evidence}")
     if hashlib.sha256((root / "LICENSE").read_bytes()).hexdigest() != LICENSE_SHA256:
-        errors.append("License badge differs from canonical AGPL-3.0-only")
+        errors.append("LICENSE differs from canonical AGPL-3.0-only")
     return errors
 
 
