@@ -45,12 +45,13 @@ class DailySecurityWorkflowTests(unittest.TestCase):
             "anchore/sbom-action@e22c389904149dbc22b58101806040fa8d37a610",
             "syft-version: v1.51.0",
             "google/osv-scanner-action/osv-scanner-action@8deb546fdb875b9996d27d4950be7312dac076a1",
-            '--licenses="Apache-2.0,Apache-2.0 WITH LLVM-exception,BSD-2-Clause,BSD-3-Clause,CDDL-1.1,EPL-1.0,EPL-2.0,ISC,MIT,MPL-2.0,Unicode-3.0,Zlib"',
+            "name: Enforce the SPDX package-source policy",
             "build/security/source.spdx.json",
             "ossf/scorecard-action@2d1146689b8cda280b9bc96326124645441f03bc",
         ):
             self.assertIn(expected, self.text)
         self.assertNotIn("Require package provenance in the SBOM", self.text)
+        self.assertNotIn("--licenses", self.text)
         self.assertNotIn("python3 - <<'PY'", self.text)
         self.assertGreaterEqual(self.text.count("mkdir -p build/security"), 2)
 
