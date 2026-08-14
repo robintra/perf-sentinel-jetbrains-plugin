@@ -110,7 +110,7 @@ class CiWorkflowTests(unittest.TestCase):
         ):
             self.assertIn(f"  {job}:\n", self.text)
         self.assertIn("name: CI", self.text)
-        self.assertIn("name: Gate", self.text)
+        self.assertIn("name: CI / Gate", self.text)
         self.assertIn("if: always()", self.text)
         self.assertIn("scripts/check-ci-results.py", self.text)
         self.assertEqual(16, self.text.count("verifier-target:"))
