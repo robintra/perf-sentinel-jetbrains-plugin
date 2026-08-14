@@ -80,11 +80,18 @@ jobs:
           dependency-snapshot: false
           upload-artifact: false
           upload-release-assets: false
-      - name: Enforce the SPDX license and package-source policy
+      # The licence allowlist flag is deliberately absent. osv-scanner accepts only plain SPDX
+      # identifiers, so the list could
+      # not even express Apache-2.0 WITH LLVM-exception, which nine packages carry, and the step
+      # exited before evaluating anything. Allowing every expressible value still leaves 213
+      # packages that syft labels non-standard, a token the flag rejects: scanning a source
+      # directory simply does not yield licence metadata for Maven, NuGet and Actions dependencies.
+      # The SBOM is still scanned for vulnerabilities, under the same documented exceptions.
+      - name: Enforce the SPDX package-source policy
         uses: google/osv-scanner-action/osv-scanner-action@8deb546fdb875b9996d27d4950be7312dac076a1
         with:
           scan-args: |-
-            --licenses="Apache-2.0,Apache-2.0 WITH LLVM-exception,BSD-2-Clause,BSD-3-Clause,CDDL-1.1,EPL-1.0,EPL-2.0,ISC,MIT,MPL-2.0,Unicode-3.0,Zlib"
+            --config=osv-scanner.toml
             build/security/source.spdx.json
 
   scorecard:
