@@ -9,6 +9,7 @@ import re
 import subprocess
 import sys
 from pathlib import Path
+from typing import cast
 from urllib.parse import quote
 
 
@@ -287,7 +288,7 @@ def normalize_environment(value):
 class GitHubApi:
     def __init__(self, repository, fixture):
         self.repository = repository
-        self.fixture = load_json(fixture) if fixture else None
+        self.fixture: dict | None = load_json(fixture) if fixture else None
 
     def fixture_key(self, endpoint, page):
         base = f"repos/{self.repository}"
@@ -308,9 +309,10 @@ class GitHubApi:
     def fetch(self, endpoint, *, page=None, schema=None, validator=None, normalize=lambda value: value, status=200):
         key = self.fixture_key(endpoint, page)
         if self.fixture is not None:
-            response = self.fixture.get(key)
-            if type(response) is not dict or set(response) != {"status", "body"} or type(response["status"]) is not int:
+            raw_response = self.fixture.get(key)
+            if type(raw_response) is not dict or set(raw_response) != {"status", "body"} or type(raw_response["status"]) is not int:
                 raise PolicyError(f"normalized API schema {key}: invalid response wrapper")
+            response = cast(dict, raw_response)
             if response["status"] != status:
                 raise PolicyError(f"GitHub API {key} returned HTTP {response['status']}")
             value = response["body"]
@@ -345,7 +347,7 @@ class GitHubApi:
         result = []
         for page in range(1, 101):
             items = self.fetch(f"repos/{self.repository}/rulesets", page=page, schema=RULESET_SUMMARIES_SCHEMA,
-                               normalize=lambda values: [selected(item, ("id",), "ruleset summary") for item in values])
+                               normalize=lambda value: [selected(item, ("id",), "ruleset summary") for item in value])
             result.extend(items)
             if len(items) < 100:
                 return result
@@ -378,9 +380,10 @@ def workflow_secrets(root):
 
 def inventory_secrets(root):
     value = load_json(root / "config" / "secret-inventory.json")
-    entries = value.get("secrets") if type(value) is dict else None
-    if type(entries) is not list:
+    raw_entries = value.get("secrets") if type(value) is dict else None
+    if type(raw_entries) is not list:
         raise PolicyError("secret inventory is invalid")
+    entries = cast(list, raw_entries)
     names = [entry.get("name") for entry in entries if type(entry) is dict]
     if any(type(name) is not str for name in names) or len(names) != len(entries) or len(names) != len(set(names)):
         raise PolicyError("secret inventory is ambiguous")

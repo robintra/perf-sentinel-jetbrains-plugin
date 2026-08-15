@@ -95,7 +95,7 @@ class PluginZipInspectorTest(unittest.TestCase):
         self.temp_dir.cleanup()
 
     @staticmethod
-    def entries(*, main=None, frontend=None, searchable=None, timestamp=NORMALIZED_TIME, mode=None):
+    def entries(*, main=None, frontend=None, searchable=None, timestamp=NORMALIZED_TIME, mode=None) -> list[tuple]:
         file_mode = 0o100644 if mode is None else mode
         return [
             (f"{PLUGIN_ROOT}/", b"", timestamp),
@@ -119,7 +119,7 @@ class PluginZipInspectorTest(unittest.TestCase):
         ]
 
     def write_archive(self, entries=None):
-        with warnings.catch_warnings():
+        with warnings.catch_warnings(record=False):
             warnings.simplefilter("ignore", UserWarning)
             self.archive.write_bytes(archive_bytes(entries if entries is not None else self.entries()))
 

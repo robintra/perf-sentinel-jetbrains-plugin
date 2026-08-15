@@ -4,6 +4,7 @@ import sys
 import tempfile
 import unittest
 from pathlib import Path
+from typing import Any
 
 
 REPOSITORY = Path(__file__).resolve().parents[2]
@@ -18,7 +19,7 @@ SECRETS = (
 )
 
 
-def policy():
+def policy() -> dict[str, Any]:
     return {
         "schema_version": 1,
         "repository": REPO,
@@ -85,7 +86,7 @@ def pull_request_rule():
     }
 
 
-def public_api_fixture():
+def public_api_fixture() -> dict[str, Any]:
     return {
         "repository": {
             "status": 200,

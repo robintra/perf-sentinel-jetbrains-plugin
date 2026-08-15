@@ -11,6 +11,7 @@ import sys
 import unicodedata
 import xml.etree.ElementTree as ElementTree
 from pathlib import Path
+from typing import cast
 
 
 MAX_CONFIG_BYTES = 256 * 1024
@@ -472,16 +473,19 @@ def validate_rider_contract(root: Path) -> None:
 
 
 def validate_supply_bindings(inventory, jvm_linter: str) -> None:
-    dependencies = inventory.get("dependencies") if type(inventory) is dict else None
-    if type(dependencies) is not list:
+    raw_dependencies = inventory.get("dependencies") if type(inventory) is dict else None
+    if type(raw_dependencies) is not list:
         raise AnalysisError("supply-chain dependencies must be an array")
-    by_name = {}
+    dependencies = cast(list, raw_dependencies)
+    by_name: dict[str, dict] = {}
     for dependency in dependencies:
         if type(dependency) is dict and type(dependency.get("name")) is str:
             if dependency["name"] in by_name:
                 raise AnalysisError(f"duplicate supply-chain dependency {dependency['name']}")
             by_name[dependency["name"]] = dependency
     match_jvm = IMAGE.fullmatch(jvm_linter)
+    if match_jvm is None:
+        raise AnalysisError("qodana.yml linter is not a pinned image reference")
     expected = {
         "Qodana JVM Community image": {
             "kind": "container", "version": match_jvm.group(3), "release": match_jvm.group(2),

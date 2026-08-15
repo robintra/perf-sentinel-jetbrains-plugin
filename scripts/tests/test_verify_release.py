@@ -192,9 +192,9 @@ class ReleaseVerifierTests(unittest.TestCase):
 
     def test_rejects_missing_extra_or_malformed_release_data(self):
         mutations = (
-            lambda value: value.update({"extra": True}),
-            lambda value: value["published"].pop("sbom"),
-            lambda value: value.update({"channel": "beta"}),
+            lambda data: data.update({"extra": True}),
+            lambda data: data["published"].pop("sbom"),
+            lambda data: data.update({"channel": "beta"}),
         )
         for mutate in mutations:
             with self.subTest(mutate=mutate):

@@ -188,7 +188,7 @@ def validate_common(archive, label, *, expected_order=None):
     names = [info.filename for info in infos]
     canonical_names = [unicodedata.normalize("NFC", name).casefold() for name in names]
     counts = Counter(canonical_names)
-    duplicate = next((name for name, canonical in zip(names, canonical_names) if counts[canonical] > 1), None)
+    duplicate: str | None = next((name for name, canonical in zip(names, canonical_names) if counts[canonical] > 1), None)
     if duplicate is not None:
         raise ValidationError(f"{label}: duplicate entry {duplicate}")
     for info in infos:
@@ -316,7 +316,10 @@ def inspect(path):
         if len(main_jars) != 1:
             raise ValidationError("plugin ZIP requires exactly one main plugin jar")
         main_jar = main_jars[0]
-        version = main_pattern.fullmatch(main_jar).group(1)
+        main_match = main_pattern.fullmatch(main_jar)
+        if main_match is None:
+            raise ValidationError("plugin ZIP requires exactly one main plugin jar")
+        version = main_match.group(1)
         frontend_jar = f"{prefix}perf-sentinel-rider-frontend.jar"
         searchable_jar = f"{prefix}perf-sentinel-jetbrains-plugin-{version}-searchableOptions.jar"
         expected_jars = {main_jar, frontend_jar, searchable_jar}

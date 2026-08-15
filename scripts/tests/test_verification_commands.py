@@ -19,7 +19,7 @@ class VerificationCommandTests(unittest.TestCase):
             if component.get("group") not in hosted_groups:
                 continue
             for artifact in component.findall("v:artifact", namespace):
-                artifact_name = artifact.get("name")
+                artifact_name = artifact.get("name", "")
                 if not artifact_name.endswith((".tar.gz", "-win.zip")):
                     continue
                 self.assertEqual(1, len(artifact.findall("v:sha256", namespace)))

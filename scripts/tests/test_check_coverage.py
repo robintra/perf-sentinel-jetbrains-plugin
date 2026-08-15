@@ -74,7 +74,7 @@ def cobertura(filename="src/dotnet/App.cs", lines=((1, 1),)):
     )
 
 
-def numeric_baseline(jvm=100, rider=100):
+def numeric_baseline(jvm: int = 100, rider: int | str = 100):
     rider_value = (
         '{"status":"pending_windows"}'
         if rider == "pending_windows"

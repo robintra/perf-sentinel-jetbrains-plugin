@@ -12,6 +12,7 @@ import unicodedata
 import xml.etree.ElementTree as ElementTree
 from dataclasses import dataclass
 from decimal import Decimal
+from typing import Any
 from pathlib import Path
 
 
@@ -166,7 +167,8 @@ def parse_kover_class(class_element: ElementTree.Element) -> tuple[str, int, int
     method_counts: list[tuple[int, int]] = []
     method_keys: set[tuple[str, str]] = set()
     for method in (child for child in class_element if child.tag == "method"):
-        key = tuple(unicodedata.normalize("NFC", method.get(field, "")) for field in ("name", "desc"))
+        key = (unicodedata.normalize("NFC", method.get("name", "")),
+               unicodedata.normalize("NFC", method.get("desc", "")))
         if key in method_keys:
             raise CoverageError("duplicate Kover method")
         method_keys.add(key)
@@ -490,7 +492,7 @@ def load_baseline(path: Path) -> dict[str, object]:
         raise CoverageError(f"{path}: unable to parse coverage baseline: {error}") from error
 
 
-def baseline_surfaces(data: dict[str, object]) -> dict[str, dict[str, object]]:
+def baseline_surfaces(data: dict[str, object]) -> dict[str, dict[str, Any]]:
     """load_baseline has already proved this shape, restating it keeps callers typed."""
     surfaces = data["surfaces"]
     if not isinstance(surfaces, dict):

@@ -48,9 +48,12 @@ def manifest_version(root: Path) -> str:
     if plugin.tag != "idea-plugin" or plugin.attrib:
         fail("plugin manifest root is not canonical")
     versions = [child for child in plugin if child.tag == "version"]
-    if len(versions) != 1 or versions[0].attrib or list(versions[0]) or versions[0].text is None:
+    if len(versions) != 1 or versions[0].attrib or list(versions[0]):
         fail("plugin manifest must contain exactly one direct version")
-    return versions[0].text.strip()
+    text = versions[0].text
+    if text is None:
+        fail("plugin manifest must contain exactly one direct version")
+    return text.strip()
 
 
 def changelog_version(root: Path, version: str) -> None:

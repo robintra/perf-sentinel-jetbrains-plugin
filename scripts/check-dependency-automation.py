@@ -196,7 +196,7 @@ def validate(root: Path):
     if renovate.get("vulnerabilityAlerts") != {"enabled": False} or renovate.get("osvVulnerabilityAlerts") is not False:
         errors.append("Dependabot must be the only security alert owner")
     limit = renovate.get("prConcurrentLimit")
-    if type(limit) is not int or not 1 <= limit <= 5:
+    if not isinstance(limit, int) or isinstance(limit, bool) or not 1 <= limit <= 5:
         errors.append("Renovate pull requests must be bounded")
     if renovate.get("labels") != ["dependencies"] or renovate.get("timezone") != "Europe/Paris":
         errors.append("Renovate labels and timezone are not canonical")

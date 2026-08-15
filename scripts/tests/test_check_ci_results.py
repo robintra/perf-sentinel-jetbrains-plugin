@@ -4,6 +4,7 @@ import sys
 import tempfile
 import unittest
 from pathlib import Path
+from typing import Any
 
 
 REPOSITORY = Path(__file__).resolve().parents[2]
@@ -26,7 +27,7 @@ class CiResultCheckerTests(unittest.TestCase):
             )
 
     @staticmethod
-    def success_payload():
+    def success_payload() -> dict[str, Any]:
         return {
             "schema_version": 1,
             "change_scope": "code",

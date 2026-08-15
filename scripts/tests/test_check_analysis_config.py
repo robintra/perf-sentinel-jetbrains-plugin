@@ -231,11 +231,11 @@ class AnalysisConfigCheckerTests(unittest.TestCase):
 
     def test_rejects_secret_inventory_schema_and_name_drift(self):
         cases = (
-            (lambda value: value.update({"extra": []}), "unknown field"),
-            (lambda value: value["secrets"][0].update({"enabled": True}), "unknown field"),
-            (lambda value: value["secrets"][0].update({"owner": False}), "non-empty string"),
-            (lambda value: value["secrets"].append(dict(value["secrets"][0], name="EXTRA_TOKEN")), "exact secret set"),
-            (lambda value: value["secrets"][2].update({"trustedJobScope": ["ci"]}), "trusted-job scope"),
+            (lambda data: data.update({"extra": []}), "unknown field"),
+            (lambda data: data["secrets"][0].update({"enabled": True}), "unknown field"),
+            (lambda data: data["secrets"][0].update({"owner": False}), "non-empty string"),
+            (lambda data: data["secrets"].append(dict(data["secrets"][0], name="EXTRA_TOKEN")), "exact secret set"),
+            (lambda data: data["secrets"][2].update({"trustedJobScope": ["ci"]}), "trusted-job scope"),
         )
         for mutate, message in cases:
             with self.subTest(message=message):
