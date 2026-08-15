@@ -337,8 +337,9 @@ def check_inventory(root, errors, now):
         errors.append(f"duplicate exception for {dependency}")
     required_compatibility = {"RDGen 2026.2.5"} if "RDGen" in names else set()
     actual_compatibility = {
-        item.get("dependency") for item in exceptions
+        item["dependency"] for item in exceptions
         if isinstance(item, dict) and item.get("type") == "compatibility"
+        and isinstance(item.get("dependency"), str)
     }
     for dependency in sorted(required_compatibility - actual_compatibility):
         errors.append(f"required RDGen compatibility exception missing: {dependency}")
@@ -482,12 +483,12 @@ def check_declarations(root, inventory, errors):
         except (OSError, ElementTree.ParseError, ValueError, tomllib.TOMLDecodeError):
             actual = []
         if declaration == "qodana.yml#linter":
-            expected = f"{dependency.get('release')}@{dependency.get('version')}"
+            expected = f"{dependency.get('release', '')}@{dependency.get('version', '')}"
         else:
-            expected = dependency.get("sha256") if declaration.endswith("#sha256") else dependency.get("version")
+            expected = dependency.get("sha256", "") if declaration.endswith("#sha256") else dependency.get("version", "")
         if not actual or any(value != expected for value in actual):
             detail = "Rider declarations diverge" if declaration.startswith("build.gradle.kts#Rider") else "does not match declaration"
-            errors.append(f"{dependency.get('name')} {detail} {declaration}: expected {expected}, found {actual}")
+            errors.append(f"{dependency.get('name', '')} {detail} {declaration}: expected {expected}, found {actual}")
 
     kover_builds = (root / "build.gradle.kts", root / "rider-frontend" / "build.gradle.kts")
     if any(path.is_file() and "libs.plugins.kover" in path.read_text(encoding="utf-8") for path in kover_builds):
@@ -502,8 +503,24 @@ def check_declarations(root, inventory, errors):
             errors.append("coverlet.collector declaration missing from inventory")
 
 
+def transitive_exceptions(inventory) -> dict[str, dict]:
+    """Index the declared transitive-prerelease exceptions by coordinate.
+
+    A coordinate that is not a string cannot match a lock entry, so dropping it only
+    tightens the check: the exception stops counting as declared.
+    """
+    indexed: dict[str, dict] = {}
+    for item in inventory.get("exceptions", []):
+        if not isinstance(item, dict) or item.get("type") != "transitive-prerelease":
+            continue
+        coordinate = item.get("dependency")
+        if isinstance(coordinate, str):
+            indexed[coordinate] = item
+    return indexed
+
+
 def parse_gradle_locks(root, inventory, errors):
-    occurrences = {}
+    occurrences: dict[str, dict[str, set[str]]] = {}
     for relative in REQUIRED_GRADLE_LOCKS:
         path = root / relative
         try:
@@ -534,11 +551,7 @@ def parse_gradle_locks(root, inventory, errors):
         if not entries:
             errors.append(f"empty dependency lock: {relative}")
 
-    exceptions = {
-        item.get("dependency"): item
-        for item in inventory.get("exceptions", [])
-        if isinstance(item, dict) and item.get("type") == "transitive-prerelease"
-    }
+    exceptions = transitive_exceptions(inventory)
     required_exceptions = set(
         REQUIRED_TRANSITIVE_EXCEPTIONS
         if any(item.get("name") == "RDGen" for item in inventory.get("dependencies", []) if isinstance(item, dict))
@@ -805,11 +818,11 @@ def check_nuget(root, inventory, errors):
     if not source_children or source_children[0].tag != "clear" or len([node for node in source_children if node.tag == "clear"]) != 1:
         errors.append("NuGet.Config must clear inherited sources")
     sources = {
-        node.get("key"): node.get("value")
+        node.get("key", ""): node.get("value", "")
         for node in source_children
         if node.tag == "add" and set(node.attrib) <= {"key", "value", "protocolVersion"}
     }
-    source_keys = [node.get("key") for node in source_children if node.tag == "add"]
+    source_keys = [node.get("key", "") for node in source_children if node.tag == "add"]
     for key in {value for value in source_keys if source_keys.count(value) > 1}:
         errors.append(f"duplicate NuGet source key {key}")
     approved = inventory.get("approvedNuGetSources", [])
@@ -828,7 +841,7 @@ def check_nuget(root, inventory, errors):
                 errors.append("NuGet.Config has invalid package source mapping")
                 continue
             mapping_keys.append(source.get("key"))
-            patterns = [node.get("pattern") for node in source if node.tag == "package" and set(node.attrib) == {"pattern"}]
+            patterns = [node.get("pattern", "") for node in source if node.tag == "package" and set(node.attrib) == {"pattern"}]
             if not patterns or any(not pattern for pattern in patterns):
                 errors.append("NuGet.Config has empty package source mapping")
             mappings[source.get("key")] = patterns
@@ -899,21 +912,25 @@ def same_release_date(recorded, actual):
     return instant.date() == expected.date() if len(recorded) == 10 else instant == expected
 
 
-def latest_eligible(candidates, now):
+def latest_eligible(candidates: list[tuple[str, datetime]], now) -> tuple[str, datetime] | None:
     stable = [item for item in candidates if not PRERELEASE.search(item[0]) and item[1] <= now]
     return max(stable, key=lambda item: version_key(item[0])) if stable else None
 
 
-def validate_release(dependency, candidates, now, label, compatible_prefix=None):
+def validate_release(dependency, candidates: list[tuple[str, datetime]], now, label, compatible_prefix=None):
     expected = dependency["version"].lower()
     selected = next((item for item in candidates if item[0].lower() == expected), None)
-    if not selected or not same_release_date(dependency["releasedAt"], selected[1].isoformat().replace("+00:00", "Z")):
+    if selected is None:
+        raise ValueError(f"{label} version/date mismatch")
+    if not same_release_date(dependency["releasedAt"], selected[1].isoformat().replace("+00:00", "Z")):
         raise ValueError(f"{label} version/date mismatch")
     if compatible_prefix:
         candidates = [item for item in candidates if item[0].startswith(compatible_prefix)]
     eligible = latest_eligible(candidates, now)
-    if not eligible or eligible[0].lower() != expected:
-        raise ValueError(f"not latest eligible stable {label} ({eligible[0] if eligible else 'none'})")
+    if eligible is None:
+        raise ValueError(f"not latest eligible stable {label} (none)")
+    if eligible[0].lower() != expected:
+        raise ValueError(f"not latest eligible stable {label} ({eligible[0]})")
 
 
 def verify_github(client, dependency, now):
@@ -934,12 +951,16 @@ def verify_github(client, dependency, now):
     validate_release(release_dependency, candidates, now, "GitHub release")
     if dependency["kind"] == "github-action":
         refs = client.json(f"https://api.github.com/repos/{repo}/git/matching-refs/tags/{urllib.parse.quote(tag)}")
-        ref = next((item for item in refs if item["ref"] == f"refs/tags/{tag}"), None)
-        if ref and ref["object"]["type"] == "tag":
-            tag_object = client.json(f"https://api.github.com/repos/{repo}/git/tags/{ref['object']['sha']}")
-            ref = {"object": tag_object["object"]}
-        if not ref or ref["object"]["type"] != "commit" or ref["object"]["sha"] != dependency["version"]:
-            raise ValueError("action SHA does not match its stable release tag")
+        mismatch = ValueError("action SHA does not match its stable release tag")
+        ref: dict | None = next((item for item in refs if item["ref"] == f"refs/tags/{tag}"), None)
+        if ref is None:
+            raise mismatch
+        target = ref["object"]
+        if target["type"] == "tag":
+            tag_object = client.json(f"https://api.github.com/repos/{repo}/git/tags/{target['sha']}")
+            target = tag_object["object"]
+        if target["type"] != "commit" or target["sha"] != dependency["version"]:
+            raise mismatch
     elif dependency["version"] != tag.lstrip("v"):
         raise ValueError("tool version does not match release tag")
 
