@@ -276,14 +276,19 @@ def check_inventory(root, errors, now):
             if not SHA1.fullmatch(version) or type(dependency.get("release")) is not str:
                 errors.append(f"{name} action requires a full SHA and release")
 
-    action_names = {item.get("name") for item in dependencies if isinstance(item, dict) and item.get("kind") == "github-action"}
+    action_names = {
+        item["name"] for item in dependencies
+        if isinstance(item, dict) and item.get("kind") == "github-action"
+        and isinstance(item.get("name"), str)
+    }
     for action in sorted(REQUIRED_ACTIONS - action_names):
         errors.append(f"required action missing from inventory: {action}")
     for action in sorted(action_names - REQUIRED_ACTIONS):
         errors.append(f"unexpected action in inventory: {action}")
     tool_names = {
-        item.get("name") for item in dependencies
+        item["name"] for item in dependencies
         if isinstance(item, dict) and item.get("kind") in {"audited-tool", "container"}
+        and isinstance(item.get("name"), str)
     }
     for tool in sorted(tool_names - REQUIRED_TOOLS):
         errors.append(f"unexpected tool in inventory: {tool}")
@@ -737,12 +742,23 @@ def parse_nuget_locks(root, errors):
     return packages, direct
 
 
+def package_reference_version(props, package):
+    """A missing entry must name itself, not surface as an AttributeError on None."""
+    element = props.find(f'.//PackageReference[@Include="{package}"]')
+    if element is None:
+        raise ValueError(f"Directory.Build.props has no PackageReference for {package}")
+    version = element.get("Version")
+    if version is None:
+        raise ValueError(f"PackageReference for {package} has no Version attribute")
+    return version
+
+
 def nuget_declared_direct(root):
     result = {}
     props = ElementTree.parse(root / "src/dotnet/Directory.Build.props")
     sdk = ElementTree.parse(root / "src/dotnet/Plugin.props").findtext(".//SdkVersion")
-    common = props.find('.//PackageReference[@Include="Microsoft.NETFramework.ReferenceAssemblies"]').get("Version")
-    patched_memory = props.find('.//PackageReference[@Include="Microsoft.Bcl.Memory"]').get("Version")
+    common = package_reference_version(props, "Microsoft.NETFramework.ReferenceAssemblies")
+    patched_memory = package_reference_version(props, "Microsoft.Bcl.Memory")
     rider = "src/dotnet/PerfSentinel.Rider/packages.lock.json"
     tests = "src/dotnet/PerfSentinel.Rider.Tests/packages.lock.json"
     result[(rider, "JetBrains.Rider.SDK")] = sdk
@@ -954,6 +970,8 @@ def verify_gradle(client, dependency, _now):
 
 def verify_jetbrains_product(client, dependency, now):
     product = next((name for name in PRODUCT_CODES if dependency["name"].startswith(name + " ")), None)
+    if product is None:
+        raise ValueError(f"{dependency['name']} matches no known JetBrains product code")
     data = client.json(dependency["source"])[PRODUCT_CODES[product]]
     candidates = [(item["version"], parse_instant(item["date"], end_of_day=True)) for item in data if not PRERELEASE.search(item["version"])]
     wave = dependency["name"].rsplit(" ", 1)[-1]
