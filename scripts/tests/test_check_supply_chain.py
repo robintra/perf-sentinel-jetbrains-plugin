@@ -4,6 +4,7 @@ import sys
 import tempfile
 import unittest
 from pathlib import Path
+from typing import Any
 
 
 CHECKER = Path(__file__).parents[1] / "check-supply-chain.py"
@@ -20,7 +21,7 @@ class SupplyChainCheckerTest(unittest.TestCase):
         for project in ("PerfSentinel.Rider", "PerfSentinel.Rider.Tests"):
             (self.root / "src" / "dotnet" / project).mkdir(parents=True)
 
-        self.inventory = {
+        self.inventory: dict[str, Any] = {
             "schemaVersion": 1,
             "auditedAt": "2026-08-12T07:00:00Z",
             "approvedNuGetSources": [
