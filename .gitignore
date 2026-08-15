@@ -5,6 +5,9 @@
 !.idea/dictionaries/
 .idea/dictionaries/*
 !.idea/dictionaries/perf_sentinel.xml
+# `.idea/*` above carries a slash, so it is anchored to the repository root and does not
+# reach a nested project directory. PyCharm opens scripts/ as its own project.
+scripts/.idea/
 .intellijPlatform/
 build/
 *.iml
