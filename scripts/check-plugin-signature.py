@@ -124,6 +124,8 @@ def certificate_pems(path: Path) -> tuple[str, ...]:
     return matches
 
 
+# _ssl._test_decode_cert parses an X.509 PEM without adding a runtime dependency.
+# noinspection PyProtectedMember,PyUnresolvedReferences
 def decode_certificate(pem: str) -> dict:
     try:
         with tempfile.TemporaryDirectory(prefix="perf-sentinel-certificate-") as directory:
