@@ -16,11 +16,11 @@ BADGES = {
         f"{REPO_URL}/blob/main/build.gradle.kts",
     ),
     "Kotlin": (
-        "https://img.shields.io/badge/Kotlin-7F52FF?logo=kotlin&logoColor=white",
-        f"{REPO_URL}/blob/main/build.gradle.kts",
+        "https://img.shields.io/badge/Kotlin-2.4.10-7F52FF?logo=kotlin&logoColor=white",
+        f"{REPO_URL}/blob/main/settings.gradle.kts",
     ),
     ".NET": (
-        "https://img.shields.io/badge/dynamic/xml?url=https%3A%2F%2Fraw.githubusercontent.com%2Frobintra%2Fperf-sentinel-jetbrains-plugin%2Fmain%2Fsrc%2Fdotnet%2FPerfSentinel.Rider%2FPerfSentinel.Rider.csproj&query=%2F%2FTargetFramework&label=.NET&color=512BD4&logo=dotnet&logoColor=white",
+        "https://img.shields.io/badge/.NET%20Framework-4.7.2-512BD4?logo=dotnet&logoColor=white",
         f"{REPO_URL}/blob/main/src/dotnet/PerfSentinel.Rider/PerfSentinel.Rider.csproj",
     ),
     "CI": (
@@ -80,6 +80,10 @@ def write_root(root, readme, *, listing_id=None, missing_evidence=None, license_
     (root / "qodana.yml").write_text("version: 1.0\n", encoding="utf-8")
     if missing_evidence != "build.gradle.kts":
         (root / "build.gradle.kts").write_text("plugins {}\n", encoding="utf-8")
+    if missing_evidence != "settings.gradle.kts":
+        (root / "settings.gradle.kts").write_text(
+            'id("org.jetbrains.kotlin.jvm") version "2.4.10"\n', encoding="utf-8"
+        )
     csproj = root / "src" / "dotnet" / "PerfSentinel.Rider"
     csproj.mkdir(parents=True)
     (csproj / "PerfSentinel.Rider.csproj").write_text(

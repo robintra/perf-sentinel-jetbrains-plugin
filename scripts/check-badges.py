@@ -11,6 +11,10 @@ from pathlib import Path
 
 REPO_URL = "https://github.com/robintra/perf-sentinel-jetbrains-plugin"
 LICENSE_SHA256 = "8486a10c4393cee1c25392769ddd3b2d6c242d6ec7928e1414efff7dfb2f07ef"
+KOTLIN_VERSION = "2.4.10"
+TARGET_FRAMEWORK = "net472"
+RIDER_CSPROJ = "src/dotnet/PerfSentinel.Rider/PerfSentinel.Rider.csproj"
+
 BADGES = {
     "JetBrains IDEs": (
         "https://img.shields.io/badge/JetBrains%20IDEs-2025.3%20%7C%202026.2-087CFA?logo=jetbrains&logoColor=white",
@@ -18,12 +22,12 @@ BADGES = {
         "build.gradle.kts",
     ),
     "Kotlin": (
-        "https://img.shields.io/badge/Kotlin-7F52FF?logo=kotlin&logoColor=white",
-        f"{REPO_URL}/blob/main/build.gradle.kts",
-        "build.gradle.kts",
+        "https://img.shields.io/badge/Kotlin-2.4.10-7F52FF?logo=kotlin&logoColor=white",
+        f"{REPO_URL}/blob/main/settings.gradle.kts",
+        "settings.gradle.kts",
     ),
     ".NET": (
-        "https://img.shields.io/badge/dynamic/xml?url=https%3A%2F%2Fraw.githubusercontent.com%2Frobintra%2Fperf-sentinel-jetbrains-plugin%2Fmain%2Fsrc%2Fdotnet%2FPerfSentinel.Rider%2FPerfSentinel.Rider.csproj&query=%2F%2FTargetFramework&label=.NET&color=512BD4&logo=dotnet&logoColor=white",
+        "https://img.shields.io/badge/.NET%20Framework-4.7.2-512BD4?logo=dotnet&logoColor=white",
         f"{REPO_URL}/blob/main/src/dotnet/PerfSentinel.Rider/PerfSentinel.Rider.csproj",
         "src/dotnet/PerfSentinel.Rider/PerfSentinel.Rider.csproj",
     ),
@@ -105,6 +109,24 @@ def load_metadata(path):
     return listing_id
 
 
+def declared_version_errors(root):
+    """Both technology badges state a literal version, so the build files must still say so."""
+    errors = []
+    settings = (root / "settings.gradle.kts").read_text(encoding="utf-8")
+    if f'id("org.jetbrains.kotlin.jvm") version "{KOTLIN_VERSION}"' not in settings:
+        errors.append("Kotlin badge differs from settings.gradle.kts")
+    errors.extend(target_framework_errors(root))
+    return errors
+
+
+def target_framework_errors(root):
+    """The .NET badge states 4.7.2 as a literal, so the csproj must still say so."""
+    text = (root / RIDER_CSPROJ).read_text(encoding="utf-8")
+    if f"<TargetFramework>{TARGET_FRAMEWORK}</TargetFramework>" in text:
+        return []
+    return [f".NET badge differs from {RIDER_CSPROJ}"]
+
+
 def validate(root):
     errors = []
     try:
@@ -130,6 +152,7 @@ def validate(root):
     for _, _, evidence in BADGES.values():
         if not (root / evidence).is_file():
             errors.append(f"missing local evidence: {evidence}")
+    errors.extend(declared_version_errors(root))
     if hashlib.sha256((root / "LICENSE").read_bytes()).hexdigest() != LICENSE_SHA256:
         errors.append("LICENSE differs from canonical AGPL-3.0-only")
     return errors
