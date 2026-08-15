@@ -17,6 +17,16 @@ BADGES = {
         f"{REPO_URL}/blob/main/build.gradle.kts",
         "build.gradle.kts",
     ),
+    "Kotlin": (
+        "https://img.shields.io/badge/Kotlin-7F52FF?logo=kotlin&logoColor=white",
+        f"{REPO_URL}/blob/main/build.gradle.kts",
+        "build.gradle.kts",
+    ),
+    ".NET": (
+        "https://img.shields.io/badge/dynamic/xml?url=https%3A%2F%2Fraw.githubusercontent.com%2Frobintra%2Fperf-sentinel-jetbrains-plugin%2Fmain%2Fsrc%2Fdotnet%2FPerfSentinel.Rider%2FPerfSentinel.Rider.csproj&query=%2F%2FTargetFramework&label=.NET&color=512BD4&logo=dotnet&logoColor=white",
+        f"{REPO_URL}/blob/main/src/dotnet/PerfSentinel.Rider/PerfSentinel.Rider.csproj",
+        "src/dotnet/PerfSentinel.Rider/PerfSentinel.Rider.csproj",
+    ),
     "CI": (
         f"{REPO_URL}/actions/workflows/ci.yml/badge.svg",
         f"{REPO_URL}/actions/workflows/ci.yml",
