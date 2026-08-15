@@ -8,6 +8,7 @@ import sys
 import xml.etree.ElementTree as ElementTree
 from datetime import date
 from pathlib import Path
+from typing import NoReturn
 
 
 TAG = re.compile(r"^v0\.(?:0|[1-9][0-9]*)\.(?:0|[1-9][0-9]*)$")
@@ -15,7 +16,7 @@ VERSION = re.compile(r"^0\.(?:0|[1-9][0-9]*)\.(?:0|[1-9][0-9]*)$")
 HEADING = re.compile(r"^## \[(?P<version>[^]]+)] - (?P<date>[0-9]{4}-[0-9]{2}-[0-9]{2})$")
 
 
-def fail(message: str) -> None:
+def fail(message: str) -> NoReturn:
     raise ValueError(message)
 
 

@@ -165,7 +165,8 @@ jobs:
       - uses: gradle/actions/setup-gradle@9c971963bec38e04b3d30dcc455b5382be2fdbfb
         with: {gradle-version: "9.7.0", cache-read-only: true}
       - run: gradle --no-daemon --dependency-verification strict :protocol:rdgen
-      - run: dotnet restore src/dotnet/PerfSentinel.Rider.Tests/PerfSentinel.Rider.Tests.csproj --locked-mode --configfile src/dotnet/NuGet.Config
+      # Qodana opens the solution, so both projects must be restored, not just the test one.
+      - run: dotnet restore src/dotnet/PerfSentinel.sln --locked-mode --configfile src/dotnet/NuGet.Config
       - uses: JetBrains/qodana-action@b588768b6e7e6da579e518bc584f79de0d243692
         with:
           args: --config qodana-dotnet.yml
