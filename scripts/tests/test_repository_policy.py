@@ -53,7 +53,9 @@ def policy():
             "require_signed_commits": True,
             "allow_force_pushes": False,
             "allow_deletions": False,
-            "bypass_actors": [],
+            "bypass_actors": [
+                {"actor_id": 5, "actor_type": "RepositoryRole", "bypass_mode": "always"}
+            ],
         },
         "tag_ruleset": {
             "ref_include": "refs/tags/v*",
@@ -117,7 +119,9 @@ def public_api_fixture():
                 "id": 101,
                 "target": "branch",
                 "enforcement": "active",
-                "bypass_actors": [],
+                "bypass_actors": [
+                    {"actor_id": 5, "actor_type": "RepositoryRole", "bypass_mode": "always"}
+                ],
                 "conditions": {"ref_name": {"include": ["~DEFAULT_BRANCH"], "exclude": []}},
                 "rules": [
                     {"type": "required_linear_history"},
@@ -255,7 +259,7 @@ class RepositoryPolicyTests(unittest.TestCase):
                 api["ruleset:101"]["body"]["rules"][-1]["parameters"]["required_status_checks"] = checks
                 self.assert_drift(api, "status checks")
 
-    def test_requires_signed_linear_pr_history_without_bypass(self):
+    def test_requires_signed_linear_pr_history_and_only_the_admin_bypass(self):
         for mutation, message in (
             ("required_signatures", "required_signatures"),
             ("required_linear_history", "required_linear_history"),
@@ -269,9 +273,9 @@ class RepositoryPolicyTests(unittest.TestCase):
                 rules[:] = [rule for rule in rules if rule["type"] != mutation]
                 self.assert_drift(api, message)
         api = public_api_fixture()
-        api["ruleset:101"]["body"]["bypass_actors"] = [
-            {"actor_id": 5, "actor_type": "RepositoryRole", "bypass_mode": "always"}
-        ]
+        api["ruleset:101"]["body"]["bypass_actors"].append(
+            {"actor_id": 99, "actor_type": "Team", "bypass_mode": "always"}
+        )
         self.assert_drift(api, "bypass")
 
     def test_requires_exact_pull_request_semantics(self):

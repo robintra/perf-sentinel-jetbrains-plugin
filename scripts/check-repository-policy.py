@@ -37,6 +37,9 @@ SECRETS = {
 
 CHECK_SCHEMA = {"context": str}
 ACTOR_SCHEMA = {"actor_id": (NULLABLE, int), "actor_type": str, "bypass_mode": str}
+# The sole documented bypass: the repository-admin role, so the maintainer can push to the
+# default branch directly. Any other actor, team, app or deploy key stays refused.
+ADMIN_BYPASS = [{"actor_id": 5, "actor_type": "RepositoryRole", "bypass_mode": "always"}]
 PR_SCHEMA = {
     "allowed_merge_methods": (LIST, str),
     "dismiss_stale_reviews_on_push": bool,
@@ -176,7 +179,7 @@ def validate_policy(value):
         and branch["require_signed_commits"] is True
         and branch["allow_force_pushes"] is False
         and branch["allow_deletions"] is False
-        and branch["bypass_actors"] == []
+        and branch["bypass_actors"] == ADMIN_BYPASS
         and value["tag_ruleset"] == {
             "ref_include": "refs/tags/v*", "allow_updates": False,
             "allow_deletions": False, "bypass_actors": [],
@@ -441,8 +444,8 @@ def validate(repository, root, policy, api):
     if set(rules) != expected_types:
         missing = sorted(expected_types - set(rules))
         errors.append(f"default branch rules differ: {', '.join(missing)}")
-    if branch["bypass_actors"]:
-        errors.append("default branch bypass is forbidden")
+    if branch["bypass_actors"] != ADMIN_BYPASS:
+        errors.append("default branch bypass beyond the admin role is forbidden")
     expected_pr = {name: policy["branch_ruleset"][name] for name in PR_SCHEMA}
     actual_pr = rules.get("pull_request", {}).get("parameters")
     if type(actual_pr) is not dict:
