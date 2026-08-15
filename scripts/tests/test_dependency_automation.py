@@ -36,6 +36,16 @@ def make_fixture(directory):
     return root
 
 
+def run_with_mutation(directory, key, value):
+    """Apply one renovate.json mutation inside a fresh fixture and run the checker."""
+    root = make_fixture(directory)
+    config_path = root / ".github/renovate.json"
+    config = json.loads(config_path.read_text(encoding="utf-8"))
+    config[key] = value
+    config_path.write_text(json.dumps(config), encoding="utf-8")
+    return run_checker(root)
+
+
 class DependencyAutomationTests(unittest.TestCase):
     def test_repository_configuration_is_valid(self):
         result = run_checker()
@@ -255,12 +265,7 @@ class DependencyAutomationTests(unittest.TestCase):
             ("customManagers", [{"depNameTemplate": []}]),
         ):
             with self.subTest(key=key), tempfile.TemporaryDirectory() as directory:
-                root = make_fixture(directory)
-                config_path = root / ".github/renovate.json"
-                config = json.loads(config_path.read_text(encoding="utf-8"))
-                config[key] = value
-                config_path.write_text(json.dumps(config), encoding="utf-8")
-                result = run_checker(root)
+                result = run_with_mutation(directory, key, value)
                 self.assertNotEqual(0, result.returncode)
                 self.assertNotIn("Traceback", result.stderr)
 
@@ -298,12 +303,7 @@ class DependencyAutomationTests(unittest.TestCase):
         )
         for key, value in mutations:
             with self.subTest(key=key), tempfile.TemporaryDirectory() as directory:
-                root = make_fixture(directory)
-                config_path = root / ".github/renovate.json"
-                config = json.loads(config_path.read_text(encoding="utf-8"))
-                config[key] = value
-                config_path.write_text(json.dumps(config), encoding="utf-8")
-                result = run_checker(root)
+                result = run_with_mutation(directory, key, value)
                 self.assertNotEqual(0, result.returncode)
                 self.assertIn("top-level policy", result.stderr)
 

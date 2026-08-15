@@ -309,10 +309,13 @@ class GitHubApi:
     def fetch(self, endpoint, *, page=None, schema=None, validator=None, normalize=lambda value: value, status=200):
         key = self.fixture_key(endpoint, page)
         if self.fixture is not None:
+            wrapper = PolicyError(f"normalized API schema {key}: invalid response wrapper")
             raw_response = self.fixture.get(key)
-            if type(raw_response) is not dict or set(raw_response) != {"status", "body"} or type(raw_response["status"]) is not int:
-                raise PolicyError(f"normalized API schema {key}: invalid response wrapper")
+            if type(raw_response) is not dict:
+                raise wrapper
             response = cast(dict, raw_response)
+            if set(response) != {"status", "body"} or type(response["status"]) is not int:
+                raise wrapper
             if response["status"] != status:
                 raise PolicyError(f"GitHub API {key} returned HTTP {response['status']}")
             value = response["body"]

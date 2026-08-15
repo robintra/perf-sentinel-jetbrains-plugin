@@ -43,6 +43,20 @@ def write_zip(path, payload=b"plugin"):
         archive.writestr(info, payload)
 
 
+def sign_zip(source, target, certificate, key):
+    """Sign a ZIP with the Marketplace ZIP Signer."""
+    subprocess.run(
+        [
+            "java", "-jar", str(signer_jar()), "sign",
+            "-in", str(source), "-out", str(target),
+            "-cert-file", str(certificate), "-key-file", str(key),
+        ],
+        check=True,
+        stdout=subprocess.DEVNULL,
+        stderr=subprocess.DEVNULL,
+    )
+
+
 class PluginSignatureTests(unittest.TestCase):
     @classmethod
     def setUpClass(cls):
@@ -63,16 +77,7 @@ class PluginSignatureTests(unittest.TestCase):
             stderr=subprocess.DEVNULL,
         )
         write_zip(cls.unsigned)
-        subprocess.run(
-            [
-                "java", "-jar", str(signer_jar()), "sign",
-                "-in", str(cls.unsigned), "-out", str(cls.signed),
-                "-cert-file", str(cls.certificate), "-key-file", str(cls.key),
-            ],
-            check=True,
-            stdout=subprocess.DEVNULL,
-            stderr=subprocess.DEVNULL,
-        )
+        sign_zip(cls.unsigned, cls.signed, cls.certificate, cls.key)
         der = ssl.PEM_cert_to_DER_cert(cls.certificate.read_text(encoding="ascii"))
         cls.fingerprint = hashlib.sha256(der).hexdigest()
         cls.identity = cls.root / "identity.json"

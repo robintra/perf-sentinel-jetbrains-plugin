@@ -7,7 +7,7 @@ import tempfile
 import unittest
 from pathlib import Path
 
-from scripts.tests.test_plugin_signature import signer_jar, write_zip
+from scripts.tests.test_plugin_signature import sign_zip, signer_jar, write_zip
 
 
 REPOSITORY = Path(__file__).resolve().parents[2]
@@ -56,26 +56,8 @@ class ReleaseVerifierTests(unittest.TestCase):
             stderr=subprocess.DEVNULL,
         )
         write_zip(cls.unsigned)
-        subprocess.run(
-            [
-                "java", "-jar", str(signer_jar()), "sign",
-                "-in", str(cls.unsigned), "-out", str(cls.signed),
-                "-cert-file", str(cls.certificate), "-key-file", str(cls.key),
-            ],
-            check=True,
-            stdout=subprocess.DEVNULL,
-            stderr=subprocess.DEVNULL,
-        )
-        subprocess.run(
-            [
-                "java", "-jar", str(signer_jar()), "sign",
-                "-in", str(cls.signed), "-out", str(cls.marketplace),
-                "-cert-file", str(cls.marketplace_certificate), "-key-file", str(cls.marketplace_key),
-            ],
-            check=True,
-            stdout=subprocess.DEVNULL,
-            stderr=subprocess.DEVNULL,
-        )
+        sign_zip(cls.unsigned, cls.signed, cls.certificate, cls.key)
+        sign_zip(cls.signed, cls.marketplace, cls.marketplace_certificate, cls.marketplace_key)
         der = ssl.PEM_cert_to_DER_cert(cls.certificate.read_text(encoding="ascii"))
         cls.identity.write_text(json.dumps({
             "schemaVersion": 1,
