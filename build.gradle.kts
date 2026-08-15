@@ -340,7 +340,7 @@ intellijPlatform {
             if (verifyTarget("rider-253")) create(IntelliJPlatformType.Rider, "2025.3.5") { useInstaller = false }
             if (verifyTarget("rider-262")) create(IntelliJPlatformType.Rider, "2026.2.0.2") { useInstaller = false }
             if (verifyTarget("python-253")) create(IntelliJPlatformType.PyCharmProfessional, "2025.3.6.1")
-            if (verifyTarget("python-262")) create(IntelliJPlatformType.PyCharm, "2026.2.0.1")
+            if (verifyTarget("python-262")) create(IntelliJPlatformType.PyCharm, "2026.2.1")
             if (verifyTarget("php-253")) create(IntelliJPlatformType.PhpStorm, "2025.3.6.1")
             if (verifyTarget("php-262")) create(IntelliJPlatformType.PhpStorm, "2026.2.1")
             if (verifyTarget("rust-253")) create(IntelliJPlatformType.RustRover, "2025.3.7")

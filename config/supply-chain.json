@@ -138,8 +138,8 @@
     {
       "name": "PyCharm 2026.2",
       "kind": "jetbrains-product",
-      "version": "2026.2.0.1",
-      "releasedAt": "2026-07-27",
+      "version": "2026.2.1",
+      "releasedAt": "2026-08-12",
       "source": "https://data.services.jetbrains.com/products/releases?code=PCP&type=release",
       "declaration": "build.gradle.kts#PyCharm 2026.2"
     },
@@ -261,9 +261,9 @@
     {
       "name": "Microsoft.NET.Test.Sdk",
       "kind": "nuget",
-      "version": "18.8.1",
-      "releasedAt": "2026-07-14",
-      "source": "https://www.nuget.org/packages/Microsoft.NET.Test.Sdk/18.8.1",
+      "version": "18.9.0",
+      "releasedAt": "2026-08-14",
+      "source": "https://www.nuget.org/packages/Microsoft.NET.Test.Sdk/18.9.0",
       "declaration": "src/dotnet/PerfSentinel.Rider.Tests/PerfSentinel.Rider.Tests.csproj#Microsoft.NET.Test.Sdk"
     },
     {
@@ -310,10 +310,10 @@
     {
       "name": "TruffleHog",
       "kind": "audited-tool",
-      "version": "3.96.0",
-      "releasedAt": "2026-07-24T18:23:23Z",
-      "source": "https://github.com/trufflesecurity/trufflehog/releases/tag/v3.96.0",
-      "release": "v3.96.0"
+      "version": "3.97.0",
+      "releasedAt": "2026-08-14T18:35:16Z",
+      "source": "https://github.com/trufflesecurity/trufflehog/releases/tag/v3.97.0",
+      "release": "v3.97.0"
     },
     {
       "name": "Zizmor",
@@ -430,10 +430,10 @@
     {
       "name": "github/codeql-action",
       "kind": "github-action",
-      "version": "5595ccaf912efad79be6eef63a5619ff05969be3",
-      "release": "v4.37.6",
-      "releasedAt": "2026-08-04T13:34:40Z",
-      "source": "https://github.com/github/codeql-action/releases/tag/v4.37.6"
+      "version": "ff2f1c621b7f889edc0d3c761ac2e6a3f8cdb0dd",
+      "release": "v4.37.7",
+      "releasedAt": "2026-08-13T13:30:27Z",
+      "source": "https://github.com/github/codeql-action/releases/tag/v4.37.7"
     },
     {
       "name": "JetBrains/qodana-action",
@@ -462,10 +462,10 @@
     {
       "name": "step-security/harden-runner",
       "kind": "github-action",
-      "version": "b09bb98e06d4d774595224525879c09bc6e98c40",
-      "release": "v2.20.1",
-      "releasedAt": "2026-08-05T05:52:30Z",
-      "source": "https://github.com/step-security/harden-runner/releases/tag/v2.20.1"
+      "version": "05e31511f85b41b11d1cf0ef85d0992719546e2c",
+      "release": "v2.21.0",
+      "releasedAt": "2026-08-15T05:52:25Z",
+      "source": "https://github.com/step-security/harden-runner/releases/tag/v2.21.0"
     },
     {
       "name": "google/osv-scanner-action",

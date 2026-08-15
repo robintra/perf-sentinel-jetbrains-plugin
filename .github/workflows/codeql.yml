@@ -27,7 +27,7 @@ jobs:
         with:
           gradle-version: "9.7.0"
           cache-read-only: ${{ github.event_name == 'pull_request' }}
-      - uses: github/codeql-action/init@5595ccaf912efad79be6eef63a5619ff05969be3
+      - uses: github/codeql-action/init@ff2f1c621b7f889edc0d3c761ac2e6a3f8cdb0dd
         with:
           languages: java-kotlin
           build-mode: manual
@@ -35,7 +35,7 @@ jobs:
       # CodeQL traces the compiler, so a cache hit leaves it with nothing to analyse and the
       # database finalizes empty. Compilation has to actually run here.
       - run: gradle --no-daemon --no-build-cache --dependency-verification strict compileKotlin :protocol:rdgen :rider-frontend:compileKotlin
-      - uses: github/codeql-action/analyze@5595ccaf912efad79be6eef63a5619ff05969be3
+      - uses: github/codeql-action/analyze@ff2f1c621b7f889edc0d3c761ac2e6a3f8cdb0dd
         with:
           category: /language:java-kotlin
 
@@ -56,7 +56,7 @@ jobs:
         with:
           gradle-version: "9.7.0"
           cache-read-only: ${{ github.event_name == 'pull_request' }}
-      - uses: github/codeql-action/init@5595ccaf912efad79be6eef63a5619ff05969be3
+      - uses: github/codeql-action/init@ff2f1c621b7f889edc0d3c761ac2e6a3f8cdb0dd
         with:
           languages: csharp
           build-mode: manual
@@ -64,6 +64,6 @@ jobs:
       - run: gradle --no-daemon --dependency-verification strict :protocol:rdgen
       - run: dotnet restore src/dotnet/PerfSentinel.Rider.Tests/PerfSentinel.Rider.Tests.csproj --locked-mode --configfile src/dotnet/NuGet.Config
       - run: dotnet build src/dotnet/PerfSentinel.Rider.Tests/PerfSentinel.Rider.Tests.csproj --configuration Release --no-restore
-      - uses: github/codeql-action/analyze@5595ccaf912efad79be6eef63a5619ff05969be3
+      - uses: github/codeql-action/analyze@ff2f1c621b7f889edc0d3c761ac2e6a3f8cdb0dd
         with:
           category: /language:csharp
