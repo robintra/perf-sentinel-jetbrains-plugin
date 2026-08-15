@@ -36,7 +36,7 @@ class VerificationCommandTests(unittest.TestCase):
             ("idea", "idea", "2025.3.6.1", "idea-2025.3.6.1-win.zip"),
             ("idea", "idea", "2026.2.1", "idea-2026.2.1.tar.gz"),
             ("python", "pycharm-professional", "2025.3.6.1", "pycharm-professional-2025.3.6.1.tar.gz"),
-            ("python", "pycharm-professional", "2026.2.0.1", "pycharm-professional-2026.2.0.1.tar.gz"),
+            ("python", "pycharm-professional", "2026.2.1", "pycharm-professional-2026.2.1.tar.gz"),
             ("webide", "PhpStorm", "2025.3.6.1", "PhpStorm-2025.3.6.1.tar.gz"),
             ("webide", "PhpStorm", "2026.2.1", "PhpStorm-2026.2.1.tar.gz"),
             ("rustrover", "RustRover", "2025.3.7", "RustRover-2025.3.7.tar.gz"),
