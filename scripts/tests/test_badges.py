@@ -39,6 +39,10 @@ BADGES = {
         "https://img.shields.io/badge/Qodana-JVM%20%7C%20Rider-000000?logo=qodana&logoColor=white",
         f"{REPO_URL}/actions/workflows/security-audit.yml",
     ),
+    "Supply Chain": (
+        f"{REPO_URL}/actions/workflows/supply-chain-freshness.yml/badge.svg",
+        f"{REPO_URL}/actions/workflows/supply-chain-freshness.yml",
+    ),
     "Release": (
         f"{REPO_URL}/actions/workflows/release.yml/badge.svg",
         f"{REPO_URL}/actions/workflows/release.yml",
@@ -98,7 +102,7 @@ def write_root(root, readme, *, listing_id=None, missing_evidence=None, license_
     )
     workflows = root / ".github" / "workflows"
     workflows.mkdir(parents=True)
-    for name in ("ci.yml", "codeql.yml", "security-audit.yml", "release.yml"):
+    for name in ("ci.yml", "codeql.yml", "security-audit.yml", "supply-chain-freshness.yml", "release.yml"):
         if name != missing_evidence:
             (workflows / name).write_text(f"name: {name}\n", encoding="utf-8")
 

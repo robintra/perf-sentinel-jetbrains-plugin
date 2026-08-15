@@ -1,0 +1,30 @@
+name: Supply Chain Freshness
+
+# check-supply-chain.py --online asks every pin whether it is still the latest
+# upstream stable. That answer changes on other people's release schedules, not
+# on ours, so it runs on a schedule and never on push: a red run here means the
+# repository is behind, not that a commit is broken.
+
+on:
+  schedule:
+    - cron: '47 6 * * *'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: supply-chain-freshness
+  cancel-in-progress: true
+
+jobs:
+  freshness:
+    name: Compare every pin with its latest upstream stable
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
+        with: {persist-credentials: false}
+      - name: Audit pinned versions against upstream
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
+        run: python3 scripts/check-supply-chain.py --online

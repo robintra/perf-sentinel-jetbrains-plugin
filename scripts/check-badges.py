@@ -51,6 +51,11 @@ BADGES = {
         f"{REPO_URL}/actions/workflows/security-audit.yml",
         ".github/workflows/security-audit.yml",
     ),
+    "Supply Chain": (
+        f"{REPO_URL}/actions/workflows/supply-chain-freshness.yml/badge.svg",
+        f"{REPO_URL}/actions/workflows/supply-chain-freshness.yml",
+        ".github/workflows/supply-chain-freshness.yml",
+    ),
     "Release": (
         f"{REPO_URL}/actions/workflows/release.yml/badge.svg",
         f"{REPO_URL}/actions/workflows/release.yml",

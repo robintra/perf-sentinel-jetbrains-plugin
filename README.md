@@ -6,19 +6,22 @@
     <a href="https://github.com/robintra/perf-sentinel-jetbrains-plugin/actions/workflows/security-audit.yml"><img src="https://github.com/robintra/perf-sentinel-jetbrains-plugin/actions/workflows/security-audit.yml/badge.svg" alt="Security Audit" /></a>
     <a href="https://github.com/robintra/perf-sentinel-jetbrains-plugin/actions/workflows/codeql.yml"><img src="https://github.com/robintra/perf-sentinel-jetbrains-plugin/actions/workflows/codeql.yml/badge.svg" alt="CodeQL" /></a>
     <a href="https://github.com/robintra/perf-sentinel-jetbrains-plugin/actions/workflows/security-audit.yml"><img src="https://img.shields.io/badge/Qodana-JVM%20%7C%20Rider-000000?logo=qodana&logoColor=white" alt="Qodana" /></a>
+    <a href="https://github.com/robintra/perf-sentinel-jetbrains-plugin/actions/workflows/supply-chain-freshness.yml"><img src="https://github.com/robintra/perf-sentinel-jetbrains-plugin/actions/workflows/supply-chain-freshness.yml/badge.svg" alt="Supply Chain" /></a>
     <a href="https://github.com/robintra/perf-sentinel-jetbrains-plugin/actions/workflows/release.yml"><img src="https://github.com/robintra/perf-sentinel-jetbrains-plugin/actions/workflows/release.yml/badge.svg" alt="Release" /></a>
     <a href="https://github.com/robintra/perf-sentinel-jetbrains-plugin/actions/workflows/release.yml"><img src="https://img.shields.io/badge/JetBrains%20ZIP-signature%20configured-lightgrey?logo=jetbrains&logoColor=white" alt="Signed ZIP" /></a>
 </p>
 
 # Perf Sentinel for JetBrains IDEs
 
-CI, the daily audit, CodeQL and Qodana report observed runs. The rest do not.
-Qodana has no status badge of its own, so that one is a plain link to the
-workflow the two scans run in, the pattern JetBrains itself recommends. ZIP
-signing says `configured` because it happens only on the release path, and the
-release badge stays empty until that path runs for the first time. Marketplace
-version and download badges are omitted until JetBrains assigns the real
-numeric listing ID.
+CI, the daily audit, Supply Chain, CodeQL and Qodana report observed runs. The
+rest do not. Supply Chain turns red when a pinned dependency is no longer the
+latest upstream stable, which is a task list rather than a broken commit, so it
+runs on a schedule and never on push. Qodana has no status badge of its own, so
+that one is a plain link to the workflow the two scans run in, the pattern
+JetBrains itself recommends. ZIP signing says `configured` because it happens
+only on the release path, and the release badge stays empty until that path runs
+for the first time. Marketplace version and download badges are omitted until
+JetBrains assigns the real numeric listing ID.
 
 ## Overview
 
