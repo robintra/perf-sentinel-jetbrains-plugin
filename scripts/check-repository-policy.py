@@ -14,7 +14,7 @@ from urllib.parse import quote
 
 LIST = "list"
 NULLABLE = "nullable"
-SECRET_REFERENCE = re.compile(r"\$\{\{\s*secrets\s*\.\s*([A-Z][A-Z0-9_]*)\s*\}\}")
+SECRET_REFERENCE = re.compile(r"\$\{\{\s*secrets\s*\.\s*([A-Z][A-Z0-9_]*)\s*}}")
 SECRET_TOKEN = re.compile(r"(?<![A-Za-z0-9_])secrets(?![A-Za-z0-9_])", re.IGNORECASE)
 
 SETTINGS = {

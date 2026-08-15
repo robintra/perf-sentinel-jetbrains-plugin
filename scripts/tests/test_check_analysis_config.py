@@ -57,7 +57,7 @@ profile:
   name: qodana.recommended
 onlyDirectory: src/dotnet
 dotnet:
-  project: src/dotnet/PerfSentinel.Rider.Tests/PerfSentinel.Rider.Tests.csproj
+  solution: src/dotnet/PerfSentinel.sln
   configuration: Release
 failThreshold: 0
 '''

@@ -43,8 +43,8 @@ SECRET_CONTENT = (
     re.compile(rb"gh[pousr]_[A-Za-z0-9]{20,}"),
 )
 ABSOLUTE_BUILD_PATH = re.compile(
-    rb"(?:[A-Za-z]:[\\/](?:Users|agent|actions-runner|workspace|__w|tmp|a)[\\/][\x20-\x7e]{2,}"
-    rb"|/(?:Users|home|private|tmp|workspace|__w)/[\x20-\x7e]{2,})"
+    rb"[A-Za-z]:[\\/](?:Users|agent|actions-runner|workspace|__w|tmp|a)[\\/][\x20-\x7e]{2,}"
+    rb"|/(?:Users|home|private|tmp|workspace|__w)/[\x20-\x7e]{2,}"
 )
 
 

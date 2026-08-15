@@ -140,8 +140,8 @@ def validate(root):
         errors.append("README must start with the canonical top badge block")
     body = readme[len(prefix.encode("utf-8")) :].decode("utf-8")
     if re.search(r"\[\s*!\[", body) or (
-        re.search(r"<a(?:\s|>)", body, re.IGNORECASE)
-        and re.search(r"<img(?:\s|>)", body, re.IGNORECASE)
+        re.search(r"<a[\s>]", body, re.IGNORECASE)
+        and re.search(r"<img[\s>]", body, re.IGNORECASE)
     ):
         errors.append("README contains a badge outside the canonical top block")
     if listing_id is None and (

@@ -24,7 +24,7 @@ PROPERTY_KEY = re.compile(r"^[A-Za-z][A-Za-z0-9_.-]*$")
 YAML_KEY = re.compile(r"^([A-Za-z][A-Za-z0-9]*):(?: (.*))?$")
 DRIVE_PATH = re.compile(r"^[A-Za-z]:/")
 STATIC_SECRET = re.compile(r"\s*secrets\s*\.\s*([A-Za-z_][A-Za-z0-9_]*)\s*", re.IGNORECASE)
-SECRET_VALUE = re.compile(r"(?:gh[pousr]_[A-Za-z0-9]{20,}|sk-[A-Za-z0-9_-]{20,}|[A-Fa-f0-9]{40,})")
+SECRET_VALUE = re.compile(r"gh[pousr]_[A-Za-z0-9]{20,}|sk-[A-Za-z0-9_-]{20,}|[A-Fa-f0-9]{40,}")
 FORBIDDEN_XML = re.compile(r"<!\s*(?:DOCTYPE|ENTITY)\b", re.IGNORECASE)
 
 
@@ -97,7 +97,7 @@ def scalar(value: str):
         return parsed
     if value in {"true", "false"}:
         return value == "true"
-    if re.fullmatch(r"(?:0|[1-9][0-9]*)", value):
+    if re.fullmatch(r"0|[1-9][0-9]*", value):
         return int(value)
     if not value or value[0] in "'[{&*!|>" or " #" in value:
         raise AnalysisError("unsupported YAML scalar")
@@ -280,13 +280,15 @@ def validate_dotnet_qodana(config: dict) -> None:
         "version": "1.0",
         "profile": {"name": "qodana.recommended"},
         "onlyDirectory": "src/dotnet",
+        # The solution, not one project: opened on a single csproj, Qodana cannot see the types
+        # the test project references, and reports them as unresolved compiler errors.
         "dotnet": {
-            "project": "src/dotnet/PerfSentinel.Rider.Tests/PerfSentinel.Rider.Tests.csproj",
+            "solution": "src/dotnet/PerfSentinel.sln",
             "configuration": "Release",
         },
     }
     if any(config[name] != value for name, value in expected.items()):
-        raise AnalysisError("Qodana .NET must analyze only src/dotnet through the Release test project")
+        raise AnalysisError("Qodana .NET must analyze only src/dotnet through the Release solution")
     if type(config["failThreshold"]) is not int or config["failThreshold"] != 0:
         raise AnalysisError("Qodana .NET failThreshold must be integer zero")
 

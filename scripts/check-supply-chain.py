@@ -27,7 +27,7 @@ PRERELEASE = re.compile(
     r"(?i)(?:^|[.\-_])(alpha|beta|eap|milestone|preview|rc|snapshot|nightly|m\d+)(?:[.\-_\d]|$)"
 )
 DYNAMIC = re.compile(
-    r"(?i)(?:\d+\.\+|latest\.(?:release|integration)|\bSNAPSHOT\b|(?<![\w\"])[\[(]\d[\w., +*\-]*[\])])"
+    r"(?i)(?:\d+\.\+|latest\.(?:release|integration)|\bSNAPSHOT\b|(?<![\w\"])[\[(]\d[\w., +*\-]*[])])"
 )
 MUTABLE_IDE = re.compile(r"(?i)(?:\b(?:latest|recommended)\s*\(|LATEST-EAP-SNAPSHOT)")
 GRADLE_LOCK = re.compile(r"^([^:=\s]+):([^:=\s]+):([^=\s]+)=([^,\s]+(?:,[^,\s]+)*)$")
