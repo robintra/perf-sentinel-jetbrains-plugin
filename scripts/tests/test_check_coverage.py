@@ -98,7 +98,8 @@ class CoverageCheckerTests(unittest.TestCase):
     def tearDown(self):
         self.temp_dir.cleanup()
 
-    def write(self, path, content):
+    @staticmethod
+    def write(path, content):
         path.write_text(content, encoding="utf-8")
 
     def run_checker(self, surface, *extra):

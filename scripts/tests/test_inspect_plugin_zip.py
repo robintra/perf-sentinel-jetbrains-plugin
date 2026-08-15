@@ -94,7 +94,8 @@ class PluginZipInspectorTest(unittest.TestCase):
     def tearDown(self):
         self.temp_dir.cleanup()
 
-    def entries(self, *, main=None, frontend=None, searchable=None, timestamp=NORMALIZED_TIME, mode=None):
+    @staticmethod
+    def entries(*, main=None, frontend=None, searchable=None, timestamp=NORMALIZED_TIME, mode=None):
         file_mode = 0o100644 if mode is None else mode
         return [
             (f"{PLUGIN_ROOT}/", b"", timestamp),

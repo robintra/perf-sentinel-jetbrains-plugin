@@ -3,7 +3,6 @@ import subprocess
 import sys
 import tempfile
 import unittest
-from copy import deepcopy
 from pathlib import Path
 
 

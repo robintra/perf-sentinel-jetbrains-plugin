@@ -1,4 +1,3 @@
-import importlib.util
 import json
 import subprocess
 import sys
@@ -14,7 +13,8 @@ BUILD = REPOSITORY / "build.gradle.kts"
 
 
 class CiResultCheckerTests(unittest.TestCase):
-    def run_checker(self, payload):
+    @staticmethod
+    def run_checker(payload):
         with tempfile.TemporaryDirectory() as directory:
             path = Path(directory) / "results.json"
             path.write_text(json.dumps(payload), encoding="utf-8")

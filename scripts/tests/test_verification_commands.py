@@ -108,7 +108,8 @@ class VerificationCommandTests(unittest.TestCase):
             java_job.index("uses: gradle/actions/setup-gradle@"),
         )
 
-    def dry_run(self, target, **variables):
+    @staticmethod
+    def dry_run(target, **variables):
         arguments = ["make", "--no-print-directory", "-n", target]
         arguments.extend(f"{key}={value}" for key, value in variables.items())
         return subprocess.run(
