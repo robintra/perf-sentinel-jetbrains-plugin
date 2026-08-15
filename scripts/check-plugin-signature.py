@@ -14,7 +14,7 @@ import sys
 import tempfile
 import zipfile
 from dataclasses import dataclass
-from datetime import datetime, timezone
+from datetime import datetime, UTC
 from pathlib import Path
 
 
@@ -148,10 +148,10 @@ def certificate_details(path: Path, now: datetime | None = None) -> CertificateD
             for key, value in relative_name
         }
         common_name = names.get("commonName")
-        current = now or datetime.now(timezone.utc)
+        current = now or datetime.now(UTC)
         for index, certificate in enumerate(decoded_certificates, start=1):
-            not_before = datetime.strptime(certificate["notBefore"], "%b %d %H:%M:%S %Y %Z").replace(tzinfo=timezone.utc)
-            not_after = datetime.strptime(certificate["notAfter"], "%b %d %H:%M:%S %Y %Z").replace(tzinfo=timezone.utc)
+            not_before = datetime.strptime(certificate["notBefore"], "%b %d %H:%M:%S %Y %Z").replace(tzinfo=UTC)
+            not_after = datetime.strptime(certificate["notAfter"], "%b %d %H:%M:%S %Y %Z").replace(tzinfo=UTC)
             if current < not_before:
                 return CertificateDetails(common_name, None, f"certificate chain member {index} is not yet valid")
             if current > not_after:

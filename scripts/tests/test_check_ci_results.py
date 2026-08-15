@@ -79,7 +79,7 @@ class CiResultCheckerTests(unittest.TestCase):
     def test_allows_all_jobs_to_skip_only_for_documentation(self):
         payload = self.success_payload()
         payload["change_scope"] = "docs"
-        payload["results"] = {name: "skipped" for name in payload["results"]}
+        payload["results"] = dict.fromkeys(payload["results"], "skipped")
         result = self.run_checker(payload)
         self.assertEqual(0, result.returncode, result.stderr)
         payload["change_scope"] = "code"
@@ -185,6 +185,9 @@ class CiWorkflowTests(unittest.TestCase):
         self.assertIn("version: 1.29.0", self.text)
         self.assertIn("actionlint_1.7.12_linux_amd64.tar.gz", self.text)
         self.assertIn("8aca8db96f1b94770f1b0d72b6dddcb1ebb8123cb3712530b08cc387b349a3d8", self.text)
+        self.assertIn("ruff-x86_64-unknown-linux-gnu.tar.gz", self.text)
+        self.assertIn("7ab3b978d2c0b1c96b2323d4e5c4f35284ae1cdf35d2f7399595c74c805f5fa3", self.text)
+        self.assertIn("./ruff-x86_64-unknown-linux-gnu/ruff check scripts tools", self.text)
         self.assertIn("gitleaks/gitleaks-action@e0c47f4f8be36e29cdc102c57e68cb5cbf0e8d1e", self.text)
         workflow_security = self.text.split("  workflow-security:\n", 1)[1].split("\n  qodana-jvm:\n", 1)[0]
         self.assertIn("fetch-depth: 0", workflow_security)

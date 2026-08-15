@@ -332,6 +332,14 @@
       "release": "v1.51.0"
     },
     {
+      "name": "Ruff",
+      "kind": "audited-tool",
+      "version": "0.16.3",
+      "releasedAt": "2026-08-13T15:18:05Z",
+      "source": "https://github.com/astral-sh/ruff/releases/tag/0.16.3",
+      "release": "0.16.3"
+    },
+    {
       "name": "actionlint",
       "kind": "audited-tool",
       "version": "1.7.12",

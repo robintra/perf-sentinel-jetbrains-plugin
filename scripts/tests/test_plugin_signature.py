@@ -9,7 +9,7 @@ import sys
 import tempfile
 import unittest
 import zipfile
-from datetime import datetime, timedelta, timezone
+from datetime import datetime, timedelta, UTC
 from pathlib import Path
 from unittest.mock import patch
 
@@ -261,7 +261,7 @@ class PluginSignatureTests(unittest.TestCase):
             loader.exec_module(module)
             details = module.certificate_details(
                 self.certificate,
-                now=datetime.now(timezone.utc) + timedelta(days=3),
+                now=datetime.now(UTC) + timedelta(days=3),
             )
             self.assertIn("expired", details.error)
         finally:
@@ -319,7 +319,7 @@ class PluginSignatureTests(unittest.TestCase):
             loader.exec_module(module)
             details = module.certificate_details(
                 chain,
-                now=datetime.now(timezone.utc) + timedelta(days=3),
+                now=datetime.now(UTC) + timedelta(days=3),
             )
             self.assertEqual("certificate chain member 2 is expired", details.error)
         finally:

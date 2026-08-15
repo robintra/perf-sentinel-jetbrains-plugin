@@ -59,8 +59,8 @@ POLICY_SCHEMA = {
     "repository": str,
     "visibility": str,
     "default_branch": str,
-    "repository_settings": {name: bool for name in SETTINGS},
-    "security": {name: bool for name in SECURITY},
+    "repository_settings": dict.fromkeys(SETTINGS, bool),
+    "security": dict.fromkeys(SECURITY, bool),
     "branch_ruleset": {
         "ref_include": str,
         "required_approving_review_count": int,
@@ -93,7 +93,7 @@ POLICY_SCHEMA = {
 }
 REPOSITORY_SCHEMA = {
     "full_name": str, "visibility": str, "private": bool, "default_branch": str,
-    **{name: bool for name in SETTINGS},
+    **dict.fromkeys(SETTINGS, bool),
     "security_and_analysis": (NULLABLE, {
         "secret_scanning": {"status": str},
         "secret_scanning_push_protection": {"status": str},

@@ -6,5 +6,6 @@
 scripts/** linguist-detectable=false
 tools/** linguist-detectable=false
 Makefile linguist-detectable=false
+ruff.toml linguist-detectable=false
 *.gradle.kts linguist-detectable=false
 buildSrc/** linguist-detectable=false

@@ -17,7 +17,7 @@ import tomllib
 import urllib.parse
 import urllib.request
 import zipfile
-from datetime import datetime, time, timedelta, timezone
+from datetime import datetime, time, timedelta, UTC
 from email.utils import parsedate_to_datetime
 from pathlib import Path
 from xml.etree import ElementTree
@@ -48,7 +48,7 @@ google/osv-scanner-action gitleaks/gitleaks-action zizmorcore/zizmor-action grad
 """.split())
 REQUIRED_TOOLS = {
     "Kover", "OSV-Scanner", "Gitleaks", "TruffleHog", "Zizmor",
-    "Syft", "actionlint", "Marketplace ZIP Signer", "Qodana CLI", "Qodana JVM Community image",
+    "Syft", "actionlint", "Ruff", "Marketplace ZIP Signer", "Qodana CLI", "Qodana JVM Community image",
     "Qodana .NET image",
 }
 REQUIRED_TRANSITIVE_EXCEPTIONS = {
@@ -119,6 +119,7 @@ GITHUB_REPOS = {
     "Zizmor": "zizmorcore/zizmor",
     "Syft": "anchore/syft",
     "actionlint": "rhysd/actionlint",
+    "Ruff": "astral-sh/ruff",
     "Marketplace ZIP Signer": "JetBrains/marketplace-zip-signer",
     "Qodana CLI": "JetBrains/qodana-cli",
 }
@@ -166,7 +167,7 @@ def parse_instant(value, *, end_of_day=False):
     if re.fullmatch(r"\d{4}-\d{2}-\d{2}", value):
         day = datetime.strptime(value, "%Y-%m-%d").date()
         boundary = time.max if end_of_day else time.min
-        return datetime.combine(day, boundary, timezone.utc)
+        return datetime.combine(day, boundary, UTC)
     if not RFC3339_UTC.fullmatch(value):
         raise ValueError("timestamp must be RFC3339 UTC or YYYY-MM-DD")
     return datetime.fromisoformat(value.replace("Z", "+00:00"))
@@ -272,9 +273,10 @@ def check_inventory(root, errors, now):
         for field in ("release", "compatibility", "declaration"):
             if field in dependency and (type(dependency[field]) is not str or not dependency[field]):
                 errors.append(f"{name} field {field} must be a non-empty string")
-        if dependency["kind"] == "github-action":
-            if not SHA1.fullmatch(version) or type(dependency.get("release")) is not str:
-                errors.append(f"{name} action requires a full SHA and release")
+        if dependency["kind"] == "github-action" and (
+            not SHA1.fullmatch(version) or type(dependency.get("release")) is not str
+        ):
+            errors.append(f"{name} action requires a full SHA and release")
 
     action_names = {
         item["name"] for item in dependencies
@@ -731,7 +733,7 @@ def parse_nuget_locks(root, errors):
                     "Transitive": {"type", "resolved", "contentHash", "dependencies"},
                     "Project": {"type", "dependencies"},
                 }[value["type"]]
-                if set(value) - allowed or "dependencies" in value and type(value["dependencies"]) is not dict:
+                if set(value) - allowed or ("dependencies" in value and type(value["dependencies"]) is not dict):
                     errors.append(f"invalid NuGet lock dependency {package}")
                 if value["type"] != "Project":
                     content_hash = value.get("contentHash")
@@ -974,7 +976,7 @@ def verify_plugin(client, dependency, now):
         candidate_page = client.text(f"https://plugins.gradle.org/plugin/{plugin_id}/{candidate}")
         match = re.search(r"Created\s+(\d{1,2}\s+\w+\s+\d{4})\.", candidate_page)
         if match:
-            candidates.append((candidate, datetime.strptime(match.group(1), "%d %B %Y").replace(tzinfo=timezone.utc)))
+            candidates.append((candidate, datetime.strptime(match.group(1), "%d %B %Y").replace(tzinfo=UTC)))
     validate_release(dependency, candidates, now, "Gradle plugin")
 
 
@@ -1007,7 +1009,7 @@ def verify_maven(client, dependency, now):
     candidates = []
     for version in sorted(versions, key=version_key, reverse=True)[:8]:
         _, headers = client.get(f"{base}/{version}/{artifact}-{version}.pom", method="HEAD")
-        published = parsedate_to_datetime(headers["Last-Modified"]).astimezone(timezone.utc)
+        published = parsedate_to_datetime(headers["Last-Modified"]).astimezone(UTC)
         candidates.append((version, published))
     validate_release(dependency, candidates, now, "Maven release")
 
@@ -1093,7 +1095,7 @@ def main():
     parser.add_argument("--online", action="store_true")
     args = parser.parse_args()
     root = args.root.resolve()
-    now = datetime.now(timezone.utc)
+    now = datetime.now(UTC)
     errors = []
     inventory = check_inventory(root, errors, now)
     check_declarations(root, inventory, errors)

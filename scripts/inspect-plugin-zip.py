@@ -188,7 +188,7 @@ def validate_common(archive, label, *, expected_order=None):
     names = [info.filename for info in infos]
     canonical_names = [unicodedata.normalize("NFC", name).casefold() for name in names]
     counts = Counter(canonical_names)
-    duplicate: str | None = next((name for name, canonical in zip(names, canonical_names) if counts[canonical] > 1), None)
+    duplicate: str | None = next((name for name, canonical in zip(names, canonical_names, strict=True) if counts[canonical] > 1), None)
     if duplicate is not None:
         raise ValidationError(f"{label}: duplicate entry {duplicate}")
     for info in infos:
