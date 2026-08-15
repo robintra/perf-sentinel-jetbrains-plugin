@@ -16,6 +16,14 @@ from unittest.mock import patch
 
 REPOSITORY = Path(__file__).resolve().parents[2]
 CHECKER = REPOSITORY / "scripts" / "check-plugin-signature.py"
+
+
+def load_spec(name, path):
+    """Both spec_from_file_location and its loader are Optional, narrow them once."""
+    spec = importlib.util.spec_from_file_location(name, path)
+    if spec is None or spec.loader is None:
+        raise RuntimeError(f"cannot load {path}")
+    return spec, spec.loader
 SIGNER_GLOB = Path.home() / ".gradle/caches/modules-2/files-2.1/org.jetbrains/marketplace-zip-signer/0.1.43"
 
 
@@ -149,7 +157,7 @@ class PluginSignatureTests(unittest.TestCase):
         self.assert_rejected("unsigned ZIP central directory offset", unsigned=changed)
 
     def test_signature_block_is_inspected_with_bounded_reads(self):
-        spec = importlib.util.spec_from_file_location("plugin_signature", CHECKER)
+        spec, loader = load_spec("plugin_signature", CHECKER)
         module = importlib.util.module_from_spec(spec)
         sys.modules[spec.name] = module
         requested = []
@@ -172,7 +180,7 @@ class PluginSignatureTests(unittest.TestCase):
                 return self.stream.__exit__(*args)
 
         try:
-            spec.loader.exec_module(module)
+            loader.exec_module(module)
             unsigned = self.unsigned.read_bytes()
             end_record = unsigned.rfind(b"PK\x05\x06")
             central_offset = struct.unpack_from("<I", unsigned, end_record + 16)[0]
@@ -241,11 +249,11 @@ class PluginSignatureTests(unittest.TestCase):
         self.write_identity(self.fingerprint)
 
     def test_rejects_expired_certificate(self):
-        spec = importlib.util.spec_from_file_location("plugin_signature", CHECKER)
+        spec, loader = load_spec("plugin_signature", CHECKER)
         module = importlib.util.module_from_spec(spec)
         sys.modules[spec.name] = module
         try:
-            spec.loader.exec_module(module)
+            loader.exec_module(module)
             details = module.certificate_details(
                 self.certificate,
                 now=datetime.now(timezone.utc) + timedelta(days=3),
@@ -299,11 +307,11 @@ class PluginSignatureTests(unittest.TestCase):
             encoding="ascii",
         )
 
-        spec = importlib.util.spec_from_file_location("plugin_signature", CHECKER)
+        spec, loader = load_spec("plugin_signature", CHECKER)
         module = importlib.util.module_from_spec(spec)
         sys.modules[spec.name] = module
         try:
-            spec.loader.exec_module(module)
+            loader.exec_module(module)
             details = module.certificate_details(
                 chain,
                 now=datetime.now(timezone.utc) + timedelta(days=3),

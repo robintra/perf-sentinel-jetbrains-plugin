@@ -12,10 +12,20 @@ from contextlib import redirect_stdout
 
 REPOSITORY = Path(__file__).resolve().parents[2]
 CHECKER = REPOSITORY / "scripts" / "check-coverage.py"
-SPEC = importlib.util.spec_from_file_location("coverage_checker", CHECKER)
+
+
+def load_spec(name, path):
+    """Both spec_from_file_location and its loader are Optional, narrow them once."""
+    spec = importlib.util.spec_from_file_location(name, path)
+    if spec is None or spec.loader is None:
+        raise RuntimeError(f"cannot load {path}")
+    return spec, spec.loader
+
+
+SPEC, LOADER = load_spec("coverage_checker", CHECKER)
 COVERAGE_CHECKER = importlib.util.module_from_spec(SPEC)
 sys.modules[SPEC.name] = COVERAGE_CHECKER
-SPEC.loader.exec_module(COVERAGE_CHECKER)
+LOADER.exec_module(COVERAGE_CHECKER)
 
 
 def kover(filename="App.kt", package="io/github/example", lines=((1, 1),)):
