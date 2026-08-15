@@ -91,10 +91,10 @@ def marketplace_badges(listing_id):
 
 def canonical_prefix(listing_id):
     badges = BADGES | (marketplace_badges(listing_id) if listing_id else {})
-    return "# Perf Sentinel for JetBrains IDEs\n\n" + '<p align="center">\n' + "".join(
+    return '<p align="center">\n' + "".join(
         f'    <a href="{destination}"><img src="{image}" alt="{label}" /></a>\n'
         for label, (image, destination, _) in badges.items()
-    ) + "</p>\n\n"
+    ) + "</p>\n\n# Perf Sentinel for JetBrains IDEs\n\n"
 
 
 def load_metadata(path):

@@ -1,5 +1,3 @@
-# Perf Sentinel for JetBrains IDEs
-
 <p align="center">
     <a href="https://github.com/robintra/perf-sentinel-jetbrains-plugin/blob/main/build.gradle.kts"><img src="https://img.shields.io/badge/JetBrains%20IDEs-2025.3%20%7C%202026.2-087CFA?logo=jetbrains&logoColor=white" alt="JetBrains IDEs" /></a>
     <a href="https://github.com/robintra/perf-sentinel-jetbrains-plugin/blob/main/settings.gradle.kts"><img src="https://img.shields.io/badge/Kotlin-2.4.10-7F52FF?logo=kotlin&logoColor=white" alt="Kotlin" /></a>
@@ -11,6 +9,8 @@
     <a href="https://github.com/robintra/perf-sentinel-jetbrains-plugin/actions/workflows/release.yml"><img src="https://github.com/robintra/perf-sentinel-jetbrains-plugin/actions/workflows/release.yml/badge.svg" alt="Release" /></a>
     <a href="https://github.com/robintra/perf-sentinel-jetbrains-plugin/actions/workflows/release.yml"><img src="https://img.shields.io/badge/JetBrains%20ZIP-signature%20configured-lightgrey?logo=jetbrains&logoColor=white" alt="Signed ZIP" /></a>
 </p>
+
+# Perf Sentinel for JetBrains IDEs
 
 CI, the daily audit, CodeQL and Qodana report observed runs. The rest do not.
 Qodana has no status badge of its own, so that one is a plain link to the

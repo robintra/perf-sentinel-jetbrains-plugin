@@ -68,9 +68,9 @@ def marketplace_badges(listing_id):
 
 def complete_readme(listing_id=None):
     badges = BADGES | (marketplace_badges(listing_id) if listing_id else {})
-    lines = ["# Perf Sentinel for JetBrains IDEs", "", '<p align="center">']
+    lines = ['<p align="center">']
     lines.extend(badge(label, *values) for label, values in badges.items())
-    lines.append("</p>")
+    lines.extend(["</p>", "", "# Perf Sentinel for JetBrains IDEs"])
     return "\n".join(lines) + "\n\n"
 
 
