@@ -108,7 +108,7 @@ def normalize_component(value: object, *, allow_empty: bool = False, allow_pathm
 
 
 def line_key(path: str, number: int) -> tuple[str, int]:
-    return (path.casefold(), number)
+    return path.casefold(), number
 
 
 def merge_lines(target: dict[tuple[str, int], bool], source: dict[tuple[str, int], bool]) -> None:
@@ -451,8 +451,8 @@ def unique_object(pairs: list[tuple[str, object]]) -> dict[str, object]:
 
 
 def load_baseline(path: Path) -> dict[str, object]:
-    def reject_constant(value: str):
-        raise ValueError(f"non-finite number {value}")
+    def reject_constant(constant: str):
+        raise ValueError(f"non-finite number {constant}")
 
     try:
         data = json.loads(
@@ -490,8 +490,16 @@ def load_baseline(path: Path) -> dict[str, object]:
         raise CoverageError(f"{path}: unable to parse coverage baseline: {error}") from error
 
 
+def baseline_surfaces(data: dict[str, object]) -> dict[str, dict[str, object]]:
+    """load_baseline has already proved this shape, restating it keeps callers typed."""
+    surfaces = data["surfaces"]
+    if not isinstance(surfaces, dict):
+        raise CoverageError("coverage baseline surfaces must be an object")
+    return surfaces
+
+
 def baseline_value(data: dict[str, object], surface: str) -> Decimal:
-    value = data["surfaces"][surface]
+    value = baseline_surfaces(data)[surface]
     if surface == "rider" and value == {"status": "pending_windows"}:
         raise CoverageError("Rider baseline is pending genuine Windows coverage")
     return Decimal(value["total_line_coverage"])
@@ -529,7 +537,7 @@ def establish(surface: str, report_path: Path, baseline_path: Path) -> None:
         rider = None
         if baseline_path.is_file():
             existing = load_baseline(baseline_path)
-            rider_entry = existing["surfaces"]["rider"]
+            rider_entry = baseline_surfaces(existing)["rider"]
             if "total_line_coverage" in rider_entry:
                 rider = Decimal(rider_entry["total_line_coverage"])
         write_baseline(baseline_path, total, rider)

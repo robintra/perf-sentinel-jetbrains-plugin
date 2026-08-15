@@ -362,9 +362,15 @@ class GitHubApi:
 
 def workflow_secrets(root):
     result = set()
-    for path in sorted((root / ".github" / "workflows").glob("*.y*ml")):
+
+    def collect(match) -> str:
+        result.add(match.group(1))
+        return ""
+
+    workflows: list[Path] = sorted((root / ".github" / "workflows").glob("*.y*ml"))
+    for path in workflows:
         text = path.read_text(encoding="utf-8")
-        stripped = SECRET_REFERENCE.sub(lambda match: result.add(match.group(1)) or "", text)
+        stripped = SECRET_REFERENCE.sub(collect, text)
         if SECRET_TOKEN.search(stripped):
             raise PolicyError(f"{path}: non-canonical workflow secret reference")
     return result

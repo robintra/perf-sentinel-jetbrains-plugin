@@ -257,7 +257,7 @@ def check_inventory(root, errors, now):
         if DYNAMIC.search(version):
             errors.append(f"{name} uses dynamic version {version}")
         try:
-            released = parse_instant(dependency["releasedAt"], end_of_day=True)
+            parse_instant(dependency["releasedAt"], end_of_day=True)
         except ValueError:
             errors.append(f"{name} has no valid release date")
         if not dependency["source"].startswith("https://"):
@@ -941,7 +941,8 @@ def verify_plugin(client, dependency, now):
     validate_release(dependency, candidates, now, "Gradle plugin")
 
 
-def verify_gradle(client, dependency, now):
+# `_now` is unused here, the six verify_* helpers share one signature for the dispatch below.
+def verify_gradle(client, dependency, _now):
     data = client.json("https://services.gradle.org/versions/current")
     released = datetime.strptime(data["buildTime"], "%Y%m%d%H%M%S%z")
     if dependency["version"] != data["version"] or not same_release_date(dependency["releasedAt"], released.isoformat().replace("+00:00", "Z")):
@@ -989,7 +990,7 @@ def verify_nuget(client, dependency, now):
         if dependency.get("compatibility") != "netstandard2.0":
             raise ValueError("coverlet collector requires its net472 compatibility contract")
         compatible = []
-        for version, published, content in sorted(candidates, key=lambda item: version_key(item[0]), reverse=True):
+        for version, published, content in sorted(candidates, key=lambda entry: version_key(entry[0]), reverse=True):
             package_bytes = client.get(content)[0]
             if len(package_bytes) > 64 * 1024 * 1024:
                 raise ValueError("coverlet package exceeds audit size bound")

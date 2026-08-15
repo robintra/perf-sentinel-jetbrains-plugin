@@ -40,12 +40,11 @@ def properties(root: Path) -> dict[str, str]:
 
 
 def manifest_version(root: Path) -> str:
+    text = read(root / "src/main/resources/META-INF/plugin.xml", "plugin manifest")
     try:
-        plugin = ElementTree.fromstring(read(
-            root / "src/main/resources/META-INF/plugin.xml", "plugin manifest"
-        ))
+        plugin = ElementTree.fromstring(text)
     except ElementTree.ParseError as error:
-        fail(f"plugin manifest XML is malformed: {error}")
+        raise ValueError(f"plugin manifest XML is malformed: {error}") from error
     if plugin.tag != "idea-plugin" or plugin.attrib:
         fail("plugin manifest root is not canonical")
     versions = [child for child in plugin if child.tag == "version"]
