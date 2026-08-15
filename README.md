@@ -1,19 +1,22 @@
 # Perf Sentinel for JetBrains IDEs
 
-[![CI](https://github.com/robintra/perf-sentinel-jetbrains-plugin/actions/workflows/ci.yml/badge.svg)](https://github.com/robintra/perf-sentinel-jetbrains-plugin/actions/workflows/ci.yml)
-[![Qodana](https://img.shields.io/badge/Qodana-configured-lightgrey)](https://github.com/robintra/perf-sentinel-jetbrains-plugin/actions/workflows/ci.yml)
-[![CodeQL](https://github.com/robintra/perf-sentinel-jetbrains-plugin/actions/workflows/codeql.yml/badge.svg)](https://github.com/robintra/perf-sentinel-jetbrains-plugin/actions/workflows/codeql.yml)
-[![Daily audit](https://github.com/robintra/perf-sentinel-jetbrains-plugin/actions/workflows/security-audit.yml/badge.svg)](https://github.com/robintra/perf-sentinel-jetbrains-plugin/actions/workflows/security-audit.yml)
-[![Release](https://github.com/robintra/perf-sentinel-jetbrains-plugin/actions/workflows/release.yml/badge.svg)](https://github.com/robintra/perf-sentinel-jetbrains-plugin/actions/workflows/release.yml)
-[![JetBrains compatibility](https://img.shields.io/badge/JetBrains-2025.3%20%7C%202026.2-087CFA)](https://github.com/robintra/perf-sentinel-jetbrains-plugin/actions/workflows/ci.yml)
-[![Signed ZIP](https://img.shields.io/badge/JetBrains%20ZIP%20signature-configured-lightgrey)](https://github.com/robintra/perf-sentinel-jetbrains-plugin/actions/workflows/release.yml)
+<p align="center">
+    <a href="https://github.com/robintra/perf-sentinel-jetbrains-plugin/blob/main/build.gradle.kts"><img src="https://img.shields.io/badge/JetBrains%20IDEs-2025.3%20%7C%202026.2-087CFA?logo=jetbrains&logoColor=white" alt="JetBrains IDEs" /></a>
+    <a href="https://github.com/robintra/perf-sentinel-jetbrains-plugin/actions/workflows/ci.yml"><img src="https://github.com/robintra/perf-sentinel-jetbrains-plugin/actions/workflows/ci.yml/badge.svg" alt="CI" /></a>
+    <a href="https://github.com/robintra/perf-sentinel-jetbrains-plugin/actions/workflows/security-audit.yml"><img src="https://github.com/robintra/perf-sentinel-jetbrains-plugin/actions/workflows/security-audit.yml/badge.svg" alt="Security Audit" /></a>
+    <a href="https://github.com/robintra/perf-sentinel-jetbrains-plugin/actions/workflows/codeql.yml"><img src="https://github.com/robintra/perf-sentinel-jetbrains-plugin/actions/workflows/codeql.yml/badge.svg" alt="CodeQL" /></a>
+    <a href="https://github.com/robintra/perf-sentinel-jetbrains-plugin/actions/workflows/security-audit.yml"><img src="https://img.shields.io/badge/Qodana-JVM%20%7C%20Rider-000000?logo=qodana&logoColor=white" alt="Qodana" /></a>
+    <a href="https://github.com/robintra/perf-sentinel-jetbrains-plugin/actions/workflows/release.yml"><img src="https://github.com/robintra/perf-sentinel-jetbrains-plugin/actions/workflows/release.yml/badge.svg" alt="Release" /></a>
+    <a href="https://github.com/robintra/perf-sentinel-jetbrains-plugin/actions/workflows/release.yml"><img src="https://img.shields.io/badge/JetBrains%20ZIP-signature%20configured-lightgrey?logo=jetbrains&logoColor=white" alt="Signed ZIP" /></a>
+</p>
 
-The badges link to workflows, release destinations, and committed evidence. CI,
-CodeQL, and the daily audit report observed runs. The others do not: Qodana and
-ZIP signing deliberately say `configured` because nothing is published yet, and
-the release badge stays empty until the release workflow runs for the first
-time. Marketplace version and download badges are omitted until JetBrains
-assigns the real numeric listing ID.
+CI, the daily audit, CodeQL and Qodana report observed runs. The rest do not.
+Qodana has no status badge of its own, so that one is a plain link to the
+workflow the two scans run in, the pattern JetBrains itself recommends. ZIP
+signing says `configured` because it happens only on the release path, and the
+release badge stays empty until that path runs for the first time. Marketplace
+version and download badges are omitted until JetBrains assigns the real
+numeric listing ID.
 
 ## Overview
 

@@ -11,39 +11,39 @@ CHECKER = REPOSITORY / "scripts" / "check-badges.py"
 REPO_URL = "https://github.com/robintra/perf-sentinel-jetbrains-plugin"
 CANONICAL_LICENSE = (REPOSITORY / "LICENSE").read_bytes()
 BADGES = {
+    "JetBrains IDEs": (
+        "https://img.shields.io/badge/JetBrains%20IDEs-2025.3%20%7C%202026.2-087CFA?logo=jetbrains&logoColor=white",
+        f"{REPO_URL}/blob/main/build.gradle.kts",
+    ),
     "CI": (
         f"{REPO_URL}/actions/workflows/ci.yml/badge.svg",
         f"{REPO_URL}/actions/workflows/ci.yml",
     ),
-    "Qodana": (
-        "https://img.shields.io/badge/Qodana-configured-lightgrey",
-        f"{REPO_URL}/actions/workflows/ci.yml",
+    "Security Audit": (
+        f"{REPO_URL}/actions/workflows/security-audit.yml/badge.svg",
+        f"{REPO_URL}/actions/workflows/security-audit.yml",
     ),
     "CodeQL": (
         f"{REPO_URL}/actions/workflows/codeql.yml/badge.svg",
         f"{REPO_URL}/actions/workflows/codeql.yml",
     ),
-    "Daily audit": (
-        f"{REPO_URL}/actions/workflows/security-audit.yml/badge.svg",
+    "Qodana": (
+        "https://img.shields.io/badge/Qodana-JVM%20%7C%20Rider-000000?logo=qodana&logoColor=white",
         f"{REPO_URL}/actions/workflows/security-audit.yml",
     ),
     "Release": (
         f"{REPO_URL}/actions/workflows/release.yml/badge.svg",
         f"{REPO_URL}/actions/workflows/release.yml",
     ),
-    "JetBrains compatibility": (
-        "https://img.shields.io/badge/JetBrains-2025.3%20%7C%202026.2-087CFA",
-        f"{REPO_URL}/actions/workflows/ci.yml",
-    ),
     "Signed ZIP": (
-        "https://img.shields.io/badge/JetBrains%20ZIP%20signature-configured-lightgrey",
+        "https://img.shields.io/badge/JetBrains%20ZIP-signature%20configured-lightgrey?logo=jetbrains&logoColor=white",
         f"{REPO_URL}/actions/workflows/release.yml",
     ),
 }
 
 
 def badge(label, image, destination):
-    return f"[![{label}]({image})]({destination})"
+    return f'    <a href="{destination}"><img src="{image}" alt="{label}" /></a>'
 
 
 def marketplace_badges(listing_id):
@@ -60,8 +60,9 @@ def marketplace_badges(listing_id):
 
 def complete_readme(listing_id=None):
     badges = BADGES | (marketplace_badges(listing_id) if listing_id else {})
-    lines = ["# Perf Sentinel for JetBrains IDEs", ""]
+    lines = ["# Perf Sentinel for JetBrains IDEs", "", '<p align="center">']
     lines.extend(badge(label, *values) for label, values in badges.items())
+    lines.append("</p>")
     return "\n".join(lines) + "\n\n"
 
 
@@ -69,6 +70,8 @@ def write_root(root, readme, *, listing_id=None, missing_evidence=None, license_
     (root / "README.md").write_text(readme, encoding="utf-8")
     (root / "LICENSE").write_bytes(license_bytes)
     (root / "qodana.yml").write_text("version: 1.0\n", encoding="utf-8")
+    if missing_evidence != "build.gradle.kts":
+        (root / "build.gradle.kts").write_text("plugins {}\n", encoding="utf-8")
     config = root / "config"
     config.mkdir()
     (config / "release-metadata.json").write_text(

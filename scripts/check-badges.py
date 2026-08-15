@@ -12,23 +12,28 @@ from pathlib import Path
 REPO_URL = "https://github.com/robintra/perf-sentinel-jetbrains-plugin"
 LICENSE_SHA256 = "8486a10c4393cee1c25392769ddd3b2d6c242d6ec7928e1414efff7dfb2f07ef"
 BADGES = {
+    "JetBrains IDEs": (
+        "https://img.shields.io/badge/JetBrains%20IDEs-2025.3%20%7C%202026.2-087CFA?logo=jetbrains&logoColor=white",
+        f"{REPO_URL}/blob/main/build.gradle.kts",
+        "build.gradle.kts",
+    ),
     "CI": (
         f"{REPO_URL}/actions/workflows/ci.yml/badge.svg",
         f"{REPO_URL}/actions/workflows/ci.yml",
         ".github/workflows/ci.yml",
     ),
-    "Qodana": (
-        "https://img.shields.io/badge/Qodana-configured-lightgrey",
-        f"{REPO_URL}/actions/workflows/ci.yml",
-        "qodana.yml",
+    "Security Audit": (
+        f"{REPO_URL}/actions/workflows/security-audit.yml/badge.svg",
+        f"{REPO_URL}/actions/workflows/security-audit.yml",
+        ".github/workflows/security-audit.yml",
     ),
     "CodeQL": (
         f"{REPO_URL}/actions/workflows/codeql.yml/badge.svg",
         f"{REPO_URL}/actions/workflows/codeql.yml",
         ".github/workflows/codeql.yml",
     ),
-    "Daily audit": (
-        f"{REPO_URL}/actions/workflows/security-audit.yml/badge.svg",
+    "Qodana": (
+        "https://img.shields.io/badge/Qodana-JVM%20%7C%20Rider-000000?logo=qodana&logoColor=white",
         f"{REPO_URL}/actions/workflows/security-audit.yml",
         ".github/workflows/security-audit.yml",
     ),
@@ -37,13 +42,8 @@ BADGES = {
         f"{REPO_URL}/actions/workflows/release.yml",
         ".github/workflows/release.yml",
     ),
-    "JetBrains compatibility": (
-        "https://img.shields.io/badge/JetBrains-2025.3%20%7C%202026.2-087CFA",
-        f"{REPO_URL}/actions/workflows/ci.yml",
-        ".github/workflows/ci.yml",
-    ),
     "Signed ZIP": (
-        "https://img.shields.io/badge/JetBrains%20ZIP%20signature-configured-lightgrey",
+        "https://img.shields.io/badge/JetBrains%20ZIP-signature%20configured-lightgrey?logo=jetbrains&logoColor=white",
         f"{REPO_URL}/actions/workflows/release.yml",
         ".github/workflows/release.yml",
     ),
@@ -77,10 +77,10 @@ def marketplace_badges(listing_id):
 
 def canonical_prefix(listing_id):
     badges = BADGES | (marketplace_badges(listing_id) if listing_id else {})
-    return "# Perf Sentinel for JetBrains IDEs\n\n" + "".join(
-        f"[![{label}]({image})]({destination})\n"
+    return "# Perf Sentinel for JetBrains IDEs\n\n" + '<p align="center">\n' + "".join(
+        f'    <a href="{destination}"><img src="{image}" alt="{label}" /></a>\n'
         for label, (image, destination, _) in badges.items()
-    ) + "\n"
+    ) + "</p>\n\n"
 
 
 def load_metadata(path):
