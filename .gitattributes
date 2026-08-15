@@ -1,6 +1,10 @@
-# The Python under scripts/ and tools/ is CI, release and fixture tooling, not the plugin, and
-# it outweighs the Kotlin and C# it validates. Excluding it from Linguist keeps the language
-# breakdown on the shipped code. These files stay first-party, so neither linguist-vendored nor
+# Keep the language breakdown on what the plugin ships. Excluded here is developer tooling
+# only: the CI, release and fixture scripts, the Gradle build definition, and the convenience
+# Makefile. The Kotlin under src/ and the Rider C# backend stay counted, since both end up in
+# the published ZIP. These files stay first-party, so neither linguist-vendored nor
 # linguist-generated would be true of them.
 scripts/** linguist-detectable=false
 tools/** linguist-detectable=false
+Makefile linguist-detectable=false
+*.gradle.kts linguist-detectable=false
+buildSrc/** linguist-detectable=false
