@@ -7,7 +7,6 @@ using JetBrains.ProjectModel;
 using JetBrains.ReSharper.Psi;
 using JetBrains.ReSharper.Psi.Caches;
 using JetBrains.ReSharper.Psi.CSharp.Tree;
-using JetBrains.ReSharper.Psi.ExtensionsAPI.Tree;
 using JetBrains.ReSharper.Psi.Modules;
 using JetBrains.ReSharper.Psi.Tree;
 using JetBrains.ReSharper.Resources.Shell;
@@ -74,7 +73,7 @@ public static class CSharpSymbolResolver
                                     local.DeclaredName == symbol.Member &&
                                     local.GetContainingNode<IMethodDeclaration>()?.DeclaredName == symbol.Parent,
         _ => declaration is IMethodDeclaration method && method.DeclaredName == symbol.Member ||
-             declaration is IPropertyDeclaration property && property.DeclaredName == symbol.Member,
+             declaration is IPropertyDeclaration property && property.DeclaredName == symbol.Member
     };
 
     private static SourceAnchor? ToAnchor(ICSharpDeclaration declaration)
@@ -97,7 +96,7 @@ public static class CSharpSymbolResolver
         Property,
         Getter,
         Setter,
-        LocalFunction,
+        LocalFunction
     }
 
     private sealed class SymbolName
@@ -131,10 +130,13 @@ public static class CSharpSymbolResolver
                 ? function.Substring(prefix.Length)
                 : function;
 
-            if (member == ".ctor")
-                return new SymbolName(owner, member, SymbolKind.InstanceConstructor);
-            if (member == ".cctor")
-                return new SymbolName(owner, member, SymbolKind.StaticConstructor);
+            switch (member)
+            {
+                case ".ctor":
+                    return new SymbolName(owner, member, SymbolKind.InstanceConstructor);
+                case ".cctor":
+                    return new SymbolName(owner, member, SymbolKind.StaticConstructor);
+            }
 
             var local = LocalFunctionPattern.Match(member);
             if (local.Success)
