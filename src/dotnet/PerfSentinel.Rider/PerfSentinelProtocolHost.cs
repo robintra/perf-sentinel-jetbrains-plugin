@@ -12,10 +12,11 @@ public sealed class PerfSentinelProtocolHost
 {
     public PerfSentinelProtocolHost(ISolution solution)
     {
-        var protocolSolution = solution.GetProtocolSolution();
-        if (protocolSolution == null)
+        // GetProtocolSolution is annotated non-null, HasProtocolSolution is the API's own guard.
+        if (!solution.HasProtocolSolution())
             return;
 
+        var protocolSolution = solution.GetProtocolSolution();
         protocolSolution.GetPerfSentinelModel().ResolveCSharpSymbol.SetAsync((lifetime, request) =>
         {
             if (!lifetime.IsAlive)
