@@ -41,12 +41,13 @@ build the whole matrix compiles with. The pin is not cosmetic: the IntelliJ Plat
 stamps the resolved JVM into `Build-JVM` in each jar manifest, so a floating `java-version: "21"`
 makes two builds of the same commit differ and the Windows reproducibility comparison fail.
 
-Renovate tracks that file through its `java-version` datasource, which reads the Adoptium API. That
-API reports a release as `21.0.12+8.0.LTS`, so a package rule strips the trailing `.0.LTS` back to
-the form `setup-java` resolves. One case stays manual: Adoptium folds an interim rebuild into the
-semver build metadata, publishing `21.0.12.1+1` as `21.0.12+101.0.LTS`, and semver ordering ignores
-build metadata. Renovate therefore proposes patch and later releases but stays silent on an interim
-rebuild of the pinned patch.
+The pinned value is an Adoptium semver string, `21.0.12+8.0.LTS`, not the release name
+`21.0.12+8`: for Temurin, `setup-java` resolves against the same namespace Renovate's `java-version`
+datasource reads, so the two agree without any transform. Adoptium folds an interim rebuild into the
+build metadata, publishing `21.0.12.1+1` as `21.0.12+101.0.LTS`, which is why the manager declares
+`loose` versioning rather than `semver`. Semver ordering ignores build metadata and would call those
+two releases equal, exactly the drift that broke the reproducibility comparison in the first place.
+A package rule holds the JDK on the Java 21 line the IntelliJ Platform targets.
 
 ## Bringing the inventory back in step
 

@@ -50,9 +50,9 @@
       "allowedVersions": "<7.0.0"
     },
     {
-      "description": "Write the Temurin build the way setup-java reads it, without the Adoptium LTS suffix",
+      "description": "Keep the JDK on the Java 21 line the plugin targets",
       "matchPackageNames": ["java-jdk"],
-      "extractVersion": "^(?<version>[0-9]+\\.[0-9]+\\.[0-9]+\\+[0-9]+)"
+      "allowedVersions": "/^21\\./"
     }
   ],
   "customDatasources": {
@@ -140,10 +140,10 @@
     {
       "customType": "regex",
       "managerFilePatterns": ["/^\\.java-version$/"],
-      "matchStrings": ["(?<currentValue>[0-9]+\\.[0-9]+\\.[0-9]+\\+[0-9]+)"],
+      "matchStrings": ["(?<currentValue>[0-9]+\\.[0-9]+\\.[0-9]+\\+\\S+)"],
       "depNameTemplate": "java-jdk",
       "datasourceTemplate": "java-version",
-      "versioningTemplate": "semver"
+      "versioningTemplate": "loose"
     }
   ]
 }
