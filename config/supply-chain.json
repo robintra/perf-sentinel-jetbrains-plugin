@@ -8,17 +8,17 @@
     {
       "name": "Gradle",
       "kind": "build-tool",
-      "version": "9.7.0",
-      "releasedAt": "2026-08-06T14:07:35Z",
+      "version": "9.7.1",
+      "releasedAt": "2026-08-19T14:16:09Z",
       "source": "https://services.gradle.org/versions/current",
-      "sha256": "84fbba45c7f4c64abc77460e1c00f541e9f960e3c7ed2538f1ede19eacd873ae",
+      "sha256": "acd53f1edaf02f1a8ff99879f8a34b302661a057d9b063ae9e35b552f804d20a",
       "declaration": "gradle/wrapper/gradle-wrapper.properties#distributionUrl"
     },
     {
       "name": "Gradle wrapper JAR",
       "kind": "build-tool",
-      "version": "9.7.0",
-      "releasedAt": "2026-08-06T14:07:35Z",
+      "version": "9.7.1",
+      "releasedAt": "2026-08-19T14:16:09Z",
       "source": "https://services.gradle.org/versions/current",
       "sha256": "7a9ce74cff467ca1bf60a4fcd9f05185acceda4d0f382434d393e17864262c5d",
       "declaration": "gradle/wrapper/gradle-wrapper.jar#sha256"
@@ -294,10 +294,10 @@
     {
       "name": "OSV-Scanner",
       "kind": "audited-tool",
-      "version": "2.5.0",
-      "releasedAt": "2026-08-07T05:23:52Z",
-      "source": "https://github.com/google/osv-scanner/releases/tag/v2.5.0",
-      "release": "v2.5.0"
+      "version": "2.5.1",
+      "releasedAt": "2026-08-17T04:29:53Z",
+      "source": "https://github.com/google/osv-scanner/releases/tag/v2.5.1",
+      "release": "v2.5.1"
     },
     {
       "name": "Gitleaks",
@@ -430,10 +430,10 @@
     {
       "name": "github/codeql-action",
       "kind": "github-action",
-      "version": "ff2f1c621b7f889edc0d3c761ac2e6a3f8cdb0dd",
-      "release": "v4.37.7",
-      "releasedAt": "2026-08-13T13:30:27Z",
-      "source": "https://github.com/github/codeql-action/releases/tag/v4.37.7"
+      "version": "db488ddef3bf6cb639b32c2e9a7c0a7ea8271d28",
+      "release": "v4.37.8",
+      "releasedAt": "2026-08-21T12:25:47Z",
+      "source": "https://github.com/github/codeql-action/releases/tag/v4.37.8"
     },
     {
       "name": "JetBrains/qodana-action",
@@ -470,10 +470,10 @@
     {
       "name": "google/osv-scanner-action",
       "kind": "github-action",
-      "version": "8deb546fdb875b9996d27d4950be7312dac076a1",
-      "release": "v2.5.0",
-      "releasedAt": "2026-08-07T05:38:52Z",
-      "source": "https://github.com/google/osv-scanner-action/releases/tag/v2.5.0"
+      "version": "6e4298ebc4db23e847df9b2e2de2939d6f066c67",
+      "release": "v2.5.1",
+      "releasedAt": "2026-08-17T04:41:51Z",
+      "source": "https://github.com/google/osv-scanner-action/releases/tag/v2.5.1"
     },
     {
       "name": "gitleaks/gitleaks-action",

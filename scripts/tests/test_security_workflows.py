@@ -9,7 +9,7 @@ SETUP_JAVA = "actions/setup-java@b6effb05e454b25005698d916606bdc6ffcbf961"
 SETUP_DOTNET = "actions/setup-dotnet@a98b56852c35b8e3190ac28c8c2271da59106c68"
 SETUP_GRADLE = "gradle/actions/setup-gradle@9c971963bec38e04b3d30dcc455b5382be2fdbfb"
 CODEQL = "github/codeql-action"
-CODEQL_SHA = "ff2f1c621b7f889edc0d3c761ac2e6a3f8cdb0dd"
+CODEQL_SHA = "db488ddef3bf6cb639b32c2e9a7c0a7ea8271d28"
 
 
 class DailySecurityWorkflowTests(unittest.TestCase):
@@ -37,14 +37,14 @@ class DailySecurityWorkflowTests(unittest.TestCase):
             "--dependency-verification strict dependencies :protocol:dependencies :rider-frontend:dependencies --configuration runtimeClasspath",
             "--locked-mode",
             "NuGetAuditMode=all",
-            "google/osv-scanner-action/.github/workflows/osv-scanner-reusable.yml@8deb546fdb875b9996d27d4950be7312dac076a1",
+            "google/osv-scanner-action/.github/workflows/osv-scanner-reusable.yml@6e4298ebc4db23e847df9b2e2de2939d6f066c67",
             "--config=osv-scanner.toml",
             "gitleaks/gitleaks-action@e0c47f4f8be36e29cdc102c57e68cb5cbf0e8d1e",
             "GITLEAKS_VERSION: 8.30.1",
             "zizmorcore/zizmor-action@3dc1ecc9bcb9e94e9b2c709687979e1298497054",
             "anchore/sbom-action@e22c389904149dbc22b58101806040fa8d37a610",
             "syft-version: v1.51.0",
-            "google/osv-scanner-action/osv-scanner-action@8deb546fdb875b9996d27d4950be7312dac076a1",
+            "google/osv-scanner-action/osv-scanner-action@6e4298ebc4db23e847df9b2e2de2939d6f066c67",
             "name: Enforce the SPDX package-source policy",
             "build/security/source.spdx.json",
             "ossf/scorecard-action@2d1146689b8cda280b9bc96326124645441f03bc",

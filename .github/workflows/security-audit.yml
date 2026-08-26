@@ -15,7 +15,7 @@ concurrency:
 jobs:
   osv:
     name: OSV dependency audit
-    uses: google/osv-scanner-action/.github/workflows/osv-scanner-reusable.yml@8deb546fdb875b9996d27d4950be7312dac076a1
+    uses: google/osv-scanner-action/.github/workflows/osv-scanner-reusable.yml@6e4298ebc4db23e847df9b2e2de2939d6f066c67
     permissions:
       actions: read
       contents: read
@@ -88,7 +88,7 @@ jobs:
       # directory simply does not yield licence metadata for Maven, NuGet and Actions dependencies.
       # The SBOM is still scanned for vulnerabilities, under the same documented exceptions.
       - name: Enforce the SPDX package-source policy
-        uses: google/osv-scanner-action/osv-scanner-action@8deb546fdb875b9996d27d4950be7312dac076a1
+        uses: google/osv-scanner-action/osv-scanner-action@6e4298ebc4db23e847df9b2e2de2939d6f066c67
         with:
           scan-args: |-
             --config=osv-scanner.toml
@@ -115,7 +115,7 @@ jobs:
           results_format: sarif
           repo_token: ${{ github.token }}
           publish_results: true
-      - uses: github/codeql-action/upload-sarif@ff2f1c621b7f889edc0d3c761ac2e6a3f8cdb0dd
+      - uses: github/codeql-action/upload-sarif@db488ddef3bf6cb639b32c2e9a7c0a7ea8271d28
         with:
           sarif_file: build/security/scorecard.sarif
           category: security-audit/scorecard
@@ -141,7 +141,7 @@ jobs:
           use-annotations: false
           post-pr-comment: false
           push-fixes: none
-      - uses: github/codeql-action/upload-sarif@ff2f1c621b7f889edc0d3c761ac2e6a3f8cdb0dd
+      - uses: github/codeql-action/upload-sarif@db488ddef3bf6cb639b32c2e9a7c0a7ea8271d28
         with:
           sarif_file: build/security/qodana-jvm/qodana.sarif.json
           category: qodana-jvm
@@ -176,7 +176,7 @@ jobs:
           use-annotations: false
           post-pr-comment: false
           push-fixes: none
-      - uses: github/codeql-action/upload-sarif@ff2f1c621b7f889edc0d3c761ac2e6a3f8cdb0dd
+      - uses: github/codeql-action/upload-sarif@db488ddef3bf6cb639b32c2e9a7c0a7ea8271d28
         with:
           sarif_file: build/security/qodana-rider/qodana.sarif.json
           category: qodana-rider
