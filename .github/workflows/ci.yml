@@ -14,7 +14,7 @@ concurrency:
   cancel-in-progress: true
 
 env:
-  JAVA_VERSION: "21"
+  JAVA_VERSION: "21.0.12+8"
 
 jobs:
   changes:
@@ -70,14 +70,17 @@ jobs:
         with:
           distribution: temurin
           java-version: ${{ env.JAVA_VERSION }}
+      - uses: actions/setup-dotnet@a98b56852c35b8e3190ac28c8c2271da59106c68
+        with:
+          dotnet-version: 10.0.302
       - run: scripts/free-hosted-runner-space.sh
       - name: Free the toolchains this job never calls
         shell: bash
         run: |
           set -euo pipefail
           # /usr/share/dotnet stays: koverXmlReport aggregates :rider-frontend, whose
-          # :compileRiderBackend shells out to the preinstalled dotnet even though this job runs
-          # no setup-dotnet. Nothing here touches Node, Rust or Homebrew.
+          # :compileRiderBackend shells out to the SDK setup-dotnet installs there.
+          # Nothing here touches Node, Rust or Homebrew.
           sudo rm -rf /usr/local/lib/node_modules /home/linuxbrew /usr/share/rust
           df -h /
       - uses: gradle/actions/setup-gradle@9c971963bec38e04b3d30dcc455b5382be2fdbfb
@@ -109,7 +112,10 @@ jobs:
           ref: ${{ needs.changes.outputs.target-sha }}
           persist-credentials: false
       - uses: actions/setup-java@b6effb05e454b25005698d916606bdc6ffcbf961
-        with: {distribution: temurin, java-version: "21"}
+        with: {distribution: temurin, java-version: "21.0.12+8"}
+      - uses: actions/setup-dotnet@a98b56852c35b8e3190ac28c8c2271da59106c68
+        with:
+          dotnet-version: 10.0.302
       - run: scripts/free-hosted-runner-space.sh
       - uses: gradle/actions/setup-gradle@9c971963bec38e04b3d30dcc455b5382be2fdbfb
         with:
@@ -128,7 +134,10 @@ jobs:
           ref: ${{ needs.changes.outputs.target-sha }}
           persist-credentials: false
       - uses: actions/setup-java@b6effb05e454b25005698d916606bdc6ffcbf961
-        with: {distribution: temurin, java-version: "21"}
+        with: {distribution: temurin, java-version: "21.0.12+8"}
+      - uses: actions/setup-dotnet@a98b56852c35b8e3190ac28c8c2271da59106c68
+        with:
+          dotnet-version: 10.0.302
       - run: scripts/free-hosted-runner-space.sh
       - uses: gradle/actions/setup-gradle@9c971963bec38e04b3d30dcc455b5382be2fdbfb
         with:
@@ -147,7 +156,10 @@ jobs:
           ref: ${{ needs.changes.outputs.target-sha }}
           persist-credentials: false
       - uses: actions/setup-java@b6effb05e454b25005698d916606bdc6ffcbf961
-        with: {distribution: temurin, java-version: "21"}
+        with: {distribution: temurin, java-version: "21.0.12+8"}
+      - uses: actions/setup-dotnet@a98b56852c35b8e3190ac28c8c2271da59106c68
+        with:
+          dotnet-version: 10.0.302
       - run: scripts/free-hosted-runner-space.sh
       - uses: gradle/actions/setup-gradle@9c971963bec38e04b3d30dcc455b5382be2fdbfb
         with:
@@ -166,7 +178,10 @@ jobs:
           ref: ${{ needs.changes.outputs.target-sha }}
           persist-credentials: false
       - uses: actions/setup-java@b6effb05e454b25005698d916606bdc6ffcbf961
-        with: {distribution: temurin, java-version: "21"}
+        with: {distribution: temurin, java-version: "21.0.12+8"}
+      - uses: actions/setup-dotnet@a98b56852c35b8e3190ac28c8c2271da59106c68
+        with:
+          dotnet-version: 10.0.302
       - run: scripts/free-hosted-runner-space.sh
       - uses: gradle/actions/setup-gradle@9c971963bec38e04b3d30dcc455b5382be2fdbfb
         with:
@@ -185,7 +200,10 @@ jobs:
           ref: ${{ needs.changes.outputs.target-sha }}
           persist-credentials: false
       - uses: actions/setup-java@b6effb05e454b25005698d916606bdc6ffcbf961
-        with: {distribution: temurin, java-version: "21"}
+        with: {distribution: temurin, java-version: "21.0.12+8"}
+      - uses: actions/setup-dotnet@a98b56852c35b8e3190ac28c8c2271da59106c68
+        with:
+          dotnet-version: 10.0.302
       - run: scripts/free-hosted-runner-space.sh
       - uses: gradle/actions/setup-gradle@9c971963bec38e04b3d30dcc455b5382be2fdbfb
         with:
@@ -204,7 +222,10 @@ jobs:
           ref: ${{ needs.changes.outputs.target-sha }}
           persist-credentials: false
       - uses: actions/setup-java@b6effb05e454b25005698d916606bdc6ffcbf961
-        with: {distribution: temurin, java-version: "21"}
+        with: {distribution: temurin, java-version: "21.0.12+8"}
+      - uses: actions/setup-dotnet@a98b56852c35b8e3190ac28c8c2271da59106c68
+        with:
+          dotnet-version: 10.0.302
       - run: scripts/free-hosted-runner-space.sh
       - uses: gradle/actions/setup-gradle@9c971963bec38e04b3d30dcc455b5382be2fdbfb
         with:
@@ -223,7 +244,7 @@ jobs:
           ref: ${{ needs.changes.outputs.target-sha }}
           persist-credentials: false
       - uses: actions/setup-java@b6effb05e454b25005698d916606bdc6ffcbf961
-        with: {distribution: temurin, java-version: "21"}
+        with: {distribution: temurin, java-version: "21.0.12+8"}
       - run: scripts/free-hosted-runner-space.sh
       - uses: gradle/actions/setup-gradle@9c971963bec38e04b3d30dcc455b5382be2fdbfb
         with:
@@ -262,7 +283,7 @@ jobs:
           ref: ${{ needs.changes.outputs.target-sha }}
           persist-credentials: false
       - uses: actions/setup-java@b6effb05e454b25005698d916606bdc6ffcbf961
-        with: {distribution: temurin, java-version: "21"}
+        with: {distribution: temurin, java-version: "21.0.12+8"}
       - uses: actions/setup-dotnet@a98b56852c35b8e3190ac28c8c2271da59106c68
         with:
           dotnet-version: 10.0.302
@@ -284,7 +305,7 @@ jobs:
           ref: ${{ needs.changes.outputs.target-sha }}
           persist-credentials: false
       - uses: actions/setup-java@b6effb05e454b25005698d916606bdc6ffcbf961
-        with: {distribution: temurin, java-version: "21"}
+        with: {distribution: temurin, java-version: "21.0.12+8"}
       - uses: actions/setup-dotnet@a98b56852c35b8e3190ac28c8c2271da59106c68
         with:
           dotnet-version: 10.0.302
@@ -413,7 +434,7 @@ jobs:
           ref: ${{ needs.changes.outputs.target-sha }}
           persist-credentials: false
       - uses: actions/setup-java@b6effb05e454b25005698d916606bdc6ffcbf961
-        with: {distribution: temurin, java-version: "21"}
+        with: {distribution: temurin, java-version: "21.0.12+8"}
       - uses: actions/setup-dotnet@a98b56852c35b8e3190ac28c8c2271da59106c68
         with:
           dotnet-version: 10.0.302
