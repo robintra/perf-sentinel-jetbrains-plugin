@@ -72,7 +72,7 @@ def declaration_changes(root, checker, dependencies, problems):
             continue
         try:
             values = checker.declared_versions(root, declaration)
-        except Exception as error:  # noqa: BLE001 - reported, never silent
+        except Exception as error:  # reported, never silent
             problems.append(f"{dependency['name']}: cannot read {declaration}: {error}")
             continue
         distinct = set(values)
@@ -210,7 +210,7 @@ def refresh(root, checker, inventory, online, problems):
         for dependency in dependencies:
             try:
                 metadata = online_metadata(client, checker, dependency)
-            except Exception as error:  # noqa: BLE001 - reported, never silent
+            except Exception as error:  # reported, never silent
                 if id(dependency) in touched:
                     problems.append(
                         f"{dependency['name']}: cannot refresh metadata: {error}"
