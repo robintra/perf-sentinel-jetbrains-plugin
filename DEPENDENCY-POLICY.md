@@ -33,3 +33,18 @@ its Gradle managers cover `settings.gradle.kts`, `gradle/libs.versions.toml`, RD
 `gradle/wrapper/gradle-wrapper.properties`, Gradle locks, and verification metadata. Its NuGet
 manager updates SDK-style project files and `packages.lock.json`. Dependabot is deliberately limited
 to `.github/workflows` action references.
+
+## Bringing the inventory back in step
+
+Neither bot writes `config/supply-chain.json`, so a pull request that bumps a manifest fails
+`check-supply-chain.py` until the matching entry is rewritten. `make sync-supply-chain` performs
+that rewrite: it resolves every declaration through `check-supply-chain.py` itself, so the writer
+and the gate cannot disagree, and it follows the commit SHA the workflows pin for each action.
+`make sync-supply-chain ONLINE=1` also refreshes the release dates, tags, source URLs and Gradle
+checksums that no file in the working tree can prove, which is what the `--online` gate compares.
+
+A Gradle bump reaches further than the wrapper: the hosted `gradle-version` inputs in the
+workflows and the `gradle-<version>-src.zip` checksum in `gradle/verification-metadata.xml`, which
+Qodana downloads, both move with it. `sync-supply-chain` owns the inventory only, so those two stay
+manual, and so do the pins mirrored in `scripts/tests`, which exist precisely so a pin cannot move
+without a second, conscious edit. The command lists them on every run that changes something.

@@ -24,10 +24,16 @@ RIDER_PROJECT := src/dotnet/PerfSentinel.Rider.Tests/PerfSentinel.Rider.Tests.cs
 NUGET_CONFIG := src/dotnet/NuGet.Config
 LOCK_INPUTS := gradle.lockfile protocol/gradle.lockfile rider-frontend/gradle.lockfile gradle/verification-metadata.xml src/dotnet/PerfSentinel.Rider/packages.lock.json src/dotnet/PerfSentinel.Rider.Tests/packages.lock.json
 
-.PHONY: badge-check check-disk check-locks verify-fast verify security release-check
+.PHONY: badge-check check-disk check-locks sync-supply-chain verify-fast verify security release-check
 
 badge-check:
 	@cd "$(ROOT)" && $(PYTHON) scripts/check-badges.py
+
+# Rewrites config/supply-chain.json to match the manifests a dependency pull
+# request just bumped. ONLINE=1 also refreshes release dates, tags and
+# checksums, which check-supply-chain.py --online requires.
+sync-supply-chain:
+	@cd "$(ROOT)" && $(PYTHON) scripts/sync-supply-chain.py $(if $(ONLINE),--online,)
 
 check-disk:
 	@$(PYTHON) -c 'import os,shutil,sys; free=shutil.disk_usage(sys.argv[1]).free; ci=os.environ.get("CI") == "true"; print("Disk guard: managed CI runner" if ci else f"Disk guard: {free // (1024**3)} GiB free"); sys.exit(0 if ci or free >= 25 * 1024**3 else "At least 25 GiB free are required")' "$(ROOT)"
