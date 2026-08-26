@@ -11003,9 +11003,9 @@
             <sha256 value="44a2cb6dda302340ade6e52adfff291c9fd62074c53d312b7f4268ddaa0a2159" origin="Verified from JetBrains checksum"/>
          </artifact>
       </component>
-      <component group="gradle" name="gradle" version="9.7.0">
-         <artifact name="gradle-9.7.0-src.zip">
-            <sha256 value="e4e703098cd27f95cd10b1d5c8466dd9a5bd3cfc1f34098e3a1b4e5e790d7c82" origin="Verified from services.gradle.org checksum"/>
+      <component group="gradle" name="gradle" version="9.7.1">
+         <artifact name="gradle-9.7.1-src.zip">
+            <sha256 value="c136caa3ba090740c50a703e25aa15bea0c7fb01e1450ba90e1079920e9b8bf4" origin="Verified from services.gradle.org checksum"/>
          </artifact>
       </component>
       <component group="idea" name="idea" version="2025.3.6.1">
