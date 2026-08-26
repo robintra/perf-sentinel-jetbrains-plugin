@@ -82,7 +82,7 @@ jobs:
           df -h /
       - uses: gradle/actions/setup-gradle@9c971963bec38e04b3d30dcc455b5382be2fdbfb
         with:
-          gradle-version: "9.7.0"
+          gradle-version: "9.7.1"
           # Restoring the Gradle cache lands after the cleanup steps above and refills the disk.
           cache-disabled: true
       - run: gradle --no-daemon --dependency-verification strict test koverXmlReport
@@ -113,7 +113,7 @@ jobs:
       - run: scripts/free-hosted-runner-space.sh
       - uses: gradle/actions/setup-gradle@9c971963bec38e04b3d30dcc455b5382be2fdbfb
         with:
-          gradle-version: "9.7.0"
+          gradle-version: "9.7.1"
           cache-read-only: ${{ github.event_name == 'pull_request' }}
       - run: gradle --no-daemon --dependency-verification strict testPyCharm253
 
@@ -132,7 +132,7 @@ jobs:
       - run: scripts/free-hosted-runner-space.sh
       - uses: gradle/actions/setup-gradle@9c971963bec38e04b3d30dcc455b5382be2fdbfb
         with:
-          gradle-version: "9.7.0"
+          gradle-version: "9.7.1"
           cache-read-only: ${{ github.event_name == 'pull_request' }}
       - run: gradle --no-daemon --dependency-verification strict testPhpStorm253
 
@@ -151,7 +151,7 @@ jobs:
       - run: scripts/free-hosted-runner-space.sh
       - uses: gradle/actions/setup-gradle@9c971963bec38e04b3d30dcc455b5382be2fdbfb
         with:
-          gradle-version: "9.7.0"
+          gradle-version: "9.7.1"
           cache-read-only: ${{ github.event_name == 'pull_request' }}
       - run: gradle --no-daemon --dependency-verification strict testRustRover253 testRustRover262
 
@@ -170,7 +170,7 @@ jobs:
       - run: scripts/free-hosted-runner-space.sh
       - uses: gradle/actions/setup-gradle@9c971963bec38e04b3d30dcc455b5382be2fdbfb
         with:
-          gradle-version: "9.7.0"
+          gradle-version: "9.7.1"
           cache-read-only: ${{ github.event_name == 'pull_request' }}
       - run: gradle --no-daemon --dependency-verification strict testRubyMine253
 
@@ -189,7 +189,7 @@ jobs:
       - run: scripts/free-hosted-runner-space.sh
       - uses: gradle/actions/setup-gradle@9c971963bec38e04b3d30dcc455b5382be2fdbfb
         with:
-          gradle-version: "9.7.0"
+          gradle-version: "9.7.1"
           cache-read-only: ${{ github.event_name == 'pull_request' }}
       - run: gradle --no-daemon --dependency-verification strict testWebStorm253
 
@@ -208,7 +208,7 @@ jobs:
       - run: scripts/free-hosted-runner-space.sh
       - uses: gradle/actions/setup-gradle@9c971963bec38e04b3d30dcc455b5382be2fdbfb
         with:
-          gradle-version: "9.7.0"
+          gradle-version: "9.7.1"
           cache-read-only: ${{ github.event_name == 'pull_request' }}
       - run: gradle --no-daemon --dependency-verification strict testGoLand253
 
@@ -227,7 +227,7 @@ jobs:
       - run: scripts/free-hosted-runner-space.sh
       - uses: gradle/actions/setup-gradle@9c971963bec38e04b3d30dcc455b5382be2fdbfb
         with:
-          gradle-version: "9.7.0"
+          gradle-version: "9.7.1"
           cache-read-only: ${{ github.event_name == 'pull_request' }}
       - run: gradle --no-daemon --dependency-verification strict :rider-frontend:test
 
@@ -269,7 +269,7 @@ jobs:
       - run: scripts/free-hosted-runner-space.sh
       - uses: gradle/actions/setup-gradle@9c971963bec38e04b3d30dcc455b5382be2fdbfb
         with:
-          gradle-version: "9.7.0"
+          gradle-version: "9.7.1"
           cache-disabled: true
       - run: gradle --no-daemon --dependency-verification strict verifyPlugin -PpluginVerifierTarget=${{ matrix.verifier-target }}
 
@@ -291,7 +291,7 @@ jobs:
       - run: scripts/free-hosted-runner-space.sh
       - uses: gradle/actions/setup-gradle@9c971963bec38e04b3d30dcc455b5382be2fdbfb
         with:
-          gradle-version: "9.7.0"
+          gradle-version: "9.7.1"
           cache-read-only: ${{ github.event_name == 'pull_request' }}
       - run: gradle --no-daemon --dependency-verification strict buildPlugin
       - shell: bash
@@ -421,7 +421,7 @@ jobs:
           cache-dependency-path: src/dotnet/**/packages.lock.json
       - uses: gradle/actions/setup-gradle@9c971963bec38e04b3d30dcc455b5382be2fdbfb
         with:
-          gradle-version: "9.7.0"
+          gradle-version: "9.7.1"
           cache-disabled: true
       - name: Verify the .NET SDK
         shell: pwsh
