@@ -49,6 +49,36 @@ vulnerability.ignore = true
 effectiveUntil = 2026-11-13
 reason = "Bundled in RustRover 2026.2, reachable only through the testRustRover262 configurations."
 
+# The same three findings, spelled the way the SPDX scan reports them. The
+# source scan reads Gradle locks and sees full Maven coordinates, while the SBOM
+# scan reads syft's SPDX names, which carry no group: osv-scanner 2.5.1 began
+# reporting those packages and the coordinate-keyed entries above no longer
+# cover them. Both spellings stay version-pinned, so an advisory against a
+# version this repository declares still fails the audit.
+[[PackageOverrides]]
+name = "jackson-core"
+version = "2.19.0"
+ecosystem = "Maven"
+vulnerability.ignore = true
+effectiveUntil = 2026-11-13
+reason = "Shipped inside the IDE distributions the intellijPlatformTest configurations resolve. The only jackson this repository declares is jackson-bom 2.22.1, already ahead of every fixed version."
+
+[[PackageOverrides]]
+name = "jackson-databind"
+version = "2.19.0"
+ecosystem = "Maven"
+vulnerability.ignore = true
+effectiveUntil = 2026-11-13
+reason = "Shipped inside the IDE distributions the intellijPlatformTest configurations resolve. The only jackson this repository declares is jackson-bom 2.22.1, already ahead of every fixed version."
+
+[[PackageOverrides]]
+name = "jackson-databind"
+version = "3.1.4"
+ecosystem = "Maven"
+vulnerability.ignore = true
+effectiveUntil = 2026-11-13
+reason = "Bundled in RustRover 2026.2, reachable only through the testRustRover262 configurations."
+
 [[PackageOverrides]]
 name = "org.jsoup:jsoup"
 version = "1.16.1"
