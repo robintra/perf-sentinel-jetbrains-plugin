@@ -142,5 +142,23 @@ class DependencySubmissionWorkflowTests(unittest.TestCase):
         self.assertIn("persist-credentials: false", self.text)
 
 
+class JdkPinTests(unittest.TestCase):
+    """A floating JDK changes Build-JVM in every jar manifest, so the archive stops being reproducible."""
+
+    def test_every_workflow_reads_the_pinned_build_from_the_version_file(self):
+        for path in sorted(WORKFLOWS.glob("*.yml")):
+            text = path.read_text(encoding="utf-8")
+            if SETUP_JAVA not in text:
+                continue
+            self.assertIn("java-version-file: .java-version", text, path.name)
+            self.assertNotIn("java-version:", text, path.name)
+
+    def test_the_version_file_pins_an_exact_temurin_build(self):
+        # setup-java resolves Temurin against the Adoptium semver namespace, where an LTS
+        # release reads 21.0.12+8.0.LTS. A bare 21.0.12+8 matches nothing.
+        version = (REPOSITORY / ".java-version").read_text(encoding="utf-8").strip()
+        self.assertRegex(version, r"^21\.\d+\.\d+\+\d+\.\d+\.LTS$")
+
+
 if __name__ == "__main__":
     unittest.main()

@@ -103,7 +103,11 @@ class DependencyAutomationTests(unittest.TestCase):
         with tempfile.TemporaryDirectory() as directory:
             root = make_fixture(directory)
             config = json.loads((root / ".github/renovate.json").read_text(encoding="utf-8"))
-            config["customManagers"] = config["customManagers"][:-2]
+            config["customManagers"] = [
+                manager
+                for manager in config["customManagers"]
+                if manager["datasourceTemplate"] != "custom.jetbrains-products"
+            ]
             (root / ".github/renovate.json").write_text(json.dumps(config), encoding="utf-8")
             result = run_checker(root)
             self.assertNotEqual(0, result.returncode)

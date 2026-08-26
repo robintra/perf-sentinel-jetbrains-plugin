@@ -48,6 +48,11 @@
       "description": "Keep Coverlet compatible with the Rider net472 test host",
       "matchPackageNames": ["coverlet.collector"],
       "allowedVersions": "<7.0.0"
+    },
+    {
+      "description": "Write the Temurin build the way setup-java reads it, without the Adoptium LTS suffix",
+      "matchPackageNames": ["java-jdk"],
+      "extractVersion": "^(?<version>[0-9]+\\.[0-9]+\\.[0-9]+\\+[0-9]+)"
     }
   ],
   "customDatasources": {
@@ -131,6 +136,14 @@
       "depNameTemplate": "JetBrains.Rider.SDK",
       "datasourceTemplate": "nuget",
       "versioningTemplate": "nuget"
+    },
+    {
+      "customType": "regex",
+      "managerFilePatterns": ["/^\\.java-version$/"],
+      "matchStrings": ["(?<currentValue>[0-9]+\\.[0-9]+\\.[0-9]+\\+[0-9]+)"],
+      "depNameTemplate": "java-jdk",
+      "datasourceTemplate": "java-version",
+      "versioningTemplate": "semver"
     }
   ]
 }

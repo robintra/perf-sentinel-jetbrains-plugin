@@ -61,6 +61,11 @@ EXPECTED_PACKAGE_RULES = [
         "matchPackageNames": ["coverlet.collector"],
         "allowedVersions": "<7.0.0",
     },
+    {
+        "description": "Write the Temurin build the way setup-java reads it, without the Adoptium LTS suffix",
+        "matchPackageNames": ["java-jdk"],
+        "extractVersion": "^(?<version>[0-9]+\\.[0-9]+\\.[0-9]+\\+[0-9]+)",
+    },
 ]
 EXPECTED_CUSTOM_MANAGERS = {
     "IIU": {
@@ -84,6 +89,7 @@ EXPECTED_CUSTOM_MANAGERS = {
     "WS": {"files": ["/^build\\.gradle\\.kts$/"], "patterns": ["type\\s*=\\s*IntelliJPlatformType\\.WebStorm[\\s\\S]{0,120}?version\\s*=\\s*\"(?<currentValue>[0-9.]+)\"", "create\\(\\s*IntelliJPlatformType\\.WebStorm\\s*,\\s*\"(?<currentValue>[0-9.]+)\"\\s*\\)"], "datasource": "custom.jetbrains-products", "versioning": "loose"},
     "GO": {"files": ["/^build\\.gradle\\.kts$/"], "patterns": ["type\\s*=\\s*IntelliJPlatformType\\.GoLand[\\s\\S]{0,120}?version\\s*=\\s*\"(?<currentValue>[0-9.]+)\"", "create\\(\\s*IntelliJPlatformType\\.GoLand\\s*,\\s*\"(?<currentValue>[0-9.]+)\"\\s*\\)"], "datasource": "custom.jetbrains-products", "versioning": "loose"},
     "JetBrains.Rider.SDK": {"files": ["/^src/dotnet/Plugin\\.props$/"], "patterns": ["<SdkVersion>(?<currentValue>[0-9.]+)</SdkVersion>"], "datasource": "nuget", "versioning": "nuget"},
+    "java-jdk": {"files": ["/^\\.java-version$/"], "patterns": ["(?<currentValue>[0-9]+\\.[0-9]+\\.[0-9]+\\+[0-9]+)"], "datasource": "java-version", "versioning": "semver"},
 }
 EXPECTED_DATASOURCE = {
     "defaultRegistryUrlTemplate": "https://data.services.jetbrains.com/products/releases?code={{{packageName}}}&type=release",

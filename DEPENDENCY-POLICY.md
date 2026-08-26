@@ -3,7 +3,7 @@
 Renovate owns Gradle dependencies and plugins, the Gradle wrapper, JetBrains IDE and SDK versions,
 RDGen, Rider NuGet packages, lock files, and Gradle verification metadata. Dependabot owns GitHub
 Actions and GitHub-native security alerts only. The two services must never manage the same file or
-ecosystem.
+ecosystem. Renovate also owns the JDK build recorded in `.java-version`.
 
 ## Update rules
 
@@ -33,6 +33,20 @@ its Gradle managers cover `settings.gradle.kts`, `gradle/libs.versions.toml`, RD
 `gradle/wrapper/gradle-wrapper.properties`, Gradle locks, and verification metadata. Its NuGet
 manager updates SDK-style project files and `packages.lock.json`. Dependabot is deliberately limited
 to `.github/workflows` action references.
+
+## The JDK pin
+
+Every `actions/setup-java` step reads `java-version-file: .java-version`, so one file holds the
+build the whole matrix compiles with. The pin is not cosmetic: the IntelliJ Platform Gradle Plugin
+stamps the resolved JVM into `Build-JVM` in each jar manifest, so a floating `java-version: "21"`
+makes two builds of the same commit differ and the Windows reproducibility comparison fail.
+
+Renovate tracks that file through its `java-version` datasource, which reads the Adoptium API. That
+API reports a release as `21.0.12+8.0.LTS`, so a package rule strips the trailing `.0.LTS` back to
+the form `setup-java` resolves. One case stays manual: Adoptium folds an interim rebuild into the
+semver build metadata, publishing `21.0.12.1+1` as `21.0.12+101.0.LTS`, and semver ordering ignores
+build metadata. Renovate therefore proposes patch and later releases but stays silent on an interim
+rebuild of the pinned patch.
 
 ## Bringing the inventory back in step
 
