@@ -1,0 +1,258 @@
+[
+  {
+    "finding": {
+      "classification_method": "sanitizer_heuristic",
+      "confidence": "daemon_staging",
+      "first_timestamp": "2026-08-27T10:16:14.569Z",
+      "green_impact": {
+        "estimated_extra_io_ops": 11,
+        "io_intensity_band": "critical",
+        "io_intensity_score": 12.0
+      },
+      "grouping": [
+        {
+          "key": "k8s.namespace.name",
+          "value": "shop"
+        },
+        {
+          "key": "service.namespace",
+          "value": "shop"
+        }
+      ],
+      "instrumentation_scopes": [
+        "io.opentelemetry.jdbc",
+        "io.opentelemetry.hibernate-6.0",
+        "io.opentelemetry.tomcat-10.0"
+      ],
+      "last_timestamp": "2026-08-27T10:16:14.575Z",
+      "pattern": {
+        "distinct_params": 1,
+        "occurrences": 12,
+        "span_duration_cv_x1000": 901,
+        "span_duration_us_p50": 151,
+        "span_duration_us_p99": 916,
+        "template": "SELECT count(*) FROM orders.order_items WHERE order_id = ?",
+        "window_ms": 6
+      },
+      "service": "order-service",
+      "severity": "critical",
+      "signature": "n_plus_one_sql:order-service:_api_fault_template-mutation-sql:68d48fbc63bc17beac38f51d76fe9046",
+      "source_endpoint": "/api/fault/template-mutation-sql",
+      "suggested_fix": {
+        "framework": "java_jpa",
+        "pattern": "n_plus_one_sql",
+        "recommendation": "Use `JOIN FETCH` on the relationship or annotate the repository method with `@EntityGraph` to load associations in a single query.",
+        "reference_url": "https://docs.jboss.org/hibernate/orm/current/userguide/html_single/Hibernate_User_Guide.html#fetching-strategies-dynamic-fetching"
+      },
+      "suggestion": "Use `WHERE ... IN (?)` to batch 12 queries into one",
+      "trace_id": "fab8763a8e56b9723b8ffca467999fa1",
+      "type": "n_plus_one_sql"
+    },
+    "first_seen": 1787824856288,
+    "first_seen_ms": 1787825822875,
+    "last_seen": 1787825917790,
+    "max_confidence": "daemon_staging",
+    "seen_count": 1,
+    "sources": [
+      {
+        "age_seconds": 22,
+        "environment": "lab",
+        "name": "lab shared daemon",
+        "producer_version": "0.14.0",
+        "status": "ok"
+      }
+    ],
+    "status": "active",
+    "stored_at_ms": 1787825822875
+  },
+  {
+    "finding": {
+      "classification_method": "sanitizer_heuristic",
+      "confidence": "daemon_staging",
+      "first_timestamp": "2026-08-27T10:16:14.640Z",
+      "green_impact": {
+        "estimated_extra_io_ops": 11,
+        "io_intensity_band": "critical",
+        "io_intensity_score": 12.0
+      },
+      "grouping": [
+        {
+          "key": "k8s.namespace.name",
+          "value": "shop"
+        },
+        {
+          "key": "service.namespace",
+          "value": "shop"
+        }
+      ],
+      "instrumentation_scopes": [
+        "io.opentelemetry.jdbc",
+        "io.opentelemetry.hibernate-6.0",
+        "io.opentelemetry.tomcat-10.0"
+      ],
+      "last_timestamp": "2026-08-27T10:16:14.643Z",
+      "pattern": {
+        "distinct_params": 1,
+        "occurrences": 12,
+        "span_duration_cv_x1000": 557,
+        "span_duration_us_p50": 114,
+        "span_duration_us_p99": 377,
+        "template": "SELECT count(*) FROM orders.order_items WHERE order_id = ? AND quantity > ?",
+        "window_ms": 3
+      },
+      "service": "order-service",
+      "severity": "critical",
+      "signature": "n_plus_one_sql:order-service:_api_fault_template-mutation-sql:f6eb1327d845a9c68cb865b3e86a9fad",
+      "source_endpoint": "/api/fault/template-mutation-sql",
+      "suggested_fix": {
+        "framework": "java_jpa",
+        "pattern": "n_plus_one_sql",
+        "recommendation": "Use `JOIN FETCH` on the relationship or annotate the repository method with `@EntityGraph` to load associations in a single query.",
+        "reference_url": "https://docs.jboss.org/hibernate/orm/current/userguide/html_single/Hibernate_User_Guide.html#fetching-strategies-dynamic-fetching"
+      },
+      "suggestion": "Use `WHERE ... IN (?)` to batch 12 queries into one",
+      "trace_id": "ff24589f119b28dd9a6ce75af3be75bd",
+      "type": "n_plus_one_sql"
+    },
+    "first_seen": 1787824856288,
+    "first_seen_ms": 1787825822875,
+    "last_seen": 1787825917790,
+    "max_confidence": "daemon_staging",
+    "seen_count": 1,
+    "sources": [
+      {
+        "age_seconds": 22,
+        "environment": "lab",
+        "name": "lab shared daemon",
+        "producer_version": "0.14.0",
+        "status": "ok"
+      }
+    ],
+    "status": "active",
+    "stored_at_ms": 1787825822875
+  },
+  {
+    "finding": {
+      "confidence": "daemon_staging",
+      "first_timestamp": "2026-08-27T10:16:14.589Z",
+      "green_impact": {
+        "estimated_extra_io_ops": 11,
+        "io_intensity_band": "critical",
+        "io_intensity_score": 12.0
+      },
+      "grouping": [
+        {
+          "key": "k8s.namespace.name",
+          "value": "shop"
+        },
+        {
+          "key": "service.namespace",
+          "value": "shop"
+        }
+      ],
+      "instrumentation_scopes": [
+        "io.opentelemetry.jdbc",
+        "io.opentelemetry.hibernate-6.0",
+        "io.opentelemetry.tomcat-10.0"
+      ],
+      "last_timestamp": "2026-08-27T10:16:14.594Z",
+      "pattern": {
+        "distinct_params": 1,
+        "occurrences": 12,
+        "template": "SELECT count(*) FROM orders.order_items WHERE order_id = ?",
+        "window_ms": 5
+      },
+      "service": "order-service",
+      "severity": "warning",
+      "signature": "redundant_sql:order-service:_api_fault_template-mutation-sql:68d48fbc63bc17beac38f51d76fe9046",
+      "source_endpoint": "/api/fault/template-mutation-sql",
+      "suggested_fix": {
+        "framework": "java_jpa",
+        "pattern": "redundant_sql",
+        "recommendation": "Add `Spring`'s `@Cacheable` on the repository or service method, or share the `EntityManager` within the request via `@Transactional` so `Hibernate`'s first-level cache deduplicates the read.",
+        "reference_url": "https://docs.spring.io/spring-framework/reference/integration/cache.html"
+      },
+      "suggestion": "Identical operation executed 12 times: cache result or deduplicate",
+      "trace_id": "6174b72b3b241bd12eaae79821c9f01d",
+      "type": "redundant_sql"
+    },
+    "first_seen": 1787825111291,
+    "first_seen_ms": 1787825822875,
+    "last_seen": 1787825917790,
+    "max_confidence": "daemon_staging",
+    "seen_count": 2,
+    "sources": [
+      {
+        "age_seconds": 22,
+        "environment": "lab",
+        "name": "lab shared daemon",
+        "producer_version": "0.14.0",
+        "status": "ok"
+      }
+    ],
+    "status": "active",
+    "stored_at_ms": 1787825822875
+  },
+  {
+    "finding": {
+      "confidence": "daemon_staging",
+      "first_timestamp": "2026-08-27T10:16:14.625Z",
+      "green_impact": {
+        "estimated_extra_io_ops": 11,
+        "io_intensity_band": "critical",
+        "io_intensity_score": 12.0
+      },
+      "grouping": [
+        {
+          "key": "k8s.namespace.name",
+          "value": "shop"
+        },
+        {
+          "key": "service.namespace",
+          "value": "shop"
+        }
+      ],
+      "instrumentation_scopes": [
+        "io.opentelemetry.jdbc",
+        "io.opentelemetry.hibernate-6.0",
+        "io.opentelemetry.tomcat-10.0"
+      ],
+      "last_timestamp": "2026-08-27T10:16:14.628Z",
+      "pattern": {
+        "distinct_params": 1,
+        "occurrences": 12,
+        "template": "SELECT count(*) FROM orders.order_items WHERE order_id = ? AND quantity > ?",
+        "window_ms": 3
+      },
+      "service": "order-service",
+      "severity": "warning",
+      "signature": "redundant_sql:order-service:_api_fault_template-mutation-sql:f6eb1327d845a9c68cb865b3e86a9fad",
+      "source_endpoint": "/api/fault/template-mutation-sql",
+      "suggested_fix": {
+        "framework": "java_jpa",
+        "pattern": "redundant_sql",
+        "recommendation": "Add `Spring`'s `@Cacheable` on the repository or service method, or share the `EntityManager` within the request via `@Transactional` so `Hibernate`'s first-level cache deduplicates the read.",
+        "reference_url": "https://docs.spring.io/spring-framework/reference/integration/cache.html"
+      },
+      "suggestion": "Identical operation executed 12 times: cache result or deduplicate",
+      "trace_id": "3d6c703b6e660dc26b3d19ed49c9109f",
+      "type": "redundant_sql"
+    },
+    "first_seen": 1787825111291,
+    "first_seen_ms": 1787825822875,
+    "last_seen": 1787825917790,
+    "max_confidence": "daemon_staging",
+    "seen_count": 2,
+    "sources": [
+      {
+        "age_seconds": 22,
+        "environment": "lab",
+        "name": "lab shared daemon",
+        "producer_version": "0.14.0",
+        "status": "ok"
+      }
+    ],
+    "status": "active",
+    "stored_at_ms": 1787825822875
+  }
+]
