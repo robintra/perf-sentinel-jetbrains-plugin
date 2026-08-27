@@ -3,6 +3,72 @@
     "finding": {
       "classification_method": "sanitizer_heuristic",
       "confidence": "daemon_staging",
+      "first_timestamp": "2026-08-27T10:44:40.632Z",
+      "green_impact": {
+        "estimated_extra_io_ops": 14,
+        "io_intensity_band": "critical",
+        "io_intensity_score": 15.0
+      },
+      "grouping": [
+        {
+          "key": "k8s.namespace.name",
+          "value": "shop"
+        },
+        {
+          "key": "service.namespace",
+          "value": "shop"
+        }
+      ],
+      "instrumentation_scopes": [
+        "io.opentelemetry.jdbc",
+        "io.opentelemetry.hibernate-6.0",
+        "io.opentelemetry.tomcat-10.0"
+      ],
+      "last_timestamp": "2026-08-27T10:44:40.640Z",
+      "pattern": {
+        "distinct_params": 1,
+        "occurrences": 15,
+        "span_duration_cv_x1000": 1711,
+        "span_duration_us_p50": 128,
+        "span_duration_us_p99": 1948,
+        "template": "SELECT count(*) FROM orders.order_items WHERE order_id = ?",
+        "window_ms": 8
+      },
+      "service": "order-service",
+      "severity": "critical",
+      "signature": "n_plus_one_sql:order-service:_api_fault_n-plus-one-sql:68d48fbc63bc17beac38f51d76fe9046",
+      "source_endpoint": "/api/fault/n-plus-one-sql",
+      "suggested_fix": {
+        "framework": "java_jpa",
+        "pattern": "n_plus_one_sql",
+        "recommendation": "Use `JOIN FETCH` on the relationship or annotate the repository method with `@EntityGraph` to load associations in a single query.",
+        "reference_url": "https://docs.jboss.org/hibernate/orm/current/userguide/html_single/Hibernate_User_Guide.html#fetching-strategies-dynamic-fetching"
+      },
+      "suggestion": "Use `WHERE ... IN (?)` to batch 15 queries into one",
+      "trace_id": "37c18f67f9d2dcf090faef73029c55b2",
+      "type": "n_plus_one_sql"
+    },
+    "first_seen": 1787825987877,
+    "first_seen_ms": 1787825987877,
+    "last_seen": 1787827657954,
+    "max_confidence": "daemon_staging",
+    "seen_count": 16,
+    "sources": [
+      {
+        "age_seconds": 22,
+        "environment": "lab",
+        "name": "lab shared daemon",
+        "producer_version": "0.14.0",
+        "status": "ok"
+      }
+    ],
+    "status": "active",
+    "stored_at_ms": 1787827517880
+  },
+  {
+    "finding": {
+      "classification_method": "sanitizer_heuristic",
+      "confidence": "daemon_staging",
       "first_timestamp": "2026-08-27T10:16:14.569Z",
       "green_impact": {
         "estimated_extra_io_ops": 11,
@@ -50,7 +116,7 @@
     },
     "first_seen": 1787824856288,
     "first_seen_ms": 1787825822875,
-    "last_seen": 1787825917790,
+    "last_seen": 1787827657954,
     "max_confidence": "daemon_staging",
     "seen_count": 1,
     "sources": [
@@ -116,7 +182,7 @@
     },
     "first_seen": 1787824856288,
     "first_seen_ms": 1787825822875,
-    "last_seen": 1787825917790,
+    "last_seen": 1787827657954,
     "max_confidence": "daemon_staging",
     "seen_count": 1,
     "sources": [
@@ -178,7 +244,7 @@
     },
     "first_seen": 1787825111291,
     "first_seen_ms": 1787825822875,
-    "last_seen": 1787825917790,
+    "last_seen": 1787827657954,
     "max_confidence": "daemon_staging",
     "seen_count": 2,
     "sources": [
@@ -240,7 +306,7 @@
     },
     "first_seen": 1787825111291,
     "first_seen_ms": 1787825822875,
-    "last_seen": 1787825917790,
+    "last_seen": 1787827657954,
     "max_confidence": "daemon_staging",
     "seen_count": 2,
     "sources": [
@@ -254,5 +320,71 @@
     ],
     "status": "active",
     "stored_at_ms": 1787825822875
+  },
+  {
+    "finding": {
+      "classification_method": "sanitizer_heuristic",
+      "confidence": "daemon_staging",
+      "first_timestamp": "2026-08-27T10:44:40.632Z",
+      "green_impact": {
+        "estimated_extra_io_ops": 14,
+        "io_intensity_band": "critical",
+        "io_intensity_score": 15.0
+      },
+      "grouping": [
+        {
+          "key": "k8s.namespace.name",
+          "value": "shop"
+        },
+        {
+          "key": "service.namespace",
+          "value": "shop"
+        }
+      ],
+      "instrumentation_scopes": [
+        "io.opentelemetry.jdbc",
+        "io.opentelemetry.hibernate-6.0",
+        "io.opentelemetry.tomcat-10.0"
+      ],
+      "last_timestamp": "2026-08-27T10:44:40.640Z",
+      "pattern": {
+        "distinct_params": 1,
+        "occurrences": 15,
+        "span_duration_cv_x1000": 1711,
+        "span_duration_us_p50": 128,
+        "span_duration_us_p99": 1948,
+        "template": "SELECT count(*) FROM orders.order_items WHERE order_id = ?",
+        "window_ms": 8
+      },
+      "service": "order-service",
+      "severity": "critical",
+      "signature": "lab_probe:hub-ingestion:probe:00000000000000000000000000000000",
+      "source_endpoint": "/api/fault/n-plus-one-sql",
+      "suggested_fix": {
+        "framework": "java_jpa",
+        "pattern": "n_plus_one_sql",
+        "recommendation": "Use `JOIN FETCH` on the relationship or annotate the repository method with `@EntityGraph` to load associations in a single query.",
+        "reference_url": "https://docs.jboss.org/hibernate/orm/current/userguide/html_single/Hibernate_User_Guide.html#fetching-strategies-dynamic-fetching"
+      },
+      "suggestion": "Use `WHERE ... IN (?)` to batch 15 queries into one",
+      "trace_id": "37c18f67f9d2dcf090faef73029c55b2",
+      "type": "n_plus_one_sql"
+    },
+    "first_seen": 1787823491284,
+    "first_seen_ms": 1787825987877,
+    "last_seen": 1787827557526,
+    "max_confidence": "daemon_staging",
+    "seen_count": 16,
+    "sources": [
+      {
+        "age_seconds": 122,
+        "environment": "lab",
+        "name": "lab shared daemon",
+        "producer_version": "lab",
+        "status": "ok"
+      }
+    ],
+    "status": "active",
+    "stored_at_ms": 1787827517880
   }
 ]
