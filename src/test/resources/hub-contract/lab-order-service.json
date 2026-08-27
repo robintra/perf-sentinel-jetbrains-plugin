@@ -1,9 +1,72 @@
 [
   {
     "finding": {
+      "confidence": "daemon_staging",
+      "first_timestamp": "2026-08-27T12:01:35.283Z",
+      "green_impact": {
+        "estimated_extra_io_ops": 7,
+        "io_intensity_band": "high",
+        "io_intensity_score": 8.0
+      },
+      "grouping": [
+        {
+          "key": "k8s.namespace.name",
+          "value": "shop"
+        },
+        {
+          "key": "service.namespace",
+          "value": "shop"
+        }
+      ],
+      "instrumentation_scopes": [
+        "io.opentelemetry.rabbitmq-2.7"
+      ],
+      "last_timestamp": "2026-08-27T12:01:35.283Z",
+      "pattern": {
+        "distinct_params": 1,
+        "occurrences": 8,
+        "span_duration_cv_x1000": 828,
+        "span_duration_us_p50": 10,
+        "span_duration_us_p99": 48,
+        "template": "rabbitmq perfsim.order-service",
+        "window_ms": 0
+      },
+      "service": "order-service",
+      "severity": "warning",
+      "signature": "n_plus_one_messaging:order-service:_api_fault_n-plus-one-messaging:2f45e50be8a9efbd9ca22e9e0fc5f88b",
+      "source_endpoint": "/api/fault/n-plus-one-messaging",
+      "suggested_fix": {
+        "framework": "rabbitmq",
+        "pattern": "n_plus_one_messaging",
+        "recommendation": "Publish the batch on one channel and wait for outstanding confirms once after the loop instead of per message, or aggregate the items into one message when the consumer processes them together.",
+        "reference_url": "https://www.rabbitmq.com/docs/confirms"
+      },
+      "suggestion": "Send 8 messages as one batch instead of one publish per item",
+      "trace_id": "461397ce9fddc345e7977c977880a815",
+      "type": "n_plus_one_messaging"
+    },
+    "first_seen": 1787828852768,
+    "first_seen_ms": 1787832128455,
+    "last_seen": 1787833281589,
+    "max_confidence": "daemon_staging",
+    "seen_count": 295,
+    "sources": [
+      {
+        "age_seconds": 46,
+        "environment": "lab",
+        "name": "lab shared daemon",
+        "producer_version": "0.15.0",
+        "status": "ok"
+      }
+    ],
+    "status": "active",
+    "stored_at_ms": 1787832143458
+  },
+  {
+    "finding": {
       "classification_method": "sanitizer_heuristic",
       "confidence": "daemon_staging",
-      "first_timestamp": "2026-08-27T10:44:40.632Z",
+      "first_timestamp": "2026-08-27T11:52:34.787Z",
       "green_impact": {
         "estimated_extra_io_ops": 14,
         "io_intensity_band": "critical",
@@ -21,18 +84,17 @@
       ],
       "instrumentation_scopes": [
         "io.opentelemetry.jdbc",
-        "io.opentelemetry.hibernate-6.0",
-        "io.opentelemetry.tomcat-10.0"
+        "io.opentelemetry.hibernate-6.0"
       ],
-      "last_timestamp": "2026-08-27T10:44:40.640Z",
+      "last_timestamp": "2026-08-27T11:52:34.803Z",
       "pattern": {
         "distinct_params": 1,
         "occurrences": 15,
-        "span_duration_cv_x1000": 1711,
-        "span_duration_us_p50": 128,
-        "span_duration_us_p99": 1948,
+        "span_duration_cv_x1000": 3218,
+        "span_duration_us_p50": 124,
+        "span_duration_us_p99": 13696,
         "template": "SELECT count(*) FROM orders.order_items WHERE order_id = ?",
-        "window_ms": 8
+        "window_ms": 16
       },
       "service": "order-service",
       "severity": "critical",
@@ -45,31 +107,102 @@
         "reference_url": "https://docs.jboss.org/hibernate/orm/current/userguide/html_single/Hibernate_User_Guide.html#fetching-strategies-dynamic-fetching"
       },
       "suggestion": "Use `WHERE ... IN (?)` to batch 15 queries into one",
-      "trace_id": "37c18f67f9d2dcf090faef73029c55b2",
+      "trace_id": "b763ae3709ca2a1fd1112a9eb5db8aec",
       "type": "n_plus_one_sql"
     },
     "first_seen": 1787825987877,
-    "first_seen_ms": 1787825987877,
-    "last_seen": 1787827657954,
+    "first_seen_ms": 1787831558368,
+    "last_seen": 1787833281589,
     "max_confidence": "daemon_staging",
-    "seen_count": 16,
+    "seen_count": 300,
     "sources": [
       {
-        "age_seconds": 22,
+        "age_seconds": 46,
         "environment": "lab",
         "name": "lab shared daemon",
-        "producer_version": "0.14.0",
+        "producer_version": "0.15.0",
         "status": "ok"
       }
     ],
     "status": "active",
-    "stored_at_ms": 1787827517880
+    "stored_at_ms": 1787831603442
+  },
+  {
+    "finding": {
+      "classification_method": "sanitizer_heuristic",
+      "code_location": {
+        "function": "slowQuery",
+        "namespace": "com.perfsim.order.domain.OrderRepository"
+      },
+      "confidence": "daemon_staging",
+      "first_timestamp": "2026-08-27T11:59:50.976Z",
+      "green_impact": {
+        "estimated_extra_io_ops": 19,
+        "io_intensity_band": "critical",
+        "io_intensity_score": 20.0
+      },
+      "grouping": [
+        {
+          "key": "k8s.namespace.name",
+          "value": "shop"
+        },
+        {
+          "key": "service.namespace",
+          "value": "shop"
+        }
+      ],
+      "instrumentation_scopes": [
+        "io.opentelemetry.jdbc",
+        "io.opentelemetry.hibernate-6.0",
+        "io.opentelemetry.spring-data-1.8",
+        "io.opentelemetry.tomcat-10.0"
+      ],
+      "last_timestamp": "2026-08-27T11:59:51.378Z",
+      "pattern": {
+        "distinct_params": 1,
+        "occurrences": 20,
+        "span_duration_cv_x1000": 1,
+        "span_duration_us_p50": 400703,
+        "span_duration_us_p99": 401235,
+        "template": "SELECT pg_sleep(?), * FROM orders.orders ORDER BY id LIMIT ?",
+        "window_ms": 402
+      },
+      "service": "order-service",
+      "severity": "critical",
+      "signature": "n_plus_one_sql:order-service:_api_fault_pool-saturation:246de7e18eb7d6830c8a3fee2e4bc81e",
+      "source_endpoint": "/api/fault/pool-saturation",
+      "suggested_fix": {
+        "framework": "java_jpa",
+        "pattern": "n_plus_one_sql",
+        "recommendation": "Use `JOIN FETCH` on the relationship or annotate the repository method with `@EntityGraph` to load associations in a single query.",
+        "reference_url": "https://docs.jboss.org/hibernate/orm/current/userguide/html_single/Hibernate_User_Guide.html#fetching-strategies-dynamic-fetching"
+      },
+      "suggestion": "Use `WHERE ... IN (?)` to batch 20 queries into one",
+      "trace_id": "0415584da87c69c42b059bcfbf38221d",
+      "type": "n_plus_one_sql"
+    },
+    "first_seen": 1787828747765,
+    "first_seen_ms": 1787832008450,
+    "last_seen": 1787833281589,
+    "max_confidence": "daemon_staging",
+    "seen_count": 20,
+    "sources": [
+      {
+        "age_seconds": 46,
+        "environment": "lab",
+        "name": "lab shared daemon",
+        "producer_version": "0.15.0",
+        "status": "ok"
+      }
+    ],
+    "status": "active",
+    "stored_at_ms": 1787832038450
   },
   {
     "finding": {
       "classification_method": "sanitizer_heuristic",
       "confidence": "daemon_staging",
-      "first_timestamp": "2026-08-27T10:16:14.569Z",
+      "first_timestamp": "2026-08-27T12:20:26.269Z",
       "green_impact": {
         "estimated_extra_io_ops": 11,
         "io_intensity_band": "critical",
@@ -90,15 +223,15 @@
         "io.opentelemetry.hibernate-6.0",
         "io.opentelemetry.tomcat-10.0"
       ],
-      "last_timestamp": "2026-08-27T10:16:14.575Z",
+      "last_timestamp": "2026-08-27T12:20:26.274Z",
       "pattern": {
         "distinct_params": 1,
         "occurrences": 12,
-        "span_duration_cv_x1000": 901,
-        "span_duration_us_p50": 151,
-        "span_duration_us_p99": 916,
+        "span_duration_cv_x1000": 1706,
+        "span_duration_us_p50": 121,
+        "span_duration_us_p99": 1905,
         "template": "SELECT count(*) FROM orders.order_items WHERE order_id = ?",
-        "window_ms": 6
+        "window_ms": 5
       },
       "service": "order-service",
       "severity": "critical",
@@ -111,31 +244,31 @@
         "reference_url": "https://docs.jboss.org/hibernate/orm/current/userguide/html_single/Hibernate_User_Guide.html#fetching-strategies-dynamic-fetching"
       },
       "suggestion": "Use `WHERE ... IN (?)` to batch 12 queries into one",
-      "trace_id": "fab8763a8e56b9723b8ffca467999fa1",
+      "trace_id": "0736abd0fceddbac1d85437b53225b31",
       "type": "n_plus_one_sql"
     },
     "first_seen": 1787824856288,
-    "first_seen_ms": 1787825822875,
-    "last_seen": 1787827657954,
+    "first_seen_ms": 1787833268480,
+    "last_seen": 1787833281589,
     "max_confidence": "daemon_staging",
-    "seen_count": 1,
+    "seen_count": 3,
     "sources": [
       {
-        "age_seconds": 22,
+        "age_seconds": 46,
         "environment": "lab",
         "name": "lab shared daemon",
-        "producer_version": "0.14.0",
+        "producer_version": "0.15.0",
         "status": "ok"
       }
     ],
     "status": "active",
-    "stored_at_ms": 1787825822875
+    "stored_at_ms": 1787833268480
   },
   {
     "finding": {
       "classification_method": "sanitizer_heuristic",
       "confidence": "daemon_staging",
-      "first_timestamp": "2026-08-27T10:16:14.640Z",
+      "first_timestamp": "2026-08-27T12:20:26.314Z",
       "green_impact": {
         "estimated_extra_io_ops": 11,
         "io_intensity_band": "critical",
@@ -156,15 +289,15 @@
         "io.opentelemetry.hibernate-6.0",
         "io.opentelemetry.tomcat-10.0"
       ],
-      "last_timestamp": "2026-08-27T10:16:14.643Z",
+      "last_timestamp": "2026-08-27T12:20:26.316Z",
       "pattern": {
         "distinct_params": 1,
         "occurrences": 12,
-        "span_duration_cv_x1000": 557,
-        "span_duration_us_p50": 114,
-        "span_duration_us_p99": 377,
+        "span_duration_cv_x1000": 1391,
+        "span_duration_us_p50": 83,
+        "span_duration_us_p99": 742,
         "template": "SELECT count(*) FROM orders.order_items WHERE order_id = ? AND quantity > ?",
-        "window_ms": 3
+        "window_ms": 2
       },
       "service": "order-service",
       "severity": "critical",
@@ -177,157 +310,32 @@
         "reference_url": "https://docs.jboss.org/hibernate/orm/current/userguide/html_single/Hibernate_User_Guide.html#fetching-strategies-dynamic-fetching"
       },
       "suggestion": "Use `WHERE ... IN (?)` to batch 12 queries into one",
-      "trace_id": "ff24589f119b28dd9a6ce75af3be75bd",
+      "trace_id": "5975f2b9e8f7507d4746195bace60416",
       "type": "n_plus_one_sql"
     },
     "first_seen": 1787824856288,
-    "first_seen_ms": 1787825822875,
-    "last_seen": 1787827657954,
+    "first_seen_ms": 1787833268480,
+    "last_seen": 1787833281589,
     "max_confidence": "daemon_staging",
     "seen_count": 1,
     "sources": [
       {
-        "age_seconds": 22,
+        "age_seconds": 46,
         "environment": "lab",
         "name": "lab shared daemon",
-        "producer_version": "0.14.0",
+        "producer_version": "0.15.0",
         "status": "ok"
       }
     ],
     "status": "active",
-    "stored_at_ms": 1787825822875
+    "stored_at_ms": 1787833268480
   },
   {
     "finding": {
       "confidence": "daemon_staging",
-      "first_timestamp": "2026-08-27T10:16:14.589Z",
+      "first_timestamp": "2026-08-27T11:52:17.053Z",
       "green_impact": {
-        "estimated_extra_io_ops": 11,
-        "io_intensity_band": "critical",
-        "io_intensity_score": 12.0
-      },
-      "grouping": [
-        {
-          "key": "k8s.namespace.name",
-          "value": "shop"
-        },
-        {
-          "key": "service.namespace",
-          "value": "shop"
-        }
-      ],
-      "instrumentation_scopes": [
-        "io.opentelemetry.jdbc",
-        "io.opentelemetry.hibernate-6.0",
-        "io.opentelemetry.tomcat-10.0"
-      ],
-      "last_timestamp": "2026-08-27T10:16:14.594Z",
-      "pattern": {
-        "distinct_params": 1,
-        "occurrences": 12,
-        "template": "SELECT count(*) FROM orders.order_items WHERE order_id = ?",
-        "window_ms": 5
-      },
-      "service": "order-service",
-      "severity": "warning",
-      "signature": "redundant_sql:order-service:_api_fault_template-mutation-sql:68d48fbc63bc17beac38f51d76fe9046",
-      "source_endpoint": "/api/fault/template-mutation-sql",
-      "suggested_fix": {
-        "framework": "java_jpa",
-        "pattern": "redundant_sql",
-        "recommendation": "Add `Spring`'s `@Cacheable` on the repository or service method, or share the `EntityManager` within the request via `@Transactional` so `Hibernate`'s first-level cache deduplicates the read.",
-        "reference_url": "https://docs.spring.io/spring-framework/reference/integration/cache.html"
-      },
-      "suggestion": "Identical operation executed 12 times: cache result or deduplicate",
-      "trace_id": "6174b72b3b241bd12eaae79821c9f01d",
-      "type": "redundant_sql"
-    },
-    "first_seen": 1787825111291,
-    "first_seen_ms": 1787825822875,
-    "last_seen": 1787827657954,
-    "max_confidence": "daemon_staging",
-    "seen_count": 2,
-    "sources": [
-      {
-        "age_seconds": 22,
-        "environment": "lab",
-        "name": "lab shared daemon",
-        "producer_version": "0.14.0",
-        "status": "ok"
-      }
-    ],
-    "status": "active",
-    "stored_at_ms": 1787825822875
-  },
-  {
-    "finding": {
-      "confidence": "daemon_staging",
-      "first_timestamp": "2026-08-27T10:16:14.625Z",
-      "green_impact": {
-        "estimated_extra_io_ops": 11,
-        "io_intensity_band": "critical",
-        "io_intensity_score": 12.0
-      },
-      "grouping": [
-        {
-          "key": "k8s.namespace.name",
-          "value": "shop"
-        },
-        {
-          "key": "service.namespace",
-          "value": "shop"
-        }
-      ],
-      "instrumentation_scopes": [
-        "io.opentelemetry.jdbc",
-        "io.opentelemetry.hibernate-6.0",
-        "io.opentelemetry.tomcat-10.0"
-      ],
-      "last_timestamp": "2026-08-27T10:16:14.628Z",
-      "pattern": {
-        "distinct_params": 1,
-        "occurrences": 12,
-        "template": "SELECT count(*) FROM orders.order_items WHERE order_id = ? AND quantity > ?",
-        "window_ms": 3
-      },
-      "service": "order-service",
-      "severity": "warning",
-      "signature": "redundant_sql:order-service:_api_fault_template-mutation-sql:f6eb1327d845a9c68cb865b3e86a9fad",
-      "source_endpoint": "/api/fault/template-mutation-sql",
-      "suggested_fix": {
-        "framework": "java_jpa",
-        "pattern": "redundant_sql",
-        "recommendation": "Add `Spring`'s `@Cacheable` on the repository or service method, or share the `EntityManager` within the request via `@Transactional` so `Hibernate`'s first-level cache deduplicates the read.",
-        "reference_url": "https://docs.spring.io/spring-framework/reference/integration/cache.html"
-      },
-      "suggestion": "Identical operation executed 12 times: cache result or deduplicate",
-      "trace_id": "3d6c703b6e660dc26b3d19ed49c9109f",
-      "type": "redundant_sql"
-    },
-    "first_seen": 1787825111291,
-    "first_seen_ms": 1787825822875,
-    "last_seen": 1787827657954,
-    "max_confidence": "daemon_staging",
-    "seen_count": 2,
-    "sources": [
-      {
-        "age_seconds": 22,
-        "environment": "lab",
-        "name": "lab shared daemon",
-        "producer_version": "0.14.0",
-        "status": "ok"
-      }
-    ],
-    "status": "active",
-    "stored_at_ms": 1787825822875
-  },
-  {
-    "finding": {
-      "classification_method": "sanitizer_heuristic",
-      "confidence": "daemon_staging",
-      "first_timestamp": "2026-08-27T10:44:40.632Z",
-      "green_impact": {
-        "estimated_extra_io_ops": 14,
+        "estimated_extra_io_ops": 0,
         "io_intensity_band": "critical",
         "io_intensity_score": 15.0
       },
@@ -341,50 +349,1055 @@
           "value": "shop"
         }
       ],
+      "last_timestamp": "2026-08-27T11:52:17.054Z",
+      "pattern": {
+        "distinct_params": 15,
+        "occurrences": 12,
+        "template": "order-service",
+        "window_ms": 1
+      },
+      "service": "order-service",
+      "severity": "warning",
+      "signature": "pool_saturation:order-service:_api_fault_n-plus-one-sql:c1136991ddae1c23b956e7046e1fc2f4",
+      "source_endpoint": "/api/fault/n-plus-one-sql",
+      "suggestion": "Potential connection pool saturation: service order-service has 12 concurrent SQL spans within 1ms window. Consider increasing the connection pool size, optimizing long-running queries or using connection pool metrics (db.client.connection.pool.*) for precise monitoring",
+      "trace_id": "674a352c7b90e1a36403bc752880cdd0",
+      "type": "pool_saturation"
+    },
+    "first_seen": 1787828327780,
+    "first_seen_ms": 1787831558368,
+    "last_seen": 1787833281589,
+    "max_confidence": "daemon_staging",
+    "seen_count": 9,
+    "sources": [
+      {
+        "age_seconds": 46,
+        "environment": "lab",
+        "name": "lab shared daemon",
+        "producer_version": "0.15.0",
+        "status": "ok"
+      }
+    ],
+    "status": "active",
+    "stored_at_ms": 1787831573379
+  },
+  {
+    "finding": {
+      "confidence": "daemon_staging",
+      "first_timestamp": "2026-08-27T11:59:50.976Z",
+      "green_impact": {
+        "estimated_extra_io_ops": 0,
+        "io_intensity_band": "critical",
+        "io_intensity_score": 20.0
+      },
+      "grouping": [
+        {
+          "key": "k8s.namespace.name",
+          "value": "shop"
+        },
+        {
+          "key": "service.namespace",
+          "value": "shop"
+        }
+      ],
+      "last_timestamp": "2026-08-27T11:59:51.378Z",
+      "pattern": {
+        "distinct_params": 20,
+        "occurrences": 12,
+        "template": "order-service",
+        "window_ms": 402
+      },
+      "service": "order-service",
+      "severity": "warning",
+      "signature": "pool_saturation:order-service:_api_fault_pool-saturation:c1136991ddae1c23b956e7046e1fc2f4",
+      "source_endpoint": "/api/fault/pool-saturation",
+      "suggestion": "Potential connection pool saturation: service order-service has 12 concurrent SQL spans within 402ms window. Consider increasing the connection pool size, optimizing long-running queries or using connection pool metrics (db.client.connection.pool.*) for precise monitoring",
+      "trace_id": "0415584da87c69c42b059bcfbf38221d",
+      "type": "pool_saturation"
+    },
+    "first_seen": 1787828747765,
+    "first_seen_ms": 1787832008450,
+    "last_seen": 1787833281589,
+    "max_confidence": "daemon_staging",
+    "seen_count": 21,
+    "sources": [
+      {
+        "age_seconds": 46,
+        "environment": "lab",
+        "name": "lab shared daemon",
+        "producer_version": "0.15.0",
+        "status": "ok"
+      }
+    ],
+    "status": "active",
+    "stored_at_ms": 1787832038450
+  },
+  {
+    "finding": {
+      "confidence": "daemon_staging",
+      "first_timestamp": "2026-08-27T12:20:26.288Z",
+      "green_impact": {
+        "estimated_extra_io_ops": 0,
+        "io_intensity_band": "critical",
+        "io_intensity_score": 12.0
+      },
+      "grouping": [
+        {
+          "key": "k8s.namespace.name",
+          "value": "shop"
+        },
+        {
+          "key": "service.namespace",
+          "value": "shop"
+        }
+      ],
+      "last_timestamp": "2026-08-27T12:20:26.290Z",
+      "pattern": {
+        "distinct_params": 12,
+        "occurrences": 10,
+        "template": "order-service",
+        "window_ms": 2
+      },
+      "service": "order-service",
+      "severity": "warning",
+      "signature": "pool_saturation:order-service:_api_fault_template-mutation-sql:c1136991ddae1c23b956e7046e1fc2f4",
+      "source_endpoint": "/api/fault/template-mutation-sql",
+      "suggestion": "Potential connection pool saturation: service order-service has 10 concurrent SQL spans within 2ms window. Consider increasing the connection pool size, optimizing long-running queries or using connection pool metrics (db.client.connection.pool.*) for precise monitoring",
+      "trace_id": "90a815820fba6ca6f0af887747c9a4e2",
+      "type": "pool_saturation"
+    },
+    "first_seen": 1787833268480,
+    "first_seen_ms": 1787833268480,
+    "last_seen": 1787833281589,
+    "max_confidence": "daemon_staging",
+    "seen_count": 1,
+    "sources": [
+      {
+        "age_seconds": 46,
+        "environment": "lab",
+        "name": "lab shared daemon",
+        "producer_version": "0.15.0",
+        "status": "ok"
+      }
+    ],
+    "status": "active",
+    "stored_at_ms": 1787833268480
+  },
+  {
+    "finding": {
+      "confidence": "daemon_staging",
+      "first_timestamp": "2026-08-27T11:55:14.503Z",
+      "green_impact": {
+        "estimated_extra_io_ops": 9,
+        "io_intensity_band": "critical",
+        "io_intensity_score": 10.0
+      },
+      "grouping": [
+        {
+          "key": "k8s.namespace.name",
+          "value": "shop"
+        },
+        {
+          "key": "service.namespace",
+          "value": "shop"
+        }
+      ],
+      "instrumentation_scopes": [
+        "io.opentelemetry.java-http-client",
+        "io.opentelemetry.tomcat-10.0"
+      ],
+      "last_timestamp": "2026-08-27T11:55:14.574Z",
+      "pattern": {
+        "distinct_params": 1,
+        "occurrences": 10,
+        "template": "GET payment-service.shop.svc.cluster.local/api/payments/history",
+        "window_ms": 71
+      },
+      "service": "order-service",
+      "severity": "warning",
+      "signature": "redundant_http:order-service:_api_fault_redundant-http:2d8516a7bc563f9381300ffe96aa1784",
+      "source_endpoint": "/api/fault/redundant-http",
+      "suggestion": "Identical operation executed 10 times: cache result or deduplicate",
+      "trace_id": "dddc9e077913efb0526dd14ed339a309",
+      "type": "redundant_http"
+    },
+    "first_seen": 1787828462777,
+    "first_seen_ms": 1787831723449,
+    "last_seen": 1787833281589,
+    "max_confidence": "daemon_staging",
+    "seen_count": 285,
+    "sources": [
+      {
+        "age_seconds": 46,
+        "environment": "lab",
+        "name": "lab shared daemon",
+        "producer_version": "0.15.0",
+        "status": "ok"
+      }
+    ],
+    "status": "active",
+    "stored_at_ms": 1787831768447
+  },
+  {
+    "finding": {
+      "code_location": {
+        "function": "slowQuery",
+        "namespace": "com.perfsim.order.domain.OrderRepository"
+      },
+      "confidence": "daemon_staging",
+      "first_timestamp": "2026-08-27T11:59:27.941Z",
+      "green_impact": {
+        "estimated_extra_io_ops": 19,
+        "io_intensity_band": "critical",
+        "io_intensity_score": 21.2
+      },
+      "grouping": [
+        {
+          "key": "k8s.namespace.name",
+          "value": "shop"
+        },
+        {
+          "key": "service.namespace",
+          "value": "shop"
+        }
+      ],
+      "instrumentation_scopes": [
+        "io.opentelemetry.jdbc",
+        "io.opentelemetry.hibernate-6.0",
+        "io.opentelemetry.spring-data-1.8",
+        "io.opentelemetry.tomcat-10.0"
+      ],
+      "last_timestamp": "2026-08-27T11:59:28.908Z",
+      "pattern": {
+        "distinct_params": 1,
+        "occurrences": 20,
+        "template": "SELECT pg_sleep(?), * FROM orders.orders ORDER BY id LIMIT ?",
+        "window_ms": 967
+      },
+      "service": "order-service",
+      "severity": "warning",
+      "signature": "redundant_sql:order-service:_api_fault_pool-saturation:246de7e18eb7d6830c8a3fee2e4bc81e",
+      "source_endpoint": "/api/fault/pool-saturation",
+      "suggested_fix": {
+        "framework": "java_jpa",
+        "pattern": "redundant_sql",
+        "recommendation": "Add `Spring`'s `@Cacheable` on the repository or service method, or share the `EntityManager` within the request via `@Transactional` so `Hibernate`'s first-level cache deduplicates the read.",
+        "reference_url": "https://docs.spring.io/spring-framework/reference/integration/cache.html"
+      },
+      "suggestion": "Identical operation executed 20 times: cache result or deduplicate",
+      "trace_id": "405ac7736633e0440f56b436f389f098",
+      "type": "redundant_sql"
+    },
+    "first_seen": 1787828732766,
+    "first_seen_ms": 1787832008450,
+    "last_seen": 1787833281589,
+    "max_confidence": "daemon_staging",
+    "seen_count": 2,
+    "sources": [
+      {
+        "age_seconds": 46,
+        "environment": "lab",
+        "name": "lab shared daemon",
+        "producer_version": "0.15.0",
+        "status": "ok"
+      }
+    ],
+    "status": "active",
+    "stored_at_ms": 1787832008450
+  },
+  {
+    "finding": {
+      "code_location": {
+        "function": "slowQuery",
+        "namespace": "com.perfsim.order.domain.OrderRepository"
+      },
+      "confidence": "daemon_staging",
+      "first_timestamp": "2026-08-27T11:59:28.360Z",
+      "green_impact": {
+        "estimated_extra_io_ops": 3,
+        "io_intensity_band": "critical",
+        "io_intensity_score": 21.2
+      },
+      "grouping": [
+        {
+          "key": "k8s.namespace.name",
+          "value": "shop"
+        },
+        {
+          "key": "service.namespace",
+          "value": "shop"
+        }
+      ],
+      "instrumentation_scopes": [
+        "io.opentelemetry.jdbc",
+        "io.opentelemetry.hibernate-6.0",
+        "io.opentelemetry.spring-data-1.8",
+        "io.opentelemetry.tomcat-10.0"
+      ],
+      "last_timestamp": "2026-08-27T11:59:28.502Z",
+      "pattern": {
+        "distinct_params": 1,
+        "occurrences": 4,
+        "template": "SELECT c.oid, a.attnum, a.attname, c.relname, n.nspname, a.attnotnull OR (t.typtype = ? AND t.typnotnull), a.attidentity != ? OR pg_catalog.pg_get_expr(d.adbin, d.adrelid) LIKE ? FROM pg_catalog.pg_class c JOIN pg_catalog.pg_namespace n ON (c.relnamespace = n.oid) JOIN pg_catalog.pg_attribute a ON (c.oid = a.attrelid) JOIN pg_catalog.pg_type t ON (a.atttypid = t.oid) LEFT JOIN pg_catalog.pg_attrdef d ON (d.adrelid = a.attrelid AND d.adnum = a.attnum) JOIN (SELECT ? AS oid , ? AS attnum UNION ALL SELECT ?, ? UNION ALL SELECT ?, ? UNION ALL SELECT ?, ? UNION ALL SELECT ?, ?) vals ON (c.oid = vals.oid AND a.attnum = vals.attnum) ",
+        "window_ms": 142
+      },
+      "service": "order-service",
+      "severity": "info",
+      "signature": "redundant_sql:order-service:_api_fault_pool-saturation:c906f101d7a6da2cda681ce7c38aa239",
+      "source_endpoint": "/api/fault/pool-saturation",
+      "suggested_fix": {
+        "framework": "java_jpa",
+        "pattern": "redundant_sql",
+        "recommendation": "Add `Spring`'s `@Cacheable` on the repository or service method, or share the `EntityManager` within the request via `@Transactional` so `Hibernate`'s first-level cache deduplicates the read.",
+        "reference_url": "https://docs.spring.io/spring-framework/reference/integration/cache.html"
+      },
+      "suggestion": "Identical operation executed 4 times: cache result or deduplicate",
+      "trace_id": "405ac7736633e0440f56b436f389f098",
+      "type": "redundant_sql"
+    },
+    "first_seen": 1787828732766,
+    "first_seen_ms": 1787832008450,
+    "last_seen": 1787833281589,
+    "max_confidence": "daemon_staging",
+    "seen_count": 2,
+    "sources": [
+      {
+        "age_seconds": 46,
+        "environment": "lab",
+        "name": "lab shared daemon",
+        "producer_version": "0.15.0",
+        "status": "ok"
+      }
+    ],
+    "status": "active",
+    "stored_at_ms": 1787832008450
+  },
+  {
+    "finding": {
+      "confidence": "daemon_staging",
+      "first_timestamp": "2026-08-27T11:56:03.827Z",
+      "green_impact": {
+        "estimated_extra_io_ops": 5,
+        "io_intensity_band": "high",
+        "io_intensity_score": 6.0
+      },
+      "grouping": [
+        {
+          "key": "k8s.namespace.name",
+          "value": "shop"
+        },
+        {
+          "key": "service.namespace",
+          "value": "shop"
+        }
+      ],
+      "instrumentation_scopes": [
+        "io.opentelemetry.jdbc",
+        "io.opentelemetry.hibernate-6.0"
+      ],
+      "last_timestamp": "2026-08-27T11:56:12.858Z",
+      "pattern": {
+        "distinct_params": 1,
+        "occurrences": 6,
+        "template": "SELECT pg_sleep(?), * FROM orders.orders ORDER BY id OFFSET ? LIMIT ?",
+        "window_ms": 9031
+      },
+      "service": "order-service",
+      "severity": "warning",
+      "signature": "redundant_sql:order-service:_api_fault_slow-sql:584fa9458bd52b5af92a9d783488815e",
+      "source_endpoint": "/api/fault/slow-sql",
+      "suggested_fix": {
+        "framework": "java_jpa",
+        "pattern": "redundant_sql",
+        "recommendation": "Add `Spring`'s `@Cacheable` on the repository or service method, or share the `EntityManager` within the request via `@Transactional` so `Hibernate`'s first-level cache deduplicates the read.",
+        "reference_url": "https://docs.spring.io/spring-framework/reference/integration/cache.html"
+      },
+      "suggestion": "Identical operation executed 6 times: cache result or deduplicate",
+      "trace_id": "28aa28e2df3c1b36fcbcc140806e2346",
+      "type": "redundant_sql"
+    },
+    "first_seen": 1787828522771,
+    "first_seen_ms": 1787831798446,
+    "last_seen": 1787833281589,
+    "max_confidence": "daemon_staging",
+    "seen_count": 9,
+    "sources": [
+      {
+        "age_seconds": 46,
+        "environment": "lab",
+        "name": "lab shared daemon",
+        "producer_version": "0.15.0",
+        "status": "ok"
+      }
+    ],
+    "status": "active",
+    "stored_at_ms": 1787831813447
+  },
+  {
+    "finding": {
+      "confidence": "daemon_staging",
+      "first_timestamp": "2026-08-27T12:20:26.326Z",
+      "green_impact": {
+        "estimated_extra_io_ops": 11,
+        "io_intensity_band": "critical",
+        "io_intensity_score": 12.0
+      },
+      "grouping": [
+        {
+          "key": "k8s.namespace.name",
+          "value": "shop"
+        },
+        {
+          "key": "service.namespace",
+          "value": "shop"
+        }
+      ],
       "instrumentation_scopes": [
         "io.opentelemetry.jdbc",
         "io.opentelemetry.hibernate-6.0",
         "io.opentelemetry.tomcat-10.0"
       ],
-      "last_timestamp": "2026-08-27T10:44:40.640Z",
+      "last_timestamp": "2026-08-27T12:20:26.328Z",
       "pattern": {
         "distinct_params": 1,
-        "occurrences": 15,
-        "span_duration_cv_x1000": 1711,
-        "span_duration_us_p50": 128,
-        "span_duration_us_p99": 1948,
-        "template": "SELECT count(*) FROM orders.order_items WHERE order_id = ?",
-        "window_ms": 8
+        "occurrences": 12,
+        "template": "SELECT count(*) FROM orders.order_items WHERE order_id = ? AND quantity > ?",
+        "window_ms": 2
+      },
+      "service": "order-service",
+      "severity": "warning",
+      "signature": "redundant_sql:order-service:_api_fault_template-mutation-sql:f6eb1327d845a9c68cb865b3e86a9fad",
+      "source_endpoint": "/api/fault/template-mutation-sql",
+      "suggested_fix": {
+        "framework": "java_jpa",
+        "pattern": "redundant_sql",
+        "recommendation": "Add `Spring`'s `@Cacheable` on the repository or service method, or share the `EntityManager` within the request via `@Transactional` so `Hibernate`'s first-level cache deduplicates the read.",
+        "reference_url": "https://docs.spring.io/spring-framework/reference/integration/cache.html"
+      },
+      "suggestion": "Identical operation executed 12 times: cache result or deduplicate",
+      "trace_id": "0e75292f41e4a8035042149374e110b0",
+      "type": "redundant_sql"
+    },
+    "first_seen": 1787825111291,
+    "first_seen_ms": 1787833268480,
+    "last_seen": 1787833281589,
+    "max_confidence": "daemon_staging",
+    "seen_count": 2,
+    "sources": [
+      {
+        "age_seconds": 46,
+        "environment": "lab",
+        "name": "lab shared daemon",
+        "producer_version": "0.15.0",
+        "status": "ok"
+      }
+    ],
+    "status": "active",
+    "stored_at_ms": 1787833268480
+  },
+  {
+    "finding": {
+      "confidence": "daemon_staging",
+      "first_timestamp": "2026-08-27T12:02:19.154Z",
+      "green_impact": {
+        "estimated_extra_io_ops": 0,
+        "io_intensity_band": "high",
+        "io_intensity_score": 7.0
+      },
+      "grouping": [
+        {
+          "key": "k8s.namespace.name",
+          "value": "shop"
+        },
+        {
+          "key": "service.namespace",
+          "value": "shop"
+        }
+      ],
+      "last_timestamp": "2026-08-27T12:02:25.200Z",
+      "pattern": {
+        "distinct_params": 2,
+        "occurrences": 3,
+        "template": "/api/fault/slow-messaging",
+        "window_ms": 6046
+      },
+      "service": "order-service",
+      "severity": "info",
+      "signature": "serialized_calls:order-service:_api_fault_slow-messaging:444e7f252e95e8fb992d173752ce28a6",
+      "source_endpoint": "/api/fault/slow-messaging",
+      "suggestion": "3 sequential independent calls could potentially be parallelized: POST toxiproxy.messaging.svc.cluster.local/proxies/rabbitmq-slow/toxics/latency_downstream (8ms) -> rabbitmq perfsim.order-service (601ms) -> rabbitmq perfsim.order-service (601ms). Total sequential: 1211ms, potential parallel: ~601ms. If these calls are independent, consider executing them in parallel (e.g., tokio::join!, CompletableFuture.allOf(), Task.WhenAll())",
+      "trace_id": "20df05cf5f7610c9de01c438463ae25d",
+      "type": "serialized_calls"
+    },
+    "first_seen": 1787828912761,
+    "first_seen_ms": 1787832173452,
+    "last_seen": 1787833281589,
+    "max_confidence": "daemon_staging",
+    "seen_count": 2,
+    "sources": [
+      {
+        "age_seconds": 46,
+        "environment": "lab",
+        "name": "lab shared daemon",
+        "producer_version": "0.15.0",
+        "status": "ok"
+      }
+    ],
+    "status": "active",
+    "stored_at_ms": 1787832188452
+  },
+  {
+    "finding": {
+      "confidence": "daemon_staging",
+      "first_timestamp": "2026-08-27T12:02:23.997Z",
+      "green_impact": {
+        "estimated_extra_io_ops": 0,
+        "io_intensity_band": "high",
+        "io_intensity_score": 7.0
+      },
+      "grouping": [
+        {
+          "key": "k8s.namespace.name",
+          "value": "shop"
+        },
+        {
+          "key": "service.namespace",
+          "value": "shop"
+        }
+      ],
+      "instrumentation_scopes": [
+        "com.perfsim.order.messaging.MessagingFaultService"
+      ],
+      "last_timestamp": "2026-08-27T12:02:25.200Z",
+      "pattern": {
+        "distinct_params": 1,
+        "occurrences": 3,
+        "span_duration_cv_x1000": 0,
+        "span_duration_us_p50": 601823,
+        "span_duration_us_p99": 601949,
+        "template": "rabbitmq perfsim.order-service",
+        "window_ms": 1203
+      },
+      "service": "order-service",
+      "severity": "warning",
+      "signature": "slow_messaging:order-service:_api_fault_slow-messaging:2f45e50be8a9efbd9ca22e9e0fc5f88b",
+      "source_endpoint": "/api/fault/slow-messaging",
+      "suggested_fix": {
+        "framework": "rabbitmq",
+        "pattern": "slow_messaging",
+        "recommendation": "Waiting for a publisher confirm per message costs one broker round-trip each: process confirms asynchronously or per batch. A broker under a memory or disk alarm also throttles publishers cluster-wide.",
+        "reference_url": "https://www.rabbitmq.com/docs/confirms"
+      },
+      "suggestion": "Consider batching messages or reducing payload size",
+      "trace_id": "20df05cf5f7610c9de01c438463ae25d",
+      "type": "slow_messaging"
+    },
+    "first_seen": 1787828912761,
+    "first_seen_ms": 1787832173452,
+    "last_seen": 1787833281589,
+    "max_confidence": "daemon_staging",
+    "seen_count": 2,
+    "sources": [
+      {
+        "age_seconds": 46,
+        "environment": "lab",
+        "name": "lab shared daemon",
+        "producer_version": "0.15.0",
+        "status": "ok"
+      }
+    ],
+    "status": "active",
+    "stored_at_ms": 1787832188452
+  },
+  {
+    "finding": {
+      "confidence": "daemon_staging",
+      "first_timestamp": "2026-08-27T11:56:03.827Z",
+      "green_impact": {
+        "estimated_extra_io_ops": 0,
+        "io_intensity_band": "high",
+        "io_intensity_score": 6.0
+      },
+      "grouping": [
+        {
+          "key": "k8s.namespace.name",
+          "value": "shop"
+        },
+        {
+          "key": "service.namespace",
+          "value": "shop"
+        }
+      ],
+      "instrumentation_scopes": [
+        "io.opentelemetry.jdbc",
+        "io.opentelemetry.hibernate-6.0",
+        "io.opentelemetry.tomcat-10.0"
+      ],
+      "last_timestamp": "2026-08-27T11:56:12.866Z",
+      "pattern": {
+        "distinct_params": 0,
+        "occurrences": 18,
+        "span_duration_cv_x1000": 488,
+        "span_duration_us_p50": 1808443,
+        "span_duration_us_p99": 3610600,
+        "template": "SELECT pg_sleep(?), * FROM orders.orders ORDER BY id OFFSET ? LIMIT ?",
+        "window_ms": 9039
       },
       "service": "order-service",
       "severity": "critical",
-      "signature": "lab_probe:hub-ingestion:probe:00000000000000000000000000000000",
-      "source_endpoint": "/api/fault/n-plus-one-sql",
+      "signature": "slow_sql:order-service:_api_fault_slow-sql:584fa9458bd52b5af92a9d783488815e",
+      "source_endpoint": "/api/fault/slow-sql",
+      "suggestion": "Cross-trace analysis: p50=1808.4ms, p95=3610.6ms, p99=3610.6ms across 18 occurrences. Consider adding an index or optimizing query",
+      "trace_id": "5cef4628cbfd1c8ea305279c0b631856",
+      "type": "slow_sql"
+    },
+    "first_seen": 1787828522771,
+    "first_seen_ms": 1787831798446,
+    "last_seen": 1787833281589,
+    "max_confidence": "daemon_staging",
+    "seen_count": 11,
+    "sources": [
+      {
+        "age_seconds": 46,
+        "environment": "lab",
+        "name": "lab shared daemon",
+        "producer_version": "0.15.0",
+        "status": "ok"
+      }
+    ],
+    "status": "active",
+    "stored_at_ms": 1787831813447
+  },
+  {
+    "finding": {
+      "classification_method": "sanitizer_heuristic",
+      "code_location": {
+        "function": "slowQuery",
+        "namespace": "com.perfsim.order.domain.OrderRepository"
+      },
+      "confidence": "daemon_staging",
+      "first_timestamp": "2026-08-27T11:35:59.649Z",
+      "green_impact": {
+        "estimated_extra_io_ops": 19,
+        "io_intensity_band": "critical",
+        "io_intensity_score": 10.0
+      },
+      "grouping": [
+        {
+          "key": "k8s.namespace.name",
+          "value": "shop"
+        },
+        {
+          "key": "service.namespace",
+          "value": "shop"
+        }
+      ],
+      "instrumentation_scopes": [
+        "io.opentelemetry.jdbc",
+        "io.opentelemetry.hibernate-6.0",
+        "io.opentelemetry.spring-data-1.8"
+      ],
+      "last_timestamp": "2026-08-27T11:36:00.051Z",
+      "pattern": {
+        "distinct_params": 1,
+        "occurrences": 20,
+        "span_duration_cv_x1000": 1,
+        "span_duration_us_p50": 400793,
+        "span_duration_us_p99": 401614,
+        "template": "SELECT pg_sleep(?), * FROM orders.orders ORDER BY id LIMIT ?",
+        "window_ms": 402
+      },
+      "service": "order-service",
+      "severity": "critical",
+      "signature": "n_plus_one_sql:order-service:com.perfsim.order.domain.OrderRepository.slowQuery:246de7e18eb7d6830c8a3fee2e4bc81e",
+      "source_endpoint": "com.perfsim.order.domain.OrderRepository.slowQuery",
       "suggested_fix": {
         "framework": "java_jpa",
         "pattern": "n_plus_one_sql",
         "recommendation": "Use `JOIN FETCH` on the relationship or annotate the repository method with `@EntityGraph` to load associations in a single query.",
         "reference_url": "https://docs.jboss.org/hibernate/orm/current/userguide/html_single/Hibernate_User_Guide.html#fetching-strategies-dynamic-fetching"
       },
-      "suggestion": "Use `WHERE ... IN (?)` to batch 15 queries into one",
-      "trace_id": "37c18f67f9d2dcf090faef73029c55b2",
+      "suggestion": "Use `WHERE ... IN (?)` to batch 20 queries into one",
+      "trace_id": "9055dd0c832be67f607b7131b5e03c2a",
       "type": "n_plus_one_sql"
     },
-    "first_seen": 1787823491284,
-    "first_seen_ms": 1787825987877,
-    "last_seen": 1787827557526,
+    "first_seen": 1787828747765,
+    "first_seen_ms": 1787830590449,
+    "last_seen": 1787831403462,
     "max_confidence": "daemon_staging",
-    "seen_count": 16,
+    "seen_count": 3,
     "sources": [
       {
-        "age_seconds": 122,
+        "age_seconds": 1924,
         "environment": "lab",
         "name": "lab shared daemon",
-        "producer_version": "lab",
+        "producer_version": "0.14.0",
         "status": "ok"
       }
     ],
-    "status": "active",
-    "stored_at_ms": 1787827517880
+    "status": "not_observed",
+    "stored_at_ms": 1787830605449
+  },
+  {
+    "finding": {
+      "confidence": "daemon_staging",
+      "first_timestamp": "2026-08-27T11:35:59.649Z",
+      "green_impact": {
+        "estimated_extra_io_ops": 0,
+        "io_intensity_band": "critical",
+        "io_intensity_score": 10.0
+      },
+      "grouping": [
+        {
+          "key": "k8s.namespace.name",
+          "value": "shop"
+        },
+        {
+          "key": "service.namespace",
+          "value": "shop"
+        }
+      ],
+      "last_timestamp": "2026-08-27T11:36:00.051Z",
+      "pattern": {
+        "distinct_params": 20,
+        "occurrences": 13,
+        "template": "order-service",
+        "window_ms": 402
+      },
+      "service": "order-service",
+      "severity": "warning",
+      "signature": "pool_saturation:order-service:com.perfsim.order.domain.OrderRepository.slowQuery:c1136991ddae1c23b956e7046e1fc2f4",
+      "source_endpoint": "com.perfsim.order.domain.OrderRepository.slowQuery",
+      "suggestion": "Potential connection pool saturation: service order-service has 13 concurrent SQL spans within 402ms window. Consider increasing the connection pool size, optimizing long-running queries or using connection pool metrics (db.client.connection.pool.*) for precise monitoring",
+      "trace_id": "9055dd0c832be67f607b7131b5e03c2a",
+      "type": "pool_saturation"
+    },
+    "first_seen": 1787828747765,
+    "first_seen_ms": 1787830590449,
+    "last_seen": 1787831403462,
+    "max_confidence": "daemon_staging",
+    "seen_count": 3,
+    "sources": [
+      {
+        "age_seconds": 1924,
+        "environment": "lab",
+        "name": "lab shared daemon",
+        "producer_version": "0.14.0",
+        "status": "ok"
+      }
+    ],
+    "status": "not_observed",
+    "stored_at_ms": 1787830605449
+  },
+  {
+    "finding": {
+      "classification_method": "sanitizer_heuristic",
+      "confidence": "daemon_staging",
+      "first_timestamp": "2026-08-27T11:15:10.514Z",
+      "green_impact": {
+        "estimated_extra_io_ops": 9,
+        "io_intensity_band": "critical",
+        "io_intensity_score": 10.0
+      },
+      "grouping": [
+        {
+          "key": "k8s.namespace.name",
+          "value": "shop"
+        },
+        {
+          "key": "service.namespace",
+          "value": "shop"
+        }
+      ],
+      "instrumentation_scopes": [
+        "io.opentelemetry.java-http-client",
+        "io.opentelemetry.tomcat-10.0"
+      ],
+      "last_timestamp": "2026-08-27T11:15:10.592Z",
+      "pattern": {
+        "distinct_params": 1,
+        "occurrences": 10,
+        "span_duration_cv_x1000": 869,
+        "span_duration_us_p50": 4626,
+        "span_duration_us_p99": 24369,
+        "template": "GET payment-service.shop.svc.cluster.local/api/payments/history",
+        "window_ms": 78
+      },
+      "service": "order-service",
+      "severity": "critical",
+      "signature": "n_plus_one_http:order-service:_api_fault_redundant-http:2d8516a7bc563f9381300ffe96aa1784",
+      "source_endpoint": "/api/fault/redundant-http",
+      "suggestion": "Use a batch endpoint with `?ids=...` to batch 10 calls into one",
+      "trace_id": "3c0b3ae6c36ae0b691bedf73db51f8b3",
+      "type": "n_plus_one_http"
+    },
+    "first_seen": 1787828462777,
+    "first_seen_ms": 1787828462777,
+    "last_seen": 1787829818613,
+    "max_confidence": "daemon_staging",
+    "seen_count": 15,
+    "sources": [
+      {
+        "age_seconds": 3509,
+        "environment": "lab",
+        "name": "lab shared daemon",
+        "producer_version": "0.14.0",
+        "status": "ok"
+      }
+    ],
+    "status": "likely_resolved",
+    "stored_at_ms": 1787829362762
+  },
+  {
+    "finding": {
+      "confidence": "daemon_staging",
+      "first_timestamp": "2026-08-27T10:46:59.889Z",
+      "green_impact": {
+        "estimated_extra_io_ops": 11,
+        "io_intensity_band": "critical",
+        "io_intensity_score": 12.0
+      },
+      "grouping": [
+        {
+          "key": "k8s.namespace.name",
+          "value": "shop"
+        },
+        {
+          "key": "service.namespace",
+          "value": "shop"
+        }
+      ],
+      "instrumentation_scopes": [
+        "io.opentelemetry.jdbc",
+        "io.opentelemetry.hibernate-6.0",
+        "io.opentelemetry.tomcat-10.0"
+      ],
+      "last_timestamp": "2026-08-27T10:46:59.892Z",
+      "pattern": {
+        "distinct_params": 1,
+        "occurrences": 12,
+        "template": "SELECT count(*) FROM orders.order_items WHERE order_id = ?",
+        "window_ms": 3
+      },
+      "service": "order-service",
+      "severity": "warning",
+      "signature": "redundant_sql:order-service:_api_fault_template-mutation-sql:68d48fbc63bc17beac38f51d76fe9046",
+      "source_endpoint": "/api/fault/template-mutation-sql",
+      "suggested_fix": {
+        "framework": "java_jpa",
+        "pattern": "redundant_sql",
+        "recommendation": "Add `Spring`'s `@Cacheable` on the repository or service method, or share the `EntityManager` within the request via `@Transactional` so `Hibernate`'s first-level cache deduplicates the read.",
+        "reference_url": "https://docs.spring.io/spring-framework/reference/integration/cache.html"
+      },
+      "suggestion": "Identical operation executed 12 times: cache result or deduplicate",
+      "trace_id": "cef115f171f02278ecf606d007b44c5d",
+      "type": "redundant_sql"
+    },
+    "first_seen": 1787825111291,
+    "first_seen_ms": 1787825822875,
+    "last_seen": 1787829818613,
+    "max_confidence": "daemon_staging",
+    "seen_count": 3,
+    "sources": [
+      {
+        "age_seconds": 3509,
+        "environment": "lab",
+        "name": "lab shared daemon",
+        "producer_version": "0.14.0",
+        "status": "ok"
+      }
+    ],
+    "status": "likely_resolved",
+    "stored_at_ms": 1787827667883
+  },
+  {
+    "finding": {
+      "code_location": {
+        "function": "slowQuery",
+        "namespace": "com.perfsim.order.domain.OrderRepository"
+      },
+      "confidence": "daemon_staging",
+      "first_timestamp": "2026-08-27T11:19:38.041Z",
+      "green_impact": {
+        "estimated_extra_io_ops": 19,
+        "io_intensity_band": "critical",
+        "io_intensity_score": 16.0
+      },
+      "grouping": [
+        {
+          "key": "k8s.namespace.name",
+          "value": "shop"
+        },
+        {
+          "key": "service.namespace",
+          "value": "shop"
+        }
+      ],
+      "instrumentation_scopes": [
+        "io.opentelemetry.jdbc",
+        "io.opentelemetry.hibernate-6.0",
+        "io.opentelemetry.spring-data-1.8"
+      ],
+      "last_timestamp": "2026-08-27T11:19:38.904Z",
+      "pattern": {
+        "distinct_params": 1,
+        "occurrences": 20,
+        "template": "SELECT pg_sleep(?), * FROM orders.orders ORDER BY id LIMIT ?",
+        "window_ms": 863
+      },
+      "service": "order-service",
+      "severity": "warning",
+      "signature": "redundant_sql:order-service:com.perfsim.order.domain.OrderRepository.slowQuery:246de7e18eb7d6830c8a3fee2e4bc81e",
+      "source_endpoint": "com.perfsim.order.domain.OrderRepository.slowQuery",
+      "suggested_fix": {
+        "framework": "java_jpa",
+        "pattern": "redundant_sql",
+        "recommendation": "Add `Spring`'s `@Cacheable` on the repository or service method, or share the `EntityManager` within the request via `@Transactional` so `Hibernate`'s first-level cache deduplicates the read.",
+        "reference_url": "https://docs.spring.io/spring-framework/reference/integration/cache.html"
+      },
+      "suggestion": "Identical operation executed 20 times: cache result or deduplicate",
+      "trace_id": "7c64b486a6ff0646ffaaf1e3e697956b",
+      "type": "redundant_sql"
+    },
+    "first_seen": 1787829632747,
+    "first_seen_ms": 1787829632747,
+    "last_seen": 1787829818613,
+    "max_confidence": "daemon_staging",
+    "seen_count": 2,
+    "sources": [
+      {
+        "age_seconds": 3509,
+        "environment": "lab",
+        "name": "lab shared daemon",
+        "producer_version": "0.14.0",
+        "status": "ok"
+      }
+    ],
+    "status": "likely_resolved",
+    "stored_at_ms": 1787829632747
+  },
+  {
+    "finding": {
+      "code_location": {
+        "function": "slowQuery",
+        "namespace": "com.perfsim.order.domain.OrderRepository"
+      },
+      "confidence": "daemon_staging",
+      "first_timestamp": "2026-08-27T11:19:38.448Z",
+      "green_impact": {
+        "estimated_extra_io_ops": 2,
+        "io_intensity_band": "critical",
+        "io_intensity_score": 16.0
+      },
+      "grouping": [
+        {
+          "key": "k8s.namespace.name",
+          "value": "shop"
+        },
+        {
+          "key": "service.namespace",
+          "value": "shop"
+        }
+      ],
+      "instrumentation_scopes": [
+        "io.opentelemetry.jdbc",
+        "io.opentelemetry.hibernate-6.0",
+        "io.opentelemetry.spring-data-1.8"
+      ],
+      "last_timestamp": "2026-08-27T11:19:38.620Z",
+      "pattern": {
+        "distinct_params": 1,
+        "occurrences": 3,
+        "template": "SELECT c.oid, a.attnum, a.attname, c.relname, n.nspname, a.attnotnull OR (t.typtype = ? AND t.typnotnull), a.attidentity != ? OR pg_catalog.pg_get_expr(d.adbin, d.adrelid) LIKE ? FROM pg_catalog.pg_class c JOIN pg_catalog.pg_namespace n ON (c.relnamespace = n.oid) JOIN pg_catalog.pg_attribute a ON (c.oid = a.attrelid) JOIN pg_catalog.pg_type t ON (a.atttypid = t.oid) LEFT JOIN pg_catalog.pg_attrdef d ON (d.adrelid = a.attrelid AND d.adnum = a.attnum) JOIN (SELECT ? AS oid , ? AS attnum UNION ALL SELECT ?, ? UNION ALL SELECT ?, ? UNION ALL SELECT ?, ? UNION ALL SELECT ?, ?) vals ON (c.oid = vals.oid AND a.attnum = vals.attnum) ",
+        "window_ms": 172
+      },
+      "service": "order-service",
+      "severity": "info",
+      "signature": "redundant_sql:order-service:com.perfsim.order.domain.OrderRepository.slowQuery:c906f101d7a6da2cda681ce7c38aa239",
+      "source_endpoint": "com.perfsim.order.domain.OrderRepository.slowQuery",
+      "suggested_fix": {
+        "framework": "java_jpa",
+        "pattern": "redundant_sql",
+        "recommendation": "Add `Spring`'s `@Cacheable` on the repository or service method, or share the `EntityManager` within the request via `@Transactional` so `Hibernate`'s first-level cache deduplicates the read.",
+        "reference_url": "https://docs.spring.io/spring-framework/reference/integration/cache.html"
+      },
+      "suggestion": "Identical operation executed 3 times: cache result or deduplicate",
+      "trace_id": "7c64b486a6ff0646ffaaf1e3e697956b",
+      "type": "redundant_sql"
+    },
+    "first_seen": 1787829632747,
+    "first_seen_ms": 1787829632747,
+    "last_seen": 1787829818613,
+    "max_confidence": "daemon_staging",
+    "seen_count": 2,
+    "sources": [
+      {
+        "age_seconds": 3509,
+        "environment": "lab",
+        "name": "lab shared daemon",
+        "producer_version": "0.14.0",
+        "status": "ok"
+      }
+    ],
+    "status": "likely_resolved",
+    "stored_at_ms": 1787829632747
+  },
+  {
+    "finding": {
+      "confidence": "daemon_staging",
+      "first_timestamp": "2026-08-27T11:00:17.085Z",
+      "green_impact": {
+        "estimated_extra_io_ops": 0,
+        "io_intensity_band": "critical",
+        "io_intensity_score": 10.0
+      },
+      "grouping": [
+        {
+          "key": "k8s.namespace.name",
+          "value": "shop"
+        },
+        {
+          "key": "service.namespace",
+          "value": "shop"
+        }
+      ],
+      "instrumentation_scopes": [
+        "io.opentelemetry.java-http-client",
+        "io.opentelemetry.tomcat-10.0"
+      ],
+      "last_timestamp": "2026-08-27T11:00:17.085Z",
+      "pattern": {
+        "distinct_params": 0,
+        "occurrences": 5,
+        "span_duration_cv_x1000": 8,
+        "span_duration_us_p50": 1788429,
+        "span_duration_us_p99": 1788560,
+        "template": "GET payment-service.shop.svc.cluster.local/api/payments/history",
+        "window_ms": 0
+      },
+      "service": "order-service",
+      "severity": "warning",
+      "signature": "slow_http:order-service:_api_fault_redundant-http:2d8516a7bc563f9381300ffe96aa1784",
+      "source_endpoint": "/api/fault/redundant-http",
+      "suggestion": "Cross-trace analysis: p50=1788.4ms, p95=1788.6ms, p99=1788.6ms across 5 occurrences. Consider caching or optimizing endpoint",
+      "trace_id": "1fe36e7872afcaba232cd1a519bd9d25",
+      "type": "slow_http"
+    },
+    "first_seen": 1787828462777,
+    "first_seen_ms": 1787828462777,
+    "last_seen": 1787829818613,
+    "max_confidence": "daemon_staging",
+    "seen_count": 1,
+    "sources": [
+      {
+        "age_seconds": 3509,
+        "environment": "lab",
+        "name": "lab shared daemon",
+        "producer_version": "0.14.0",
+        "status": "ok"
+      }
+    ],
+    "status": "likely_resolved",
+    "stored_at_ms": 1787828462777
   }
 ]
