@@ -58,9 +58,12 @@ jobs:
       - name: Download the exact latest stable public release
         env:
           GH_TOKEN: ${{ github.token }}
+          # Through the environment rather than interpolated into the script:
+          # a `needs` output expanded inside a run block is a template-injection
+          # surface, which zizmor flags.
+          TAG: ${{ needs.gate.outputs.tag }}
         run: |
           set -euo pipefail
-          TAG="${{ needs.gate.outputs.tag }}"
           VERSION="${TAG#v}"
           mkdir -p build/public build/marketplace
           ASSETS="$(gh release view "$TAG" --json assets)"
