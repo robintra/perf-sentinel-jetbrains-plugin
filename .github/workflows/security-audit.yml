@@ -44,7 +44,7 @@ jobs:
         with:
           fetch-depth: 0
           persist-credentials: false
-      - uses: actions/setup-java@b6effb05e454b25005698d916606bdc6ffcbf961
+      - uses: actions/setup-java@dd06d9cba3e5552c54d9f8ea23572deb30010f7c
         with: {distribution: temurin, java-version-file: .java-version}
       - uses: actions/setup-dotnet@a98b56852c35b8e3190ac28c8c2271da59106c68
         with: {dotnet-version: 10.0.302}
@@ -76,7 +76,7 @@ jobs:
           format: spdx-json
           output-file: build/security/source.spdx.json
           artifact-name: plugin-source-sbom.spdx.json
-          syft-version: v1.51.0
+          syft-version: v1.51.1
           dependency-snapshot: false
           upload-artifact: false
           upload-release-assets: false
@@ -115,7 +115,7 @@ jobs:
           results_format: sarif
           repo_token: ${{ github.token }}
           publish_results: true
-      - uses: github/codeql-action/upload-sarif@db488ddef3bf6cb639b32c2e9a7c0a7ea8271d28
+      - uses: github/codeql-action/upload-sarif@cdf488f595d80d6e07e03d4674febd5ab45fa938
         with:
           sarif_file: build/security/scorecard.sarif
           category: security-audit/scorecard
@@ -141,7 +141,7 @@ jobs:
           use-annotations: false
           post-pr-comment: false
           push-fixes: none
-      - uses: github/codeql-action/upload-sarif@db488ddef3bf6cb639b32c2e9a7c0a7ea8271d28
+      - uses: github/codeql-action/upload-sarif@cdf488f595d80d6e07e03d4674febd5ab45fa938
         with:
           sarif_file: build/security/qodana-jvm/qodana.sarif.json
           category: qodana-jvm
@@ -160,7 +160,7 @@ jobs:
         with: {persist-credentials: false}
       - uses: actions/setup-dotnet@a98b56852c35b8e3190ac28c8c2271da59106c68
         with: {dotnet-version: 10.0.302}
-      - uses: actions/setup-java@b6effb05e454b25005698d916606bdc6ffcbf961
+      - uses: actions/setup-java@dd06d9cba3e5552c54d9f8ea23572deb30010f7c
         with: {distribution: temurin, java-version-file: .java-version}
       - uses: gradle/actions/setup-gradle@9c971963bec38e04b3d30dcc455b5382be2fdbfb
         with: {gradle-version: "9.7.1", cache-read-only: true}
@@ -176,7 +176,7 @@ jobs:
           use-annotations: false
           post-pr-comment: false
           push-fixes: none
-      - uses: github/codeql-action/upload-sarif@db488ddef3bf6cb639b32c2e9a7c0a7ea8271d28
+      - uses: github/codeql-action/upload-sarif@cdf488f595d80d6e07e03d4674febd5ab45fa938
         with:
           sarif_file: build/security/qodana-rider/qodana.sarif.json
           category: qodana-rider

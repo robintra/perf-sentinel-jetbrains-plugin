@@ -74,8 +74,8 @@
     {
       "name": "Jackson BOM",
       "kind": "maven",
-      "version": "2.22.1",
-      "releasedAt": "2026-07-07",
+      "version": "2.22.2",
+      "releasedAt": "2026-08-16",
       "source": "https://repo.maven.apache.org/maven2/com/fasterxml/jackson/jackson-bom/maven-metadata.xml",
       "declaration": "gradle/libs.versions.toml#jackson"
     },
@@ -122,8 +122,8 @@
     {
       "name": "Rider 2026.2",
       "kind": "jetbrains-product",
-      "version": "2026.2.0.2",
-      "releasedAt": "2026-08-03",
+      "version": "2026.2.1",
+      "releasedAt": "2026-08-19",
       "source": "https://data.services.jetbrains.com/products/releases?code=RD&type=release",
       "declaration": "build.gradle.kts#Rider 2026.2"
     },
@@ -218,8 +218,8 @@
     {
       "name": "GoLand 2026.2",
       "kind": "jetbrains-product",
-      "version": "2026.2.1",
-      "releasedAt": "2026-08-10",
+      "version": "2026.2.1.1",
+      "releasedAt": "2026-08-19",
       "source": "https://data.services.jetbrains.com/products/releases?code=GO&type=release",
       "declaration": "build.gradle.kts#GoLand 2026.2"
     },
@@ -269,9 +269,9 @@
     {
       "name": "NUnit3TestAdapter",
       "kind": "nuget",
-      "version": "6.2.0",
-      "releasedAt": "2026-03-21",
-      "source": "https://www.nuget.org/packages/NUnit3TestAdapter/6.2.0",
+      "version": "6.3.0",
+      "releasedAt": "2026-08-24",
+      "source": "https://www.nuget.org/packages/NUnit3TestAdapter/6.3.0",
       "declaration": "src/dotnet/PerfSentinel.Rider.Tests/PerfSentinel.Rider.Tests.csproj#NUnit3TestAdapter"
     },
     {
@@ -310,10 +310,10 @@
     {
       "name": "TruffleHog",
       "kind": "audited-tool",
-      "version": "3.97.0",
-      "releasedAt": "2026-08-14T18:35:16Z",
-      "source": "https://github.com/trufflesecurity/trufflehog/releases/tag/v3.97.0",
-      "release": "v3.97.0"
+      "version": "3.97.1",
+      "releasedAt": "2026-08-24T16:53:20Z",
+      "source": "https://github.com/trufflesecurity/trufflehog/releases/tag/v3.97.1",
+      "release": "v3.97.1"
     },
     {
       "name": "Zizmor",
@@ -326,18 +326,18 @@
     {
       "name": "Syft",
       "kind": "audited-tool",
-      "version": "1.51.0",
-      "releasedAt": "2026-08-10T14:55:18Z",
-      "source": "https://github.com/anchore/syft/releases/tag/v1.51.0",
-      "release": "v1.51.0"
+      "version": "1.51.1",
+      "releasedAt": "2026-08-27T17:01:15Z",
+      "source": "https://github.com/anchore/syft/releases/tag/v1.51.1",
+      "release": "v1.51.1"
     },
     {
       "name": "Ruff",
       "kind": "audited-tool",
-      "version": "0.16.3",
-      "releasedAt": "2026-08-13T15:18:05Z",
-      "source": "https://github.com/astral-sh/ruff/releases/tag/0.16.3",
-      "release": "0.16.3"
+      "version": "0.16.5",
+      "releasedAt": "2026-08-27T16:37:58Z",
+      "source": "https://github.com/astral-sh/ruff/releases/tag/0.16.5",
+      "release": "0.16.5"
     },
     {
       "name": "actionlint",
@@ -374,10 +374,10 @@
     {
       "name": "actions/setup-java",
       "kind": "github-action",
-      "version": "b6effb05e454b25005698d916606bdc6ffcbf961",
-      "release": "v5.7.0",
-      "releasedAt": "2026-07-31T19:41:06Z",
-      "source": "https://github.com/actions/setup-java/releases/tag/v5.7.0"
+      "version": "dd06d9cba3e5552c54d9f8ea23572deb30010f7c",
+      "release": "v6.0.0",
+      "releasedAt": "2026-08-24T15:53:25Z",
+      "source": "https://github.com/actions/setup-java/releases/tag/v6.0.0"
     },
     {
       "name": "actions/setup-dotnet",
@@ -430,10 +430,10 @@
     {
       "name": "github/codeql-action",
       "kind": "github-action",
-      "version": "db488ddef3bf6cb639b32c2e9a7c0a7ea8271d28",
-      "release": "v4.37.8",
-      "releasedAt": "2026-08-21T12:25:47Z",
-      "source": "https://github.com/github/codeql-action/releases/tag/v4.37.8"
+      "version": "cdf488f595d80d6e07e03d4674febd5ab45fa938",
+      "release": "v4.37.9",
+      "releasedAt": "2026-08-26T14:41:23Z",
+      "source": "https://github.com/github/codeql-action/releases/tag/v4.37.9"
     },
     {
       "name": "JetBrains/qodana-action",

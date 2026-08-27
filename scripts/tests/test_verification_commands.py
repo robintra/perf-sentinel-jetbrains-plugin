@@ -46,7 +46,7 @@ class VerificationCommandTests(unittest.TestCase):
             ("webstorm", "WebStorm", "2025.3.6.1", "WebStorm-2025.3.6.1.tar.gz"),
             ("webstorm", "WebStorm", "2026.2.1", "WebStorm-2026.2.1.tar.gz"),
             ("go", "goland", "2025.3.5.1", "goland-2025.3.5.1.tar.gz"),
-            ("go", "goland", "2026.2.1", "goland-2026.2.1.tar.gz"),
+            ("go", "goland", "2026.2.1.1", "goland-2026.2.1.1.tar.gz"),
         }
         self.assertEqual(expected, actual)
 

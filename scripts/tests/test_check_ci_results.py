@@ -186,7 +186,7 @@ class CiWorkflowTests(unittest.TestCase):
         self.assertIn("actionlint_1.7.12_linux_amd64.tar.gz", self.text)
         self.assertIn("8aca8db96f1b94770f1b0d72b6dddcb1ebb8123cb3712530b08cc387b349a3d8", self.text)
         self.assertIn("ruff-x86_64-unknown-linux-gnu.tar.gz", self.text)
-        self.assertIn("7ab3b978d2c0b1c96b2323d4e5c4f35284ae1cdf35d2f7399595c74c805f5fa3", self.text)
+        self.assertIn("65b8bae7e43f12a91b71036a52176012b3aefb725d5ae263e2771474110a0983", self.text)
         self.assertIn("./ruff-x86_64-unknown-linux-gnu/ruff check scripts tools", self.text)
         self.assertIn("gitleaks/gitleaks-action@e0c47f4f8be36e29cdc102c57e68cb5cbf0e8d1e", self.text)
         workflow_security = self.text.split("  workflow-security:\n", 1)[1].split("\n  qodana-jvm:\n", 1)[0]
