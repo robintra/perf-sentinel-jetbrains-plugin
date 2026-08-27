@@ -13,9 +13,41 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
+  # Nothing to verify until something is published, and the verify job restores a
+  # multi-gigabyte Gradle cache before it could find that out. This gate answers
+  # the question with two API calls and keeps the expensive job from starting.
+  # It only stays quiet while the release list is genuinely empty: releases that
+  # exist but do not match the version pattern are still an error.
+  gate:
+    name: Check whether a stable release exists
+    runs-on: ubuntu-24.04
+    outputs:
+      tag: ${{ steps.find.outputs.tag }}
+    steps:
+      - name: Find the latest stable public release
+        id: find
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          TAG="$(gh release list --repo "$GITHUB_REPOSITORY" --exclude-drafts --exclude-pre-releases --limit 100 --json tagName --jq '[.[].tagName | select(test("^v0\\.(0|[1-9][0-9]*)\\.(0|[1-9][0-9]*)$"))] | sort_by(split(".") | map(ltrimstr("v") | tonumber)) | last // ""')"
+          if [ -z "$TAG" ]; then
+            COUNT="$(gh release list --repo "$GITHUB_REPOSITORY" --exclude-drafts --exclude-pre-releases --limit 100 --json tagName --jq 'length')"
+            if [ "$COUNT" -eq 0 ]; then
+              echo "::notice::no stable release published yet, nothing to verify"
+              echo "tag=" >> "$GITHUB_OUTPUT"
+              exit 0
+            fi
+            echo "$COUNT stable release(s) exist but none matches vMAJOR.MINOR.PATCH" >&2
+            exit 1
+          fi
+          echo "tag=$TAG" >> "$GITHUB_OUTPUT"
+
   verify:
     name: Verify latest stable release
     runs-on: ubuntu-24.04
+    needs: gate
+    if: needs.gate.outputs.tag != ''
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
         with: {persist-credentials: false}
@@ -28,8 +60,7 @@ jobs:
           GH_TOKEN: ${{ github.token }}
         run: |
           set -euo pipefail
-          TAG="$(gh release list --exclude-drafts --exclude-pre-releases --limit 100 --json tagName --jq '[.[].tagName | select(test("^v0\\.(0|[1-9][0-9]*)\\.(0|[1-9][0-9]*)$"))] | sort_by(split(".") | map(ltrimstr("v") | tonumber)) | last')"
-          test -n "$TAG"
+          TAG="${{ needs.gate.outputs.tag }}"
           VERSION="${TAG#v}"
           mkdir -p build/public build/marketplace
           ASSETS="$(gh release view "$TAG" --json assets)"
