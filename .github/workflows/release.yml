@@ -58,7 +58,7 @@ jobs:
           fetch-depth: 0
           ref: ${{ github.sha }}
           persist-credentials: false
-      - uses: actions/setup-java@b6effb05e454b25005698d916606bdc6ffcbf961
+      - uses: actions/setup-java@dd06d9cba3e5552c54d9f8ea23572deb30010f7c
         with: {distribution: temurin, java-version-file: .java-version}
       - uses: actions/setup-dotnet@a98b56852c35b8e3190ac28c8c2271da59106c68
         with: {dotnet-version: "10.0.302"}
@@ -132,7 +132,7 @@ jobs:
           fetch-depth: 0
           ref: ${{ github.sha }}
           persist-credentials: false
-      - uses: actions/setup-java@b6effb05e454b25005698d916606bdc6ffcbf961
+      - uses: actions/setup-java@dd06d9cba3e5552c54d9f8ea23572deb30010f7c
         with: {distribution: temurin, java-version-file: .java-version}
       - uses: gradle/actions/setup-gradle@9c971963bec38e04b3d30dcc455b5382be2fdbfb
         with: {gradle-version: "9.7.1", cache-disabled: true}
@@ -201,7 +201,7 @@ jobs:
           file: ${{ steps.signed.outputs.signed }}
           format: spdx-json
           output-file: build/release/perf-sentinel-${{ steps.signed.outputs.version }}.spdx.json
-          syft-version: 1.51.0
+          syft-version: 1.51.1
           dependency-snapshot: false
           upload-artifact: false
           upload-release-assets: false

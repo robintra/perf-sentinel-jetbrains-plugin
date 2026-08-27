@@ -5,11 +5,11 @@ from pathlib import Path
 REPOSITORY = Path(__file__).resolve().parents[2]
 WORKFLOWS = REPOSITORY / ".github/workflows"
 CHECKOUT = "actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1"
-SETUP_JAVA = "actions/setup-java@b6effb05e454b25005698d916606bdc6ffcbf961"
+SETUP_JAVA = "actions/setup-java@dd06d9cba3e5552c54d9f8ea23572deb30010f7c"
 SETUP_DOTNET = "actions/setup-dotnet@a98b56852c35b8e3190ac28c8c2271da59106c68"
 SETUP_GRADLE = "gradle/actions/setup-gradle@9c971963bec38e04b3d30dcc455b5382be2fdbfb"
 CODEQL = "github/codeql-action"
-CODEQL_SHA = "db488ddef3bf6cb639b32c2e9a7c0a7ea8271d28"
+CODEQL_SHA = "cdf488f595d80d6e07e03d4674febd5ab45fa938"
 
 
 class DailySecurityWorkflowTests(unittest.TestCase):
@@ -43,7 +43,7 @@ class DailySecurityWorkflowTests(unittest.TestCase):
             "GITLEAKS_VERSION: 8.30.1",
             "zizmorcore/zizmor-action@3dc1ecc9bcb9e94e9b2c709687979e1298497054",
             "anchore/sbom-action@e22c389904149dbc22b58101806040fa8d37a610",
-            "syft-version: v1.51.0",
+            "syft-version: v1.51.1",
             "google/osv-scanner-action/osv-scanner-action@6e4298ebc4db23e847df9b2e2de2939d6f066c67",
             "name: Enforce the SPDX package-source policy",
             "build/security/source.spdx.json",

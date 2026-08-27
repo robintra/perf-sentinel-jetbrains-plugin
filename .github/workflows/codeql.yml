@@ -20,14 +20,14 @@ jobs:
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
         with: {persist-credentials: false}
-      - uses: actions/setup-java@b6effb05e454b25005698d916606bdc6ffcbf961
+      - uses: actions/setup-java@dd06d9cba3e5552c54d9f8ea23572deb30010f7c
         with: {distribution: temurin, java-version-file: .java-version}
       - run: scripts/free-hosted-runner-space.sh
       - uses: gradle/actions/setup-gradle@9c971963bec38e04b3d30dcc455b5382be2fdbfb
         with:
           gradle-version: "9.7.1"
           cache-read-only: ${{ github.event_name == 'pull_request' }}
-      - uses: github/codeql-action/init@db488ddef3bf6cb639b32c2e9a7c0a7ea8271d28
+      - uses: github/codeql-action/init@cdf488f595d80d6e07e03d4674febd5ab45fa938
         with:
           languages: java-kotlin
           build-mode: manual
@@ -35,7 +35,7 @@ jobs:
       # CodeQL traces the compiler, so a cache hit leaves it with nothing to analyse and the
       # database finalizes empty. Compilation has to actually run here.
       - run: gradle --no-daemon --no-build-cache --dependency-verification strict compileKotlin :protocol:rdgen :rider-frontend:compileKotlin
-      - uses: github/codeql-action/analyze@db488ddef3bf6cb639b32c2e9a7c0a7ea8271d28
+      - uses: github/codeql-action/analyze@cdf488f595d80d6e07e03d4674febd5ab45fa938
         with:
           category: /language:java-kotlin
 
@@ -48,7 +48,7 @@ jobs:
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
         with: {persist-credentials: false}
-      - uses: actions/setup-java@b6effb05e454b25005698d916606bdc6ffcbf961
+      - uses: actions/setup-java@dd06d9cba3e5552c54d9f8ea23572deb30010f7c
         with: {distribution: temurin, java-version-file: .java-version}
       - uses: actions/setup-dotnet@a98b56852c35b8e3190ac28c8c2271da59106c68
         with: {dotnet-version: 10.0.302}
@@ -56,7 +56,7 @@ jobs:
         with:
           gradle-version: "9.7.1"
           cache-read-only: ${{ github.event_name == 'pull_request' }}
-      - uses: github/codeql-action/init@db488ddef3bf6cb639b32c2e9a7c0a7ea8271d28
+      - uses: github/codeql-action/init@cdf488f595d80d6e07e03d4674febd5ab45fa938
         with:
           languages: csharp
           build-mode: manual
@@ -64,6 +64,6 @@ jobs:
       - run: gradle --no-daemon --dependency-verification strict :protocol:rdgen
       - run: dotnet restore src/dotnet/PerfSentinel.Rider.Tests/PerfSentinel.Rider.Tests.csproj --locked-mode --configfile src/dotnet/NuGet.Config
       - run: dotnet build src/dotnet/PerfSentinel.Rider.Tests/PerfSentinel.Rider.Tests.csproj --configuration Release --no-restore
-      - uses: github/codeql-action/analyze@db488ddef3bf6cb639b32c2e9a7c0a7ea8271d28
+      - uses: github/codeql-action/analyze@cdf488f595d80d6e07e03d4674febd5ab45fa938
         with:
           category: /language:csharp
