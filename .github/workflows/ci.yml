@@ -85,7 +85,7 @@ jobs:
           gradle-version: "9.7.1"
           # Restoring the Gradle cache lands after the cleanup steps above and refills the disk.
           cache-disabled: true
-      - run: gradle --no-daemon --dependency-verification strict test koverXmlReport
+      - run: scripts/ci/gradle-retry.sh test koverXmlReport
       - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a
         with:
           name: jvm-analysis-inputs
@@ -118,7 +118,7 @@ jobs:
         with:
           gradle-version: "9.7.1"
           cache-read-only: ${{ github.event_name == 'pull_request' }}
-      - run: gradle --no-daemon --dependency-verification strict testPyCharm253
+      - run: scripts/ci/gradle-retry.sh testPyCharm253
 
   php:
     name: PHP
@@ -140,7 +140,7 @@ jobs:
         with:
           gradle-version: "9.7.1"
           cache-read-only: ${{ github.event_name == 'pull_request' }}
-      - run: gradle --no-daemon --dependency-verification strict testPhpStorm253
+      - run: scripts/ci/gradle-retry.sh testPhpStorm253
 
   rust:
     name: Rust
@@ -162,7 +162,7 @@ jobs:
         with:
           gradle-version: "9.7.1"
           cache-read-only: ${{ github.event_name == 'pull_request' }}
-      - run: gradle --no-daemon --dependency-verification strict testRustRover253 testRustRover262
+      - run: scripts/ci/gradle-retry.sh testRustRover253 testRustRover262
 
   ruby:
     name: Ruby
@@ -184,7 +184,7 @@ jobs:
         with:
           gradle-version: "9.7.1"
           cache-read-only: ${{ github.event_name == 'pull_request' }}
-      - run: gradle --no-daemon --dependency-verification strict testRubyMine253
+      - run: scripts/ci/gradle-retry.sh testRubyMine253
 
   javascript:
     name: JavaScript
@@ -206,7 +206,7 @@ jobs:
         with:
           gradle-version: "9.7.1"
           cache-read-only: ${{ github.event_name == 'pull_request' }}
-      - run: gradle --no-daemon --dependency-verification strict testWebStorm253
+      - run: scripts/ci/gradle-retry.sh testWebStorm253
 
   go:
     name: Go
@@ -228,7 +228,7 @@ jobs:
         with:
           gradle-version: "9.7.1"
           cache-read-only: ${{ github.event_name == 'pull_request' }}
-      - run: gradle --no-daemon --dependency-verification strict testGoLand253
+      - run: scripts/ci/gradle-retry.sh testGoLand253
 
   rider-frontend:
     name: Rider frontend
@@ -247,7 +247,7 @@ jobs:
         with:
           gradle-version: "9.7.1"
           cache-read-only: ${{ github.event_name == 'pull_request' }}
-      - run: gradle --no-daemon --dependency-verification strict :rider-frontend:test
+      - run: scripts/ci/gradle-retry.sh :rider-frontend:test
 
   plugin-verifier:
     name: Plugin Verifier (${{ matrix.verifier-target }})
@@ -289,7 +289,7 @@ jobs:
         with:
           gradle-version: "9.7.1"
           cache-disabled: true
-      - run: gradle --no-daemon --dependency-verification strict verifyPlugin -PpluginVerifierTarget=${{ matrix.verifier-target }}
+      - run: scripts/ci/gradle-retry.sh verifyPlugin -PpluginVerifierTarget=${{ matrix.verifier-target }}
 
   zip:
     name: ZIP
@@ -311,7 +311,7 @@ jobs:
         with:
           gradle-version: "9.7.1"
           cache-read-only: ${{ github.event_name == 'pull_request' }}
-      - run: gradle --no-daemon --dependency-verification strict buildPlugin
+      - run: scripts/ci/gradle-retry.sh buildPlugin
       - shell: bash
         run: |
           set -euo pipefail
@@ -394,7 +394,38 @@ jobs:
         with:
           ref: ${{ needs.changes.outputs.target-sha }}
           persist-credentials: false
-      - uses: JetBrains/qodana-action@b588768b6e7e6da579e518bc584f79de0d243692
+      # Qodana downloads the Gradle distribution itself and gives up on a
+      # 10 s read timeout with no attempt of its own, which reddens main on a
+      # slow mirror. A rerun is deterministic on real findings, so retrying the
+      # whole scan cannot hide one.
+      - name: Qodana
+        id: qodana-1
+        continue-on-error: true
+        uses: JetBrains/qodana-action@b588768b6e7e6da579e518bc584f79de0d243692
+        with:
+          args: --config qodana.yml
+          results-dir: build/qodana-jvm/results
+          upload-result: false
+          use-caches: false
+          use-annotations: false
+          post-pr-comment: false
+          push-fixes: none
+      - name: Qodana (retry 2/3)
+        id: qodana-2
+        if: steps.qodana-1.outcome == 'failure'
+        continue-on-error: true
+        uses: JetBrains/qodana-action@b588768b6e7e6da579e518bc584f79de0d243692
+        with:
+          args: --config qodana.yml
+          results-dir: build/qodana-jvm/results
+          upload-result: false
+          use-caches: false
+          use-annotations: false
+          post-pr-comment: false
+          push-fixes: none
+      - name: Qodana (retry 3/3)
+        if: steps.qodana-1.outcome == 'failure' && steps.qodana-2.outcome == 'failure'
+        uses: JetBrains/qodana-action@b588768b6e7e6da579e518bc584f79de0d243692
         with:
           args: --config qodana.yml
           results-dir: build/qodana-jvm/results
