@@ -393,6 +393,13 @@ def validate_workflow_secrets(root: Path, inventory_names: set[str]) -> None:
         if unknown:
             raise AnalysisError(f"workflow secret reference is absent from inventory: {', '.join(sorted(unknown))}")
         references = list(re.finditer(r"(?<![\w.-])(qodana-dotnet\.yml|qodana\.yml)(?![\w.-])", text))
+        # A retried Qodana step repeats its own `--config`, so collapse a run of
+        # references to the same file. The invariant is one SARIF upload per
+        # linter under its own category, not one mention of the config per linter.
+        references = [
+            reference for index, reference in enumerate(references)
+            if index == 0 or reference.group(1) != references[index - 1].group(1)
+        ]
         categories = {"qodana.yml": "qodana-jvm", "qodana-dotnet.yml": "qodana-rider"}
         for index, reference in enumerate(references):
             end = references[index + 1].start() if index + 1 < len(references) else len(text)

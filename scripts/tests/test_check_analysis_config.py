@@ -320,6 +320,53 @@ class AnalysisConfigCheckerTests(unittest.TestCase):
         result = self.run_checker()
         self.assertEqual(0, result.returncode, result.stderr)
 
+    def test_accepts_a_retried_qodana_step_repeating_its_own_config(self):
+        """A retried scan mentions its config once per attempt.
+
+        The rule counts uploads per linter, not mentions of the config, so
+        three attempts followed by one upload stay valid.
+        """
+        self.write(
+            ".github/workflows/analysis.yml",
+            """steps:
+  - run: qodana scan --config qodana.yml
+  - run: qodana scan --config qodana.yml
+  - run: qodana scan --config qodana.yml
+  - uses: github/codeql-action/upload-sarif@0123456789012345678901234567890123456789
+    with:
+      sarif_file: build/qodana-jvm/results/qodana.sarif.json
+      category: qodana-jvm
+  - run: qodana scan --config qodana-dotnet.yml
+  - uses: github/codeql-action/upload-sarif@0123456789012345678901234567890123456789
+    with:
+      sarif_file: build/qodana-rider/results/qodana.sarif.json
+      category: qodana-rider
+""",
+        )
+        result = self.run_checker()
+        self.assertEqual(0, result.returncode, result.stderr)
+
+    def test_still_rejects_a_second_upload_after_a_retried_qodana_step(self):
+        """Collapsing repeated mentions must not stop counting uploads."""
+        self.write(
+            ".github/workflows/analysis.yml",
+            """steps:
+  - run: qodana scan --config qodana.yml
+  - run: qodana scan --config qodana.yml
+  - uses: github/codeql-action/upload-sarif@0123456789012345678901234567890123456789
+    with:
+      category: qodana-jvm
+  - uses: github/codeql-action/upload-sarif@0123456789012345678901234567890123456789
+    with:
+      category: qodana-jvm
+  - run: qodana scan --config qodana-dotnet.yml
+  - uses: github/codeql-action/upload-sarif@0123456789012345678901234567890123456789
+    with:
+      category: qodana-rider
+""",
+        )
+        self.assert_rejected("distinct Qodana SARIF categories")
+
     def test_rejects_swapped_qodana_sarif_category_bindings(self):
         self.write(
             ".github/workflows/analysis.yml",
