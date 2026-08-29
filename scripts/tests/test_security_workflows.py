@@ -42,7 +42,7 @@ class DailySecurityWorkflowTests(unittest.TestCase):
             "gitleaks/gitleaks-action@e0c47f4f8be36e29cdc102c57e68cb5cbf0e8d1e",
             "GITLEAKS_VERSION: 8.30.1",
             "zizmorcore/zizmor-action@3dc1ecc9bcb9e94e9b2c709687979e1298497054",
-            "anchore/sbom-action@e22c389904149dbc22b58101806040fa8d37a610",
+            "anchore/sbom-action@3ad7283483fc7af8ff2b4ea19663c2d5ca935e26",
             "syft-version: v1.51.1",
             "google/osv-scanner-action/osv-scanner-action@6e4298ebc4db23e847df9b2e2de2939d6f066c67",
             "name: Enforce the SPDX package-source policy",
