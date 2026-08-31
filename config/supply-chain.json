@@ -318,10 +318,10 @@
     {
       "name": "Zizmor",
       "kind": "audited-tool",
-      "version": "1.29.0",
-      "releasedAt": "2026-08-01T21:14:45Z",
-      "source": "https://github.com/zizmorcore/zizmor/releases/tag/v1.29.0",
-      "release": "v1.29.0"
+      "version": "1.30.0",
+      "releasedAt": "2026-08-30T21:29:01Z",
+      "source": "https://github.com/zizmorcore/zizmor/releases/tag/v1.30.0",
+      "release": "v1.30.0"
     },
     {
       "name": "Syft",
@@ -462,10 +462,10 @@
     {
       "name": "step-security/harden-runner",
       "kind": "github-action",
-      "version": "05e31511f85b41b11d1cf0ef85d0992719546e2c",
-      "release": "v2.21.0",
-      "releasedAt": "2026-08-15T05:52:25Z",
-      "source": "https://github.com/step-security/harden-runner/releases/tag/v2.21.0"
+      "version": "e14015d583714f6e62063499dc959a02595150a1",
+      "release": "v2.21.1",
+      "releasedAt": "2026-08-30T23:29:47Z",
+      "source": "https://github.com/step-security/harden-runner/releases/tag/v2.21.1"
     },
     {
       "name": "google/osv-scanner-action",
@@ -486,10 +486,10 @@
     {
       "name": "zizmorcore/zizmor-action",
       "kind": "github-action",
-      "version": "3dc1ecc9bcb9e94e9b2c709687979e1298497054",
-      "release": "v0.6.2",
-      "releasedAt": "2026-08-01T21:21:25Z",
-      "source": "https://github.com/zizmorcore/zizmor-action/releases/tag/v0.6.2"
+      "version": "70fb788f84895a7701f5643d103d587e460b5c99",
+      "release": "v0.6.3",
+      "releasedAt": "2026-08-30T21:35:33Z",
+      "source": "https://github.com/zizmorcore/zizmor-action/releases/tag/v0.6.3"
     },
     {
       "name": "gradle/actions",

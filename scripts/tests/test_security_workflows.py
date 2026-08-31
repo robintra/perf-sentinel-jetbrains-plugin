@@ -41,7 +41,7 @@ class DailySecurityWorkflowTests(unittest.TestCase):
             "--config=osv-scanner.toml",
             "gitleaks/gitleaks-action@e0c47f4f8be36e29cdc102c57e68cb5cbf0e8d1e",
             "GITLEAKS_VERSION: 8.30.1",
-            "zizmorcore/zizmor-action@3dc1ecc9bcb9e94e9b2c709687979e1298497054",
+            "zizmorcore/zizmor-action@70fb788f84895a7701f5643d103d587e460b5c99",
             "anchore/sbom-action@3ad7283483fc7af8ff2b4ea19663c2d5ca935e26",
             "syft-version: v1.51.1",
             "google/osv-scanner-action/osv-scanner-action@6e4298ebc4db23e847df9b2e2de2939d6f066c67",
