@@ -914,8 +914,17 @@ def same_release_date(recorded, actual):
     return instant.date() == expected.date() if len(recorded) == 10 else instant == expected
 
 
+# Renovate proposes updates in one window a week (Monday 06:00-07:00), and this
+# audit runs daily. Comparing against a release published minutes ago therefore
+# reports a gap nobody can close for up to six days, which is how the job came
+# to fail almost every day. A pin is behind only once the upstream release it
+# missed has had a week to be picked up.
+FRESHNESS_GRACE = timedelta(days=7)
+
+
 def latest_eligible(candidates: list[tuple[str, datetime]], now) -> tuple[str, datetime] | None:
-    stable = [item for item in candidates if not PRERELEASE.search(item[0]) and item[1] <= now]
+    stable = [item for item in candidates
+              if not PRERELEASE.search(item[0]) and item[1] <= now - FRESHNESS_GRACE]
     return max(stable, key=lambda item: version_key(item[0])) if stable else None
 
 
@@ -931,7 +940,9 @@ def validate_release(dependency, candidates: list[tuple[str, datetime]], now, la
     eligible = latest_eligible(candidates, now)
     if eligible is None:
         raise ValueError(f"not latest eligible stable {label} (none)")
-    if eligible[0].lower() != expected:
+    # Only older than the matured release is behind. A pin on something newer is
+    # ahead of the grace window, which is what a fresh bump looks like.
+    if version_key(expected) < version_key(eligible[0].lower()):
         raise ValueError(f"not latest eligible stable {label} ({eligible[0]})")
 
 
