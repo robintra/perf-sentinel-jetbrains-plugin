@@ -16,7 +16,7 @@ dependencies {
     testImplementation(libs.junit)
 
     intellijPlatform {
-        rider("2025.3.5.1") { useInstaller = false }
+        rider("2025.3.5") { useInstaller = false }
         testFramework(TestFrameworkType.Platform)
     }
 }
