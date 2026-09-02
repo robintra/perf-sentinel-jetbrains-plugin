@@ -132,7 +132,7 @@ jobs:
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
         with: {persist-credentials: false}
-      - uses: JetBrains/qodana-action@b588768b6e7e6da579e518bc584f79de0d243692
+      - uses: JetBrains/qodana-action@10be11607eb323a180e2b76b26c9c5cdceac3e77
         with:
           args: --config qodana.yml
           results-dir: build/security/qodana-jvm
@@ -167,7 +167,7 @@ jobs:
       - run: gradle --no-daemon --dependency-verification strict :protocol:rdgen
       # Qodana opens the solution, so both projects must be restored, not just the test one.
       - run: dotnet restore src/dotnet/PerfSentinel.sln --locked-mode --configfile src/dotnet/NuGet.Config
-      - uses: JetBrains/qodana-action@b588768b6e7e6da579e518bc584f79de0d243692
+      - uses: JetBrains/qodana-action@10be11607eb323a180e2b76b26c9c5cdceac3e77
         with:
           args: --config qodana-dotnet.yml
           results-dir: build/security/qodana-rider

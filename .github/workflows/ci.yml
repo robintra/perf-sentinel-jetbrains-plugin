@@ -401,7 +401,7 @@ jobs:
       - name: Qodana
         id: qodana-1
         continue-on-error: true
-        uses: JetBrains/qodana-action@b588768b6e7e6da579e518bc584f79de0d243692
+        uses: JetBrains/qodana-action@10be11607eb323a180e2b76b26c9c5cdceac3e77
         with:
           args: --config qodana.yml
           results-dir: build/qodana-jvm/results
@@ -414,7 +414,7 @@ jobs:
         id: qodana-2
         if: steps.qodana-1.outcome == 'failure'
         continue-on-error: true
-        uses: JetBrains/qodana-action@b588768b6e7e6da579e518bc584f79de0d243692
+        uses: JetBrains/qodana-action@10be11607eb323a180e2b76b26c9c5cdceac3e77
         with:
           args: --config qodana.yml
           results-dir: build/qodana-jvm/results
@@ -425,7 +425,7 @@ jobs:
           push-fixes: none
       - name: Qodana (retry 3/3)
         if: steps.qodana-1.outcome == 'failure' && steps.qodana-2.outcome == 'failure'
-        uses: JetBrains/qodana-action@b588768b6e7e6da579e518bc584f79de0d243692
+        uses: JetBrains/qodana-action@10be11607eb323a180e2b76b26c9c5cdceac3e77
         with:
           args: --config qodana.yml
           results-dir: build/qodana-jvm/results

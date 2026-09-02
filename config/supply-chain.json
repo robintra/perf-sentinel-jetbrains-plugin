@@ -310,10 +310,10 @@
     {
       "name": "TruffleHog",
       "kind": "audited-tool",
-      "version": "3.97.1",
-      "releasedAt": "2026-08-24T16:53:20Z",
-      "source": "https://github.com/trufflesecurity/trufflehog/releases/tag/v3.97.1",
-      "release": "v3.97.1"
+      "version": "3.97.2",
+      "releasedAt": "2026-09-02T16:55:13Z",
+      "source": "https://github.com/trufflesecurity/trufflehog/releases/tag/v3.97.2",
+      "release": "v3.97.2"
     },
     {
       "name": "Zizmor",
@@ -358,10 +358,10 @@
     {
       "name": "Qodana CLI",
       "kind": "audited-tool",
-      "version": "2026.2.0",
-      "releasedAt": "2026-07-28T21:14:54Z",
-      "source": "https://github.com/JetBrains/qodana-cli/releases/tag/v2026.2.0",
-      "release": "v2026.2.0"
+      "version": "2026.2.1",
+      "releasedAt": "2026-09-02T11:06:19Z",
+      "source": "https://github.com/JetBrains/qodana-cli/releases/tag/v2026.2.1",
+      "release": "v2026.2.1"
     },
     {
       "name": "actions/checkout",
@@ -438,10 +438,10 @@
     {
       "name": "JetBrains/qodana-action",
       "kind": "github-action",
-      "version": "b588768b6e7e6da579e518bc584f79de0d243692",
-      "release": "v2026.2.0",
-      "releasedAt": "2026-07-29T08:04:23Z",
-      "source": "https://github.com/JetBrains/qodana-action/releases/tag/v2026.2.0"
+      "version": "10be11607eb323a180e2b76b26c9c5cdceac3e77",
+      "release": "v2026.2.1",
+      "releasedAt": "2026-09-02T11:44:01Z",
+      "source": "https://github.com/JetBrains/qodana-action/releases/tag/v2026.2.1"
     },
     {
       "name": "anchore/sbom-action",
