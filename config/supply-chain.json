@@ -1,6 +1,6 @@
 {
   "schemaVersion": 1,
-  "auditedAt": "2026-08-12T07:00:00Z",
+  "auditedAt": "2026-09-02T18:30:19Z",
   "approvedNuGetSources": [
     "https://api.nuget.org/v3/index.json"
   ],
@@ -226,19 +226,19 @@
     {
       "name": "JetBrains Rider SDK",
       "kind": "nuget",
-      "version": "2025.3.5",
+      "version": "2025.3.5.1",
       "release": "2025.3",
-      "releasedAt": "2026-07-30T13:02:03.333Z",
-      "source": "https://www.nuget.org/packages/JetBrains.Rider.SDK/2025.3.5",
+      "releasedAt": "2026-09-01T12:01:39.567Z",
+      "source": "https://www.nuget.org/packages/JetBrains.Rider.SDK/2025.3.5.1",
       "declaration": "src/dotnet/Plugin.props#SdkVersion:JetBrains.Rider.SDK"
     },
     {
       "name": "JetBrains ReSharper SDK Tests",
       "kind": "nuget",
-      "version": "2025.3.5",
+      "version": "2025.3.5.1",
       "release": "2025.3",
-      "releasedAt": "2026-07-30T14:04:52.977Z",
-      "source": "https://www.nuget.org/packages/JetBrains.ReSharper.SDK.Tests/2025.3.5",
+      "releasedAt": "2026-09-01T13:01:09.96Z",
+      "source": "https://www.nuget.org/packages/JetBrains.ReSharper.SDK.Tests/2025.3.5.1",
       "declaration": "src/dotnet/Plugin.props#SdkVersion:JetBrains.ReSharper.SDK.Tests"
     },
     {
