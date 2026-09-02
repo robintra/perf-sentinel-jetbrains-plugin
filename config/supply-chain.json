@@ -90,8 +90,8 @@
     {
       "name": "RDGen",
       "kind": "maven",
-      "version": "2026.2.5",
-      "releasedAt": "2026-06-18",
+      "version": "2026.3.0",
+      "releasedAt": "2026-09-01",
       "source": "https://repo.maven.apache.org/maven2/com/jetbrains/rd/rd-gen/maven-metadata.xml",
       "declaration": "gradle/libs.versions.toml#rdGen"
     },
