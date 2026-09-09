@@ -114,8 +114,8 @@
     {
       "name": "Rider 2025.3",
       "kind": "jetbrains-product",
-      "version": "2025.3.5",
-      "releasedAt": "2026-07-30",
+      "version": "2025.3.5.1",
+      "releasedAt": "2026-09-01",
       "source": "https://data.services.jetbrains.com/products/releases?code=RD&type=release",
       "declaration": "build.gradle.kts#Rider 2025.3"
     },
