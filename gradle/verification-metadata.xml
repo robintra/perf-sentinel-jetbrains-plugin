@@ -6,6 +6,7 @@
       <trusted-artifacts>
          <trust group="bundledPlugin" file=".*[.]xml" regex="true" reason="Ivy descriptors are generated locally from the already verified IDE archive and embed absolute paths, so their checksums differ per machine"/>
          <trust group="bundledModule" file=".*[.]xml" regex="true" reason="Ivy descriptors are generated locally from the already verified IDE archive and embed absolute paths, so their checksums differ per machine"/>
+         <trust group="com.jetbrains.intellij.idea" file="idea-.*[.]pom" regex="true" reason="The IDE sync probes these POMs for the IntelliJ IDEA build it runs on, a version that changes with every IDE update and is never part of a build, while the archives the build consumes stay verified under the idea:idea coordinates"/>
          <trust file=".*-(sources|javadoc)[.]jar" regex="true" reason="Qodana downloads these to navigate dependency code, they are never compiled or executed, and the matching binary jar stays verified"/>
       </trusted-artifacts>
    </configuration>
