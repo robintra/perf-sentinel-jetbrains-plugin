@@ -34,7 +34,7 @@ class VerificationCommandTests(unittest.TestCase):
         expected = {
             ("idea", "idea", "2025.3.6.1", "idea-2025.3.6.1.tar.gz"),
             ("idea", "idea", "2025.3.6.1", "idea-2025.3.6.1-win.zip"),
-            ("idea", "idea", "2026.2.1", "idea-2026.2.1.tar.gz"),
+            ("idea", "idea", "2026.2.2", "idea-2026.2.2.tar.gz"),
             ("python", "pycharm-professional", "2025.3.6.1", "pycharm-professional-2025.3.6.1.tar.gz"),
             ("python", "pycharm-professional", "2026.2.1", "pycharm-professional-2026.2.1.tar.gz"),
             ("webide", "PhpStorm", "2025.3.6.1", "PhpStorm-2025.3.6.1.tar.gz"),
