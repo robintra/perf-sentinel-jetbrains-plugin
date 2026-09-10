@@ -336,7 +336,7 @@ intellijPlatform {
         ignoredProblemsFile = file("gradle/verifier-ignored-problems.txt")
         ides {
             if (verifyTarget("idea-253")) create(IntelliJPlatformType.IntellijIdea, "2025.3.6.1")
-            if (verifyTarget("idea-262")) create(IntelliJPlatformType.IntellijIdea, "2026.2.1")
+            if (verifyTarget("idea-262")) create(IntelliJPlatformType.IntellijIdea, "2026.2.2")
             if (verifyTarget("rider-253")) create(IntelliJPlatformType.Rider, "2025.3.5.1") { useInstaller = false }
             if (verifyTarget("rider-262")) create(IntelliJPlatformType.Rider, "2026.2.1") { useInstaller = false }
             if (verifyTarget("python-253")) create(IntelliJPlatformType.PyCharmProfessional, "2025.3.6.1")

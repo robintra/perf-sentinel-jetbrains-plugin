@@ -106,8 +106,8 @@
     {
       "name": "IntelliJ IDEA 2026.2",
       "kind": "jetbrains-product",
-      "version": "2026.2.1",
-      "releasedAt": "2026-08-10",
+      "version": "2026.2.2",
+      "releasedAt": "2026-09-02",
       "source": "https://data.services.jetbrains.com/products/releases?code=IIU&type=release",
       "declaration": "build.gradle.kts#IntelliJ IDEA 2026.2"
     },
