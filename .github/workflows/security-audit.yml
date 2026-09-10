@@ -48,7 +48,10 @@ jobs:
         with: {distribution: temurin, java-version-file: .java-version}
       - uses: actions/setup-dotnet@a98b56852c35b8e3190ac28c8c2271da59106c68
         with: {dotnet-version: 10.0.302}
+      - run: scripts/free-hosted-runner-space.sh
       - uses: gradle/actions/setup-gradle@9c971963bec38e04b3d30dcc455b5382be2fdbfb
+        # Restoring the Gradle cache lands after the cleanup step above and refills the disk:
+        # the cache now carries every pinned IDE archive and exhausted the runner without it.
         with: {gradle-version: "9.7.1", cache-read-only: true}
       - name: Validate immutable inputs and Gradle dependencies
         run: |
