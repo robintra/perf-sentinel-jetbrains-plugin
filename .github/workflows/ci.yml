@@ -99,6 +99,11 @@ jobs:
             protocol/build/classes
             rider-frontend/build/classes
             rider-frontend/build/test-results
+      - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a
+        with:
+          name: rider-protocol-model
+          if-no-files-found: error
+          path: rider-frontend/build/generated/rd/kotlin
 
   python:
     name: Python
@@ -408,6 +413,15 @@ jobs:
         with:
           ref: ${{ needs.changes.outputs.target-sha }}
           persist-credentials: false
+      # Qodana imports the build but never runs :protocol:rdgen, which leaves the Kotlin RD model
+      # that rider-frontend imports unresolved. Generating it needs the Rider SDK the jvm job
+      # already holds, so that job ships the generated sources rather than this one fetching it.
+      - uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c
+        with:
+          name: rider-protocol-model
+          path: rider-frontend/build/generated/rd/kotlin
+      - name: Require the generated RD model
+        run: test -f rider-frontend/build/generated/rd/kotlin/PerfSentinelModel.Generated.kt
       # Qodana downloads the Gradle distribution itself and gives up on a
       # 10 s read timeout with no attempt of its own, which reddens main on a
       # slow mirror. A rerun is deterministic on real findings, so retrying the

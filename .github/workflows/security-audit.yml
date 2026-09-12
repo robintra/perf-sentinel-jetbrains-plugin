@@ -58,6 +58,11 @@ jobs:
           mkdir -p build/security
           python3 scripts/check-supply-chain.py
           gradle --no-daemon --dependency-verification strict dependencies :protocol:dependencies :rider-frontend:dependencies --configuration runtimeClasspath
+      # Qodana imports the build without running :protocol:rdgen. This job has already restored
+      # the Rider SDK the generator needs, so it hands the generated Kotlin model to qodana-jvm.
+      - run: gradle --no-daemon --dependency-verification strict :protocol:rdgen
+      - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a
+        with: {name: rider-protocol-model, if-no-files-found: error, path: rider-frontend/build/generated/rd/kotlin}
       - name: Audit locked NuGet dependencies
         run: |
           dotnet restore src/dotnet/PerfSentinel.Rider/PerfSentinel.Rider.csproj --locked-mode --configfile src/dotnet/NuGet.Config -p:NuGetAudit=true -p:NuGetAuditMode=all -p:TreatWarningsAsErrors=true
@@ -125,6 +130,10 @@ jobs:
 
   qodana-jvm:
     name: Qodana JVM
+    needs: dependencies
+    # The model is uploaded before the audit steps, so their failures must not skip the scan.
+    # A failure before the upload still fails the download below.
+    if: ${{ !cancelled() }}
     runs-on: ubuntu-24.04
     timeout-minutes: 40
     permissions:
@@ -135,6 +144,10 @@ jobs:
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
         with: {persist-credentials: false}
+      - uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c
+        with: {name: rider-protocol-model, path: rider-frontend/build/generated/rd/kotlin}
+      - name: Require the generated RD model
+        run: test -f rider-frontend/build/generated/rd/kotlin/PerfSentinelModel.Generated.kt
       - uses: JetBrains/qodana-action@10be11607eb323a180e2b76b26c9c5cdceac3e77
         with:
           args: --config qodana.yml
