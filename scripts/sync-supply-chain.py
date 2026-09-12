@@ -174,6 +174,23 @@ def plugin_published(client, checker, dependency) -> dict[str, str]:
     return {"releasedAt": created.strftime("%Y-%m-%d")}
 
 
+def jetbrains_published(client, checker, dependency) -> dict[str, str]:
+    """The release date the product feed gives for the pinned version."""
+    product = next(
+        (name for name in checker.PRODUCT_CODES if dependency["name"].startswith(name + " ")),
+        None,
+    )
+    if product is None:
+        raise ValueError("the name matches no known JetBrains product")
+    # The entry already carries the feed URL the checker validates against, so
+    # the two cannot drift onto different documents.
+    releases = client.json(dependency["source"])[checker.PRODUCT_CODES[product]]
+    for release in releases:
+        if release["version"] == dependency["version"]:
+            return {"releasedAt": release["date"]}
+    raise ValueError(f"version {dependency['version']} is not in the product feed")
+
+
 def online_metadata(client, checker, dependency) -> dict[str, str]:
     """Everything about an entry that the working tree cannot prove."""
     kind, name = dependency["kind"], dependency["name"]
@@ -183,6 +200,8 @@ def online_metadata(client, checker, dependency) -> dict[str, str]:
         return plugin_published(client, checker, dependency)
     if kind == "nuget" and name in checker.NUGET_PACKAGES:
         return nuget_published(client, checker, dependency)
+    if kind == "jetbrains-product":
+        return jetbrains_published(client, checker, dependency)
     repo = name if kind == "github-action" else checker.GITHUB_REPOS.get(name)
     if repo:
         tag, published = github_release(client, repo, dependency["version"])
@@ -242,14 +261,142 @@ def refresh(root, checker, inventory, online, problems):
     return changes
 
 
-def mirrored_pins(root: Path) -> list[str]:
-    """Test files repeating a pin, which stay a deliberate second edit."""
+# Products the plugin verifier pulls as an installer, mapped to the coordinate
+# the lock file records and the file name JetBrains publishes. Only IntelliJ
+# IDEA spells the two differently: the artifact is idea-<version>, the download
+# ideaIU-<version>. A product missing here is one no installer covers, such as
+# Rider, which the verifier takes from Maven with useInstaller = false.
+INSTALLER_PINS = {
+    "IntelliJ IDEA": ("idea", "idea", "ideaIU", "com.jetbrains.intellij.idea"),
+    "PyCharm": ("python", "pycharm-professional", "pycharm-professional", "com.jetbrains.intellij.pycharm"),
+    "PhpStorm": ("webide", "PhpStorm", "PhpStorm", "com.jetbrains.intellij.phpstorm"),
+    "RubyMine": ("ruby", "RubyMine", "RubyMine", "com.jetbrains.intellij.rubymine"),
+    "WebStorm": ("webstorm", "WebStorm", "WebStorm", "com.jetbrains.intellij.webstorm"),
+    "GoLand": ("go", "goland", "goland", "com.jetbrains.intellij.goland"),
+    "RustRover": ("rustrover", "RustRover", "RustRover", "com.jetbrains.intellij.rustrover"),
+}
+
+
+def derived_writes(root, client, changes, problems) -> list[str]:
+    """Carry a moved JetBrains pin into the artifacts derived from it.
+
+    The inventory is not the only file a bump leaves behind: the lock file
+    names the version, and the verification metadata names every installer it
+    covers. Both are mechanical consequences of the declaration, which is why
+    they belong here rather than in a human's hands.
+    """
+    written: list[str] = []
+    for dependency, field, old, new in changes:
+        if field != "version" or dependency.get("kind") != "jetbrains-product":
+            continue
+        product = next(
+            (name for name in INSTALLER_PINS if dependency["name"].startswith(name + " ")),
+            None,
+        )
+        if product is None:
+            problems.append(
+                f"{dependency['name']}: no installer coordinate, its lock needs a full regeneration"
+            )
+            continue
+        group, artifact, _download, maven = INSTALLER_PINS[product]
+        lock = root / "gradle.lockfile"
+        text = lock.read_text(encoding="utf-8")
+        # A version a testIde or runIde also resolves comes with platform
+        # coordinates and a bundled module, which only a Gradle relock can move.
+        if re.search(rf"^{re.escape(maven)}:[^:]+:{re.escape(old)}=", text, re.M):
+            problems.append(
+                f"{dependency['name']}: a test IDE resolves {old} from Maven, its lock needs a full regeneration"
+            )
+            continue
+        # Anchored: an installer coordinate is a suffix of its Maven namesake.
+        pin = re.search(
+            rf"^{re.escape(group)}:{re.escape(artifact)}:{re.escape(old)}=(.*)$", text, re.M
+        )
+        if pin is None:
+            problems.append(f"{dependency['name']}: {group}:{artifact}:{old} is not in the lock file")
+            continue
+        if pin.group(1) != "intellijPluginVerifierIdesDependency":
+            problems.append(
+                f"{dependency['name']}: {pin.group(1)} also resolves {old}, its lock needs a full regeneration"
+            )
+            continue
+        lock.write_text(
+            text[: pin.start()] + f"{group}:{artifact}:{new}={pin.group(1)}" + text[pin.end():],
+            encoding="utf-8",
+        )
+        written.append(f"gradle.lockfile: {group}:{artifact} {old} -> {new}")
+        try:
+            written.append(
+                rewrite_component(root, client, group, artifact, _download, old, new)
+            )
+        except Exception as error:  # reported, never silent
+            problems.append(f"{dependency['name']}: cannot rewrite verification metadata: {error}")
+    return written
+
+
+def published_checksum(client, group: str, name: str) -> str:
+    """The SHA-256 JetBrains publishes beside an installer.
+
+    The archive itself is not downloaded: the plugin verifier jobs already pull
+    every installer and let Gradle confront it with this value before anything
+    reaches the default branch.
+    """
+    document = client.text(f"https://download.jetbrains.com/{group}/{name}.sha256")
+    checksum = document.split()[0] if document.split() else ""
+    if not re.fullmatch(r"[0-9a-f]{64}", checksum):
+        raise ValueError(f"{name}.sha256 does not carry a SHA-256")
+    return checksum
+
+
+def rewrite_component(root, client, group, artifact, download, old, new) -> str:
+    """Move one verification-metadata component onto the new version."""
+    path = root / "gradle" / "verification-metadata.xml"
+    text = path.read_text(encoding="utf-8")
+    pattern = re.compile(
+        rf'      <component group="{re.escape(group)}" name="{re.escape(artifact)}" '
+        rf'version="{re.escape(old)}">\n.*?      </component>\n',
+        re.S,
+    )
+    match = pattern.search(text)
+    if match is None:
+        raise ValueError(f"{group}:{artifact}:{old} has no verification component")
+    body = ""
+    for name in re.findall(r'<artifact name="([^"]+)"', match.group(0)):
+        renamed = name.replace(old, new)
+        checksum = published_checksum(client, group, renamed.replace(f"{artifact}-", f"{download}-", 1))
+        body += (
+            f'         <artifact name="{renamed}">\n'
+            f'            <sha256 value="{checksum}" origin="Verified from JetBrains checksum"/>\n'
+            f"         </artifact>\n"
+        )
+    component = (
+        f'      <component group="{group}" name="{artifact}" version="{new}">\n'
+        f"{body}      </component>\n"
+    )
+    path.write_text(text[: match.start()] + component + text[match.end():], encoding="utf-8")
+    return f"gradle/verification-metadata.xml: {group}:{artifact} {old} -> {new}"
+
+
+def mirrored_pins(root: Path, changes) -> list[str]:
+    """Test files repeating a pin, which stay a deliberate second edit.
+
+    A commit SHA is recognisable on sight, but a mirrored version is not, and
+    reporting only the former left the version mirrors invisible. Every value
+    this run just moved is therefore searched for as well: a test still
+    carrying the old one is a mirror waiting for its second edit.
+    """
+    moved = {
+        old
+        for _dependency, _field, old, _new in changes
+        # Shorter values match too much to be evidence of a mirror.
+        if isinstance(old, str) and len(old) >= 5
+    }
     tests = root / "scripts" / "tests"
     return sorted(
         f"{path.relative_to(root)}:{number}"
         for path in tests.glob("*.py")
         for number, line in enumerate(path.read_text(encoding="utf-8").splitlines(), 1)
-        if re.search(r"[0-9a-f]{40}", line)
+        if re.search(r"[0-9a-f]{40}", line) or any(value in line for value in moved)
     )
 
 
@@ -274,9 +421,18 @@ def main() -> int:
 
     problems: list[str] = []
     changes = refresh(root, checker, inventory, args.online, problems)
+    # The published checksums live upstream, so the derived artifacts can only
+    # be finished online, and never on a run that promised to write nothing.
+    derived = (
+        derived_writes(root, checker.OnlineClient(), changes, problems)
+        if changes and args.online and not args.check
+        else []
+    )
 
     for dependency, field, old, new in changes:
         print(f"{dependency['name']}: {field} {old} -> {new}")
+    for line in derived:
+        print(line)
     # Warnings never set the exit code: check-supply-chain.py is the gate, and a
     # second one here would fail every run over drift this script cannot fix.
     for problem in problems:
@@ -293,8 +449,11 @@ def main() -> int:
     path.write_text(json.dumps(inventory, indent=2, ensure_ascii=False) + "\n", encoding="utf-8")
     print(f"Updated {len(changes)} field(s) in {path.relative_to(root)}.")
     if not args.online:
-        print("Release dates were left untouched: rerun with --online to refresh them.")
-    mirrored = mirrored_pins(root)
+        print(
+            "Release dates and the derived lock and verification entries were left "
+            "untouched: rerun with --online to refresh them."
+        )
+    mirrored = mirrored_pins(root, changes)
     if mirrored:
         print("Pins mirrored in tests, to review by hand:")
         for location in mirrored:
