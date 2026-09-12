@@ -1,5 +1,6 @@
 package io.github.robintra.perfsentinel.java
 
+import com.intellij.openapi.application.runReadAction
 import com.intellij.openapi.util.Disposer
 import com.intellij.psi.PsiClass
 import com.intellij.psi.PsiMethod
@@ -18,6 +19,11 @@ import java.util.jar.JarOutputStream
 import kotlinx.coroutines.runBlocking
 
 class JavaAnchorResolverTest : LightJavaCodeInsightFixtureTestCase() {
+    // UsefulTestCase runs test bodies on the EDT; runBlocking would park it while it holds
+    // the write-intent lock, so the readAction inside resolve() is never granted -> deadlock. Off
+    // the EDT there is no implicit read access either, hence runReadAction around every PSI read.
+    override fun runInDispatchThread() = false
+
     fun testResolvesNamespaceAndFunctionToJavaMethod() {
         myFixture.configureByText(
             "OrderService.java",
@@ -32,7 +38,7 @@ class JavaAnchorResolverTest : LightJavaCodeInsightFixtureTestCase() {
         val result = resolve("com.example.OrderService", "loadItems")
 
         assertInstanceOf(result, PsiMethod::class.java)
-        assertEquals("loadItems", (result as PsiMethod).name)
+        assertEquals("loadItems", runReadAction { (result as PsiMethod).name })
     }
 
     fun testRejectsAmbiguousOverloads() {
@@ -67,7 +73,7 @@ class JavaAnchorResolverTest : LightJavaCodeInsightFixtureTestCase() {
 
         val result = resolve("com.example.Overrider", "loadItems")
 
-        assertEquals("Overrider", (result as PsiMethod).containingClass?.name)
+        assertEquals("Overrider", runReadAction { (result as PsiMethod).containingClass?.name })
     }
 
     fun testResolvesAnInheritedMethodThroughTheBaseClass() {
@@ -84,7 +90,7 @@ class JavaAnchorResolverTest : LightJavaCodeInsightFixtureTestCase() {
 
         val result = resolve("com.example.Inheritor", "loadItems")
 
-        assertEquals("InheritedBase", (result as PsiMethod).containingClass?.name)
+        assertEquals("InheritedBase", runReadAction { (result as PsiMethod).containingClass?.name })
     }
 
     fun testReturnsNullWhenTheJavaSymbolDoesNotExist() {
@@ -105,7 +111,7 @@ class JavaAnchorResolverTest : LightJavaCodeInsightFixtureTestCase() {
         val result = resolveSql("SELECT * FROM orders")
 
         assertInstanceOf(result, PsiClass::class.java)
-        assertEquals("com.example.OrderEntity", (result as PsiClass).qualifiedName)
+        assertEquals("com.example.OrderEntity", runReadAction { (result as PsiClass).qualifiedName })
     }
 
     fun testRejectsJpaFallbackForANonJavaFilepathEvenWhenTheNamespaceResolves() {
@@ -211,8 +217,14 @@ class JavaAnchorResolverTest : LightJavaCodeInsightFixtureTestCase() {
             """.trimIndent(),
         )
 
-        assertEquals("OrderEntity", (resolveSql("SELECT * FROM orders") as PsiClass).name)
-        assertEquals("OrderEntity", (resolveSql("SELECT * FROM sales.orders") as PsiClass).name)
+        // resolveSql wraps runBlocking, so it stays outside runReadAction: blocking on a coroutine
+        // that itself awaits a readAction while already holding the read lock is the same deadlock.
+        val bare = resolveSql("SELECT * FROM orders")
+        assertEquals("OrderEntity", runReadAction { (bare as PsiClass).name })
+
+        val schemaQualified = resolveSql("SELECT * FROM sales.orders")
+        assertEquals("OrderEntity", runReadAction { (schemaQualified as PsiClass).name })
+
         assertNull(resolveSql("SELECT * FROM audit.orders"))
     }
 
@@ -302,7 +314,7 @@ class JavaAnchorResolverTest : LightJavaCodeInsightFixtureTestCase() {
         val result = resolveSql("SELECT * FROM orders")
 
         assertInstanceOf(result, PsiClass::class.java)
-        assertEquals("com.example.OrderRepository", (result as PsiClass).qualifiedName)
+        assertEquals("com.example.OrderRepository", runReadAction { (result as PsiClass).qualifiedName })
     }
 
     fun testRejectsAmbiguousExternalEntitiesEvenWithOneRepository() {

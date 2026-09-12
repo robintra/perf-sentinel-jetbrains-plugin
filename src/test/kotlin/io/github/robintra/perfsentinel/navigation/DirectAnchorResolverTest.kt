@@ -11,6 +11,11 @@ import java.nio.file.Paths
 import kotlinx.coroutines.runBlocking
 
 class DirectAnchorResolverTest : BasePlatformTestCase() {
+    // BasePlatformTestCase runs test bodies on the EDT; runBlocking would park it while it holds
+    // the write-intent lock, so the readAction inside resolve() is never granted -> deadlock. Off
+    // the EDT there is no implicit read access either, hence runReadAction around every PSI read.
+    override fun runInDispatchThread() = false
+
     fun testNavigatesToAnExistingInProjectCSharpLine() {
         val file = Paths.get(project.basePath!!).resolve("Program.cs")
         Files.createDirectories(file.parent)

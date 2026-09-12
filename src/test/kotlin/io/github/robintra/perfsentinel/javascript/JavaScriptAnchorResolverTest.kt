@@ -1,5 +1,6 @@
 package io.github.robintra.perfsentinel.javascript
 
+import com.intellij.openapi.application.runReadAction
 import com.intellij.psi.PsiElement
 import com.intellij.testFramework.fixtures.BasePlatformTestCase
 import io.github.robintra.perfsentinel.core.CodeLocation
@@ -8,6 +9,11 @@ import io.github.robintra.perfsentinel.core.FindingPattern
 import kotlinx.coroutines.runBlocking
 
 class JavaScriptAnchorResolverTest : BasePlatformTestCase() {
+    // BasePlatformTestCase runs test bodies on the EDT; runBlocking would park it while it holds
+    // the write-intent lock, so the readAction inside resolve() is never granted -> deadlock. Off
+    // the EDT there is no implicit read access either, hence runReadAction around every PSI read.
+    override fun runInDispatchThread() = false
+
     fun testResolvesModuleExportsFunction() = assertResolves(
         "orders.js",
         "module.exports.loadItems = function loadItems() { return []; };",
@@ -80,7 +86,7 @@ class JavaScriptAnchorResolverTest : BasePlatformTestCase() {
 
         val result = resolve(namespace, "loadItems()")
 
-        assertTrue((result as PsiElement).text.contains(expectedText))
+        assertTrue(runReadAction { (result as PsiElement).text }.contains(expectedText))
     }
 
     private fun resolve(namespace: String, function: String) = runBlocking {

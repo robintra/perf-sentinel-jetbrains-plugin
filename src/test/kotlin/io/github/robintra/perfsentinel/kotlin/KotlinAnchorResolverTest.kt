@@ -1,5 +1,6 @@
 package io.github.robintra.perfsentinel.kotlin
 
+import com.intellij.openapi.application.runReadAction
 import com.intellij.testFramework.fixtures.BasePlatformTestCase
 import io.github.robintra.perfsentinel.core.CodeLocation
 import io.github.robintra.perfsentinel.core.Finding
@@ -8,6 +9,11 @@ import kotlinx.coroutines.runBlocking
 import org.jetbrains.kotlin.psi.KtNamedFunction
 
 class KotlinAnchorResolverTest : BasePlatformTestCase() {
+    // BasePlatformTestCase runs test bodies on the EDT; runBlocking would park it while it holds
+    // the write-intent lock, so the readAction inside resolve() is never granted -> deadlock. Off
+    // the EDT there is no implicit read access either, hence runReadAction around every PSI read.
+    override fun runInDispatchThread() = false
+
     fun testResolvesClassMethod() {
         myFixture.configureByText(
             "OrderService.kt",
@@ -24,7 +30,7 @@ class KotlinAnchorResolverTest : BasePlatformTestCase() {
         }
 
         assertInstanceOf(result, KtNamedFunction::class.java)
-        assertEquals("loadItems", (result as KtNamedFunction).name)
+        assertEquals("loadItems", runReadAction { (result as KtNamedFunction).name })
     }
 
     fun testResolvesTopLevelFunction() {
@@ -34,7 +40,7 @@ class KotlinAnchorResolverTest : BasePlatformTestCase() {
             KotlinAnchorResolver().resolve(project, finding("com.example", "loadItems()"))
         }
 
-        assertEquals("loadItems", (result as KtNamedFunction).name)
+        assertEquals("loadItems", runReadAction { (result as KtNamedFunction).name })
     }
 
     fun testRejectsAmbiguousOverloads() {
