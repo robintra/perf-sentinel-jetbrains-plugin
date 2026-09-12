@@ -474,6 +474,7 @@ class CoverageCheckerTests(unittest.TestCase):
             json.loads(self.baseline.read_text(encoding="utf-8")),
         )
 
+    @unittest.skipIf(sys.platform == "win32", "asserts the non-Windows branch of establish()")
     def test_establishing_rider_requires_windows(self):
         self.write(self.current, cobertura(lines=((1, 1), (2, 1), (3, 0))))
         self.write(self.baseline, numeric_baseline(jvm=50, rider="pending_windows"))

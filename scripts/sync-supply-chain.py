@@ -395,7 +395,7 @@ def mirrored_pins(root: Path, changes) -> list[str]:
     }
     tests = root / "scripts" / "tests"
     return sorted(
-        f"{path.relative_to(root)}:{number}"
+        f"{path.relative_to(root).as_posix()}:{number}"
         for path in tests.glob("*.py")
         for number, line in enumerate(path.read_text(encoding="utf-8").splitlines(), 1)
         if re.search(r"[0-9a-f]{40}", line) or any(value in line for value in moved)
@@ -449,7 +449,7 @@ def main() -> int:
 
     inventory["auditedAt"] = datetime.now(UTC).strftime(INSTANT)
     path.write_text(json.dumps(inventory, indent=2, ensure_ascii=False) + "\n", encoding="utf-8")
-    print(f"Updated {len(changes)} field(s) in {path.relative_to(root)}.")
+    print(f"Updated {len(changes)} field(s) in {path.relative_to(root).as_posix()}.")
     if not args.online:
         print(
             "Release dates and the derived lock and verification entries were left "

@@ -177,6 +177,7 @@ class PluginZipInspectorTest(unittest.TestCase):
                 self.write_archive([*self.entries(), (name, b"bad")])
                 self.assert_rejected("unsafe path")
 
+    @unittest.skipIf(sys.platform == "win32", "ZipInfo rewrites os.sep so no backslash arrives")
     def test_rejects_backslashes(self):
         self.write_archive([*self.entries(), (f"{PLUGIN_ROOT}\\secret.txt", b"bad")])
         self.assert_rejected("backslash")

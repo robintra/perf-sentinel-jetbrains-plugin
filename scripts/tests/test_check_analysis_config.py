@@ -339,6 +339,14 @@ class AnalysisConfigCheckerTests(unittest.TestCase):
         self.write("qodana.yml", jvm_qodana().replace("  - name: All", "  - name: A\x01ll"))
         self.assert_rejected("control character")
 
+    def test_accepts_crlf_but_still_rejects_a_lone_carriage_return(self):
+        # write_bytes, not self.write: the helper would re-translate the endings on Windows.
+        qodana = self.root / "qodana.yml"
+        qodana.write_bytes(jvm_qodana().replace("\n", "\r\n").encode("utf-8"))
+        self.assertEqual(0, self.run_checker().returncode)
+        qodana.write_bytes(jvm_qodana().replace("\n", "\r", 1).encode("utf-8"))
+        self.assert_rejected("control character")
+
 
 if __name__ == "__main__":
     unittest.main()

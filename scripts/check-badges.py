@@ -139,7 +139,9 @@ def validate(root):
     except (OSError, UnicodeError, ValueError, json.JSONDecodeError) as error:
         return [f"release metadata is invalid: {error}"]
 
-    readme = (root / "README.md").read_bytes()
+    # A Windows checkout carries CRLF. Both comparisons below are byte-exact against
+    # LF-canonical text, so fold the line endings rather than the gate reading differently.
+    readme = (root / "README.md").read_bytes().replace(b"\r\n", b"\n")
     prefix = canonical_prefix(listing_id)
     if not readme.startswith(prefix.encode("utf-8")):
         errors.append("README must start with the canonical top badge block")
@@ -158,7 +160,8 @@ def validate(root):
         if not (root / evidence).is_file():
             errors.append(f"missing local evidence: {evidence}")
     errors.extend(declared_version_errors(root))
-    if hashlib.sha256((root / "LICENSE").read_bytes()).hexdigest() != LICENSE_SHA256:
+    license_bytes = (root / "LICENSE").read_bytes().replace(b"\r\n", b"\n")
+    if hashlib.sha256(license_bytes).hexdigest() != LICENSE_SHA256:
         errors.append("LICENSE differs from canonical AGPL-3.0-only")
     return errors
 

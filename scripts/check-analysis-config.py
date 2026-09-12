@@ -59,6 +59,9 @@ def read_utf8(path: Path, maximum: int, label: str) -> str:
         text = payload.decode("utf-8", errors="strict")
     except UnicodeDecodeError as error:
         raise AnalysisError(f"{label} must use strict UTF-8 without BOM") from error
+    # A Windows checkout carries CRLF, which is a line ending and not an injected control
+    # character. Fold it so the gate reads the same on every platform; a lone CR still fails.
+    text = text.replace("\r\n", "\n")
     if any(ord(character) < 32 and character != "\n" for character in text):
         raise AnalysisError(f"{label} contains a forbidden control character")
     if any(len(line) > MAX_LINE_LENGTH for line in text.splitlines()):

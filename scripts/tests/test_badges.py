@@ -79,7 +79,7 @@ def complete_readme(listing_id=None):
 
 
 def write_root(root, readme, *, listing_id=None, missing_evidence=None, license_bytes=CANONICAL_LICENSE):
-    (root / "README.md").write_text(readme, encoding="utf-8")
+    (root / "README.md").write_text(readme, encoding="utf-8", newline="\n")
     (root / "LICENSE").write_bytes(license_bytes)
     (root / "qodana.yml").write_text("version: 1.0\n", encoding="utf-8")
     if missing_evidence != "build.gradle.kts":

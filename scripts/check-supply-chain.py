@@ -701,11 +701,11 @@ def check_build_files(root, errors):
             continue
         text = path.read_text(encoding="utf-8", errors="replace")
         if DYNAMIC.search(text):
-            errors.append(f"dynamic version in {path.relative_to(root)}")
+            errors.append(f"dynamic version in {path.relative_to(root).as_posix()}")
         if PRERELEASE.search(text):
-            errors.append(f"prerelease version in {path.relative_to(root)}")
+            errors.append(f"prerelease version in {path.relative_to(root).as_posix()}")
         if MUTABLE_IDE.search(text):
-            errors.append(f"mutable IDE version in {path.relative_to(root)}")
+            errors.append(f"mutable IDE version in {path.relative_to(root).as_posix()}")
 
 
 def parse_nuget_locks(root, errors):
