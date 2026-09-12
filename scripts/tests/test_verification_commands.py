@@ -38,15 +38,15 @@ class VerificationCommandTests(unittest.TestCase):
             ("python", "pycharm-professional", "2025.3.6.1", "pycharm-professional-2025.3.6.1.tar.gz"),
             ("python", "pycharm-professional", "2026.2.1", "pycharm-professional-2026.2.1.tar.gz"),
             ("webide", "PhpStorm", "2025.3.6.1", "PhpStorm-2025.3.6.1.tar.gz"),
-            ("webide", "PhpStorm", "2026.2.1", "PhpStorm-2026.2.1.tar.gz"),
+            ("webide", "PhpStorm", "2026.2.2", "PhpStorm-2026.2.2.tar.gz"),
             ("rustrover", "RustRover", "2025.3.7", "RustRover-2025.3.7.tar.gz"),
             ("rustrover", "RustRover", "2026.2.1", "RustRover-2026.2.1.tar.gz"),
             ("ruby", "RubyMine", "2025.3.6.1", "RubyMine-2025.3.6.1.tar.gz"),
-            ("ruby", "RubyMine", "2026.2.1", "RubyMine-2026.2.1.tar.gz"),
+            ("ruby", "RubyMine", "2026.2.2", "RubyMine-2026.2.2.tar.gz"),
             ("webstorm", "WebStorm", "2025.3.6.1", "WebStorm-2025.3.6.1.tar.gz"),
-            ("webstorm", "WebStorm", "2026.2.1", "WebStorm-2026.2.1.tar.gz"),
+            ("webstorm", "WebStorm", "2026.2.2", "WebStorm-2026.2.2.tar.gz"),
             ("go", "goland", "2025.3.5.1", "goland-2025.3.5.1.tar.gz"),
-            ("go", "goland", "2026.2.1.1", "goland-2026.2.1.1.tar.gz"),
+            ("go", "goland", "2026.2.2.1", "goland-2026.2.2.1.tar.gz"),
         }
         self.assertEqual(expected, actual)
 

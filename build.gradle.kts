@@ -342,15 +342,15 @@ intellijPlatform {
             if (verifyTarget("python-253")) create(IntelliJPlatformType.PyCharmProfessional, "2025.3.6.1")
             if (verifyTarget("python-262")) create(IntelliJPlatformType.PyCharm, "2026.2.1")
             if (verifyTarget("php-253")) create(IntelliJPlatformType.PhpStorm, "2025.3.6.1")
-            if (verifyTarget("php-262")) create(IntelliJPlatformType.PhpStorm, "2026.2.1")
+            if (verifyTarget("php-262")) create(IntelliJPlatformType.PhpStorm, "2026.2.2")
             if (verifyTarget("rust-253")) create(IntelliJPlatformType.RustRover, "2025.3.7")
             if (verifyTarget("rust-262")) create(IntelliJPlatformType.RustRover, "2026.2.1")
             if (verifyTarget("ruby-253")) create(IntelliJPlatformType.RubyMine, "2025.3.6.1")
-            if (verifyTarget("ruby-262")) create(IntelliJPlatformType.RubyMine, "2026.2.1")
+            if (verifyTarget("ruby-262")) create(IntelliJPlatformType.RubyMine, "2026.2.2")
             if (verifyTarget("web-253")) create(IntelliJPlatformType.WebStorm, "2025.3.6.1")
-            if (verifyTarget("web-262")) create(IntelliJPlatformType.WebStorm, "2026.2.1")
+            if (verifyTarget("web-262")) create(IntelliJPlatformType.WebStorm, "2026.2.2")
             if (verifyTarget("go-253")) create(IntelliJPlatformType.GoLand, "2025.3.5.1")
-            if (verifyTarget("go-262")) create(IntelliJPlatformType.GoLand, "2026.2.1.1")
+            if (verifyTarget("go-262")) create(IntelliJPlatformType.GoLand, "2026.2.2.1")
         }
     }
 }

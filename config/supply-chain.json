@@ -1,6 +1,6 @@
 {
   "schemaVersion": 1,
-  "auditedAt": "2026-09-02T18:30:19Z",
+  "auditedAt": "2026-09-12T07:18:12Z",
   "approvedNuGetSources": [
     "https://api.nuget.org/v3/index.json"
   ],
@@ -154,8 +154,8 @@
     {
       "name": "PhpStorm 2026.2",
       "kind": "jetbrains-product",
-      "version": "2026.2.1",
-      "releasedAt": "2026-08-10",
+      "version": "2026.2.2",
+      "releasedAt": "2026-09-03",
       "source": "https://data.services.jetbrains.com/products/releases?code=PS&type=release",
       "declaration": "build.gradle.kts#PhpStorm 2026.2"
     },
@@ -186,8 +186,8 @@
     {
       "name": "RubyMine 2026.2",
       "kind": "jetbrains-product",
-      "version": "2026.2.1",
-      "releasedAt": "2026-08-11",
+      "version": "2026.2.2",
+      "releasedAt": "2026-09-03",
       "source": "https://data.services.jetbrains.com/products/releases?code=RM&type=release",
       "declaration": "build.gradle.kts#RubyMine 2026.2"
     },
@@ -202,8 +202,8 @@
     {
       "name": "WebStorm 2026.2",
       "kind": "jetbrains-product",
-      "version": "2026.2.1",
-      "releasedAt": "2026-08-04",
+      "version": "2026.2.2",
+      "releasedAt": "2026-09-03",
       "source": "https://data.services.jetbrains.com/products/releases?code=WS&type=release",
       "declaration": "build.gradle.kts#WebStorm 2026.2"
     },
@@ -218,8 +218,8 @@
     {
       "name": "GoLand 2026.2",
       "kind": "jetbrains-product",
-      "version": "2026.2.1.1",
-      "releasedAt": "2026-08-19",
+      "version": "2026.2.2.1",
+      "releasedAt": "2026-09-04",
       "source": "https://data.services.jetbrains.com/products/releases?code=GO&type=release",
       "declaration": "build.gradle.kts#GoLand 2026.2"
     },
