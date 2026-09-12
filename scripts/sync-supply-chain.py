@@ -305,7 +305,9 @@ def derived_writes(root, client, changes, problems) -> list[str]:
         # coordinates and a bundled module, which only a Gradle relock can move.
         if re.search(rf"^{re.escape(maven)}:[^:]+:{re.escape(old)}=", text, re.M):
             problems.append(
-                f"{dependency['name']}: a test IDE resolves {old} from Maven, its lock needs a full regeneration"
+                f"{dependency['name']}: a test IDE resolves {old} from Maven, so its lock needs a "
+                f"full regeneration and gradle/verification-metadata.xml needs the com.jetbrains:jbr "
+                f"component for the runtime it moved to, which dependency locking never records"
             )
             continue
         # Anchored: an installer coordinate is a suffix of its Maven namesake.

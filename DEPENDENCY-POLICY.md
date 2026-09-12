@@ -63,3 +63,9 @@ workflows and the `gradle-<version>-src.zip` checksum in `gradle/verification-me
 Qodana downloads, both move with it. `sync-supply-chain` owns the inventory only, so those two stay
 manual, and so do the pins mirrored in `scripts/tests`, which exist precisely so a pin cannot move
 without a second, conscious edit. The command lists them on every run that changes something.
+
+A test IDE bump reaches just as far: the platform arrives without a runtime, so `com.jetbrains:jbr`
+moves with it, and `build.gradle.kts` keeps that coordinate out of dependency locking. Pin the new
+archives' SHA-256 as `origin="JetBrains Runtime repository"`, confirming each download against the
+SHA-512 that `cache-redirector.jetbrains.com/intellij-jbr` publishes beside it; `TEST_IDE_RUNTIMES`
+in `scripts/tests/test_verification_commands.py` stays red until they land.

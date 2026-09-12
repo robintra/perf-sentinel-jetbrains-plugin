@@ -1,4 +1,5 @@
 import os
+import re
 import subprocess
 import tempfile
 import unittest
@@ -7,6 +8,17 @@ from pathlib import Path
 
 
 REPOSITORY = Path(__file__).resolve().parents[2]
+
+# useInstaller = false leaves a test IDE without a runtime, so the platform plugin resolves
+# com.jetbrains:jbr for whichever machine runs it. build.gradle.kts keeps that coordinate out
+# of dependency locking, which leaves this table as the only thing tying an IDE version to the
+# runtime its checksums must cover, and a bump red here until both have moved.
+TEST_IDE_RUNTIMES = {
+    "2025.3.5.1": "jbr_jcef-21.0.11-{platform}-b1163.116",
+    "2025.3.6.1": "jbr_jcef-21.0.11-{platform}-b1163.116",
+    "2025.3.7": "jbr_jcef-21.0.11-{platform}-b1163.116",
+    "2026.2.2": "jbr_jcef-25.0.4-{platform}-b508.27",
+}
 
 
 class VerificationCommandTests(unittest.TestCase):
@@ -49,6 +61,32 @@ class VerificationCommandTests(unittest.TestCase):
             ("go", "goland", "2026.2.2.1", "goland-2026.2.2.1.tar.gz"),
         }
         self.assertEqual(expected, actual)
+
+    def test_verification_metadata_pins_a_runtime_for_every_test_ide(self):
+        build = (REPOSITORY / "build.gradle.kts").read_text(encoding="utf-8")
+        registered = {
+            re.search(r'version = "([^"]+)"', block).group(1)
+            for block in build.split("intellijPlatformTesting.testIde.register(")[1:]
+        }
+        self.assertEqual(
+            set(TEST_IDE_RUNTIMES),
+            registered,
+            "a test IDE moved: read the new runtimeBuild out of the platform and pin its "
+            "com.jetbrains:jbr checksums, which dependency locking never records",
+        )
+        namespace = {"v": "https://schema.gradle.org/dependency-verification"}
+        root = ElementTree.parse(REPOSITORY / "gradle" / "verification-metadata.xml").getroot()
+        pinned = {
+            component.get("version")
+            for component in root.findall(".//v:component", namespace)
+            if (component.get("group"), component.get("name")) == ("com.jetbrains", "jbr")
+        }
+        required = {
+            runtime.format(platform=platform)
+            for runtime in TEST_IDE_RUNTIMES.values()
+            for platform in ("linux-x64", "osx-aarch64", "windows-x64")
+        }
+        self.assertEqual(set(), required - pinned)
 
     def test_hosted_workflows_use_the_action_managed_gradle_distribution(self):
         for workflow in sorted((REPOSITORY / ".github" / "workflows").glob("*.yml")):
