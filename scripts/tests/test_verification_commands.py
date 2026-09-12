@@ -40,7 +40,7 @@ class VerificationCommandTests(unittest.TestCase):
             ("webide", "PhpStorm", "2025.3.6.1", "PhpStorm-2025.3.6.1.tar.gz"),
             ("webide", "PhpStorm", "2026.2.2", "PhpStorm-2026.2.2.tar.gz"),
             ("rustrover", "RustRover", "2025.3.7", "RustRover-2025.3.7.tar.gz"),
-            ("rustrover", "RustRover", "2026.2.1", "RustRover-2026.2.1.tar.gz"),
+            ("rustrover", "RustRover", "2026.2.2", "RustRover-2026.2.2.tar.gz"),
             ("ruby", "RubyMine", "2025.3.6.1", "RubyMine-2025.3.6.1.tar.gz"),
             ("ruby", "RubyMine", "2026.2.2", "RubyMine-2026.2.2.tar.gz"),
             ("webstorm", "WebStorm", "2025.3.6.1", "WebStorm-2025.3.6.1.tar.gz"),

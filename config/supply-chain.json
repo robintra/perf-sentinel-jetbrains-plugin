@@ -1,6 +1,6 @@
 {
   "schemaVersion": 1,
-  "auditedAt": "2026-09-12T08:22:30Z",
+  "auditedAt": "2026-09-12T09:17:38Z",
   "approvedNuGetSources": [
     "https://api.nuget.org/v3/index.json"
   ],
@@ -170,8 +170,8 @@
     {
       "name": "RustRover 2026.2",
       "kind": "jetbrains-product",
-      "version": "2026.2.1",
-      "releasedAt": "2026-08-06",
+      "version": "2026.2.2",
+      "releasedAt": "2026-09-07",
       "source": "https://data.services.jetbrains.com/products/releases?code=RR&type=release",
       "declaration": "build.gradle.kts#RustRover 2026.2"
     },
