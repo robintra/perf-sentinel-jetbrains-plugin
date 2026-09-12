@@ -1,5 +1,6 @@
 package io.github.robintra.perfsentinel.rust
 
+import com.intellij.openapi.application.runReadAction
 import com.intellij.psi.PsiElement
 import com.intellij.testFramework.fixtures.BasePlatformTestCase
 import io.github.robintra.perfsentinel.core.CodeLocation
@@ -8,6 +9,11 @@ import io.github.robintra.perfsentinel.core.FindingPattern
 import kotlinx.coroutines.runBlocking
 
 class RustAnchorResolverTest : BasePlatformTestCase() {
+    // BasePlatformTestCase runs test bodies on the EDT; runBlocking would park it while it holds
+    // the write-intent lock, so the readAction inside resolve() is never granted -> deadlock. Off
+    // the EDT there is no implicit read access either, hence runReadAction around every PSI read.
+    override fun runInDispatchThread() = false
+
     fun testResolvesFreeFunction() {
         myFixture.configureByText(
             "lib.rs",
@@ -18,7 +24,7 @@ class RustAnchorResolverTest : BasePlatformTestCase() {
             RustAnchorResolver().resolve(project, finding("orders", "load_items"))
         }
 
-        assertTrue((result as PsiElement).text.startsWith("pub fn load_items"))
+        assertTrue(runReadAction { (result as PsiElement).text }.startsWith("pub fn load_items"))
     }
 
     fun testResolvesAssociatedFunction() {
@@ -38,7 +44,7 @@ class RustAnchorResolverTest : BasePlatformTestCase() {
             RustAnchorResolver().resolve(project, finding("orders::OrderService", "load_items()"))
         }
 
-        assertTrue((result as PsiElement).text.startsWith("pub fn load_items"))
+        assertTrue(runReadAction { (result as PsiElement).text }.startsWith("pub fn load_items"))
     }
 
     fun testRejectsDuplicateDeclarations() {
