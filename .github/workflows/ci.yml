@@ -17,6 +17,7 @@ jobs:
   changes:
     name: Changes
     runs-on: ubuntu-24.04
+    timeout-minutes: 10
     outputs:
       scope: ${{ steps.scope.outputs.scope }}
       target-sha: ${{ github.sha }}
@@ -58,6 +59,7 @@ jobs:
     needs: changes
     if: needs.changes.outputs.scope != 'docs'
     runs-on: ubuntu-24.04
+    timeout-minutes: 60
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
         with:
@@ -103,6 +105,7 @@ jobs:
     needs: changes
     if: needs.changes.outputs.scope != 'docs'
     runs-on: ubuntu-24.04
+    timeout-minutes: 60
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
         with:
@@ -125,6 +128,7 @@ jobs:
     needs: changes
     if: needs.changes.outputs.scope != 'docs'
     runs-on: ubuntu-24.04
+    timeout-minutes: 60
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
         with:
@@ -147,6 +151,7 @@ jobs:
     needs: changes
     if: needs.changes.outputs.scope != 'docs'
     runs-on: ubuntu-24.04
+    timeout-minutes: 60
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
         with:
@@ -169,6 +174,7 @@ jobs:
     needs: changes
     if: needs.changes.outputs.scope != 'docs'
     runs-on: ubuntu-24.04
+    timeout-minutes: 60
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
         with:
@@ -191,6 +197,7 @@ jobs:
     needs: changes
     if: needs.changes.outputs.scope != 'docs'
     runs-on: ubuntu-24.04
+    timeout-minutes: 60
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
         with:
@@ -213,6 +220,7 @@ jobs:
     needs: changes
     if: needs.changes.outputs.scope != 'docs'
     runs-on: ubuntu-24.04
+    timeout-minutes: 60
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
         with:
@@ -235,6 +243,7 @@ jobs:
     needs: changes
     if: needs.changes.outputs.scope != 'docs'
     runs-on: ubuntu-24.04
+    timeout-minutes: 60
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
         with:
@@ -254,6 +263,7 @@ jobs:
     needs: changes
     if: needs.changes.outputs.scope != 'docs'
     runs-on: ubuntu-24.04
+    timeout-minutes: 60
     strategy:
       fail-fast: false
       matrix:
@@ -296,6 +306,7 @@ jobs:
     needs: changes
     if: needs.changes.outputs.scope != 'docs'
     runs-on: ubuntu-24.04
+    timeout-minutes: 60
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
         with:
@@ -324,6 +335,7 @@ jobs:
     needs: changes
     if: needs.changes.outputs.scope != 'docs'
     runs-on: ubuntu-24.04
+    timeout-minutes: 10
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
         with:
@@ -339,6 +351,7 @@ jobs:
     needs: changes
     if: needs.changes.outputs.scope != 'docs'
     runs-on: ubuntu-24.04
+    timeout-minutes: 10
     permissions:
       contents: read
       pull-requests: read
@@ -384,6 +397,7 @@ jobs:
     needs: [changes, jvm]
     if: needs.changes.outputs.scope == 'code' && (github.event_name != 'pull_request' || github.event.pull_request.head.repo.full_name == github.repository)
     runs-on: ubuntu-24.04
+    timeout-minutes: 60
     permissions:
       contents: read
       security-events: write
@@ -444,6 +458,7 @@ jobs:
     needs: changes
     if: needs.changes.outputs.scope != 'docs'
     runs-on: windows-2025
+    timeout-minutes: 60
     strategy:
       fail-fast: false
       matrix:
@@ -537,6 +552,7 @@ jobs:
     needs: [changes, windows-rider-build]
     if: always() && needs.changes.outputs.scope != 'docs'
     runs-on: ubuntu-24.04
+    timeout-minutes: 10
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
         with:
@@ -565,6 +581,7 @@ jobs:
     if: always()
     needs: [changes, jvm, python, php, rust, ruby, javascript, go, rider-frontend, plugin-verifier, zip, dependency-review, workflow-security, qodana-jvm, windows-rider]
     runs-on: ubuntu-24.04
+    timeout-minutes: 10
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
         with:
