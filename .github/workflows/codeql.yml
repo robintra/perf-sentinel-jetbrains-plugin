@@ -14,6 +14,7 @@ jobs:
   java-kotlin:
     name: CodeQL Java/Kotlin
     runs-on: ubuntu-24.04
+    timeout-minutes: 60
     permissions:
       contents: read
       security-events: write
@@ -42,6 +43,7 @@ jobs:
   csharp:
     name: CodeQL C#
     runs-on: windows-2025
+    timeout-minutes: 60
     permissions:
       contents: read
       security-events: write

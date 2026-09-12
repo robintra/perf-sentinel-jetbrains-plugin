@@ -18,6 +18,7 @@ jobs:
   validate-tag:
     name: Validate signed release tag
     runs-on: ubuntu-24.04
+    timeout-minutes: 10
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
         with:
@@ -38,6 +39,7 @@ jobs:
     name: Windows release build (${{ matrix.build }})
     needs: validate-tag
     runs-on: windows-2025
+    timeout-minutes: 60
     strategy:
       fail-fast: false
       matrix:
@@ -89,6 +91,7 @@ jobs:
     name: Compare release builds
     needs: windows-build
     runs-on: ubuntu-24.04
+    timeout-minutes: 10
     outputs:
       artifact-id: ${{ steps.upload.outputs.artifact-id }}
       artifact-digest: ${{ steps.upload.outputs.artifact-digest }}
@@ -123,6 +126,7 @@ jobs:
     name: Sign and publish
     needs: compare
     runs-on: ubuntu-24.04
+    timeout-minutes: 60
     environment: jetbrains-release
     permissions:
       contents: write

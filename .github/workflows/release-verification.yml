@@ -21,6 +21,7 @@ jobs:
   gate:
     name: Check whether a stable release exists
     runs-on: ubuntu-24.04
+    timeout-minutes: 10
     outputs:
       tag: ${{ steps.find.outputs.tag }}
     steps:
@@ -46,6 +47,7 @@ jobs:
   verify:
     name: Verify latest stable release
     runs-on: ubuntu-24.04
+    timeout-minutes: 60
     needs: gate
     if: needs.gate.outputs.tag != ''
     steps:

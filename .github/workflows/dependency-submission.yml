@@ -12,6 +12,7 @@ jobs:
   gradle:
     name: Gradle dependency graph
     runs-on: ubuntu-24.04
+    timeout-minutes: 60
     permissions:
       contents: write  # Submits the resolved dependency graph to the repository.
     steps:
