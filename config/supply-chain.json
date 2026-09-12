@@ -1,6 +1,6 @@
 {
   "schemaVersion": 1,
-  "auditedAt": "2026-09-12T07:18:12Z",
+  "auditedAt": "2026-09-12T08:22:30Z",
   "approvedNuGetSources": [
     "https://api.nuget.org/v3/index.json"
   ],
@@ -138,8 +138,8 @@
     {
       "name": "PyCharm 2026.2",
       "kind": "jetbrains-product",
-      "version": "2026.2.1",
-      "releasedAt": "2026-08-12",
+      "version": "2026.2.2",
+      "releasedAt": "2026-09-07",
       "source": "https://data.services.jetbrains.com/products/releases?code=PCP&type=release",
       "declaration": "build.gradle.kts#PyCharm 2026.2"
     },
