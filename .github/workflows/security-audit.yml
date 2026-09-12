@@ -101,6 +101,14 @@ jobs:
           scan-args: |-
             --config=osv-scanner.toml
             build/security/source.spdx.json
+      # rider-frontend's test runtime resolves the root project as its composed jar, a file the
+      # Qodana import never builds. It is built after the SBOM so syft does not catalog it, and
+      # like the RD model it still reaches qodana-jvm when an audit step above has failed.
+      - if: ${{ !cancelled() }}
+        run: gradle --no-daemon --dependency-verification strict :composedJar
+      - if: ${{ !cancelled() }}
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a
+        with: {name: root-plugin-jar, if-no-files-found: error, path: build/libs}
 
   scorecard:
     name: OpenSSF Scorecard
@@ -148,6 +156,10 @@ jobs:
         with: {name: rider-protocol-model, path: rider-frontend/build/generated/rd/kotlin}
       - name: Require the generated RD model
         run: test -f rider-frontend/build/generated/rd/kotlin/PerfSentinelModel.Generated.kt
+      - uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c
+        with: {name: root-plugin-jar, path: build/libs}
+      - name: Require the composed plugin jar
+        run: test -f "build/libs/perf-sentinel-jetbrains-plugin-$(sed -n 's/^version=//p' gradle.properties).jar"
       - uses: JetBrains/qodana-action@10be11607eb323a180e2b76b26c9c5cdceac3e77
         with:
           args: --config qodana.yml

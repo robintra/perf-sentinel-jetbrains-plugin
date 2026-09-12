@@ -104,6 +104,11 @@ jobs:
           name: rider-protocol-model
           if-no-files-found: error
           path: rider-frontend/build/generated/rd/kotlin
+      - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a
+        with:
+          name: root-plugin-jar
+          if-no-files-found: error
+          path: build/libs
 
   python:
     name: Python
@@ -422,6 +427,14 @@ jobs:
           path: rider-frontend/build/generated/rd/kotlin
       - name: Require the generated RD model
         run: test -f rider-frontend/build/generated/rd/kotlin/PerfSentinelModel.Generated.kt
+      # rider-frontend's test runtime resolves the root project as its composed jar, which the IDE
+      # import maps to that file rather than to the module, so Qodana needs the file to exist.
+      - uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c
+        with:
+          name: root-plugin-jar
+          path: build/libs
+      - name: Require the composed plugin jar
+        run: test -f "build/libs/perf-sentinel-jetbrains-plugin-$(sed -n 's/^version=//p' gradle.properties).jar"
       # Qodana downloads the Gradle distribution itself and gives up on a
       # 10 s read timeout with no attempt of its own, which reddens main on a
       # slow mirror. A rerun is deterministic on real findings, so retrying the
