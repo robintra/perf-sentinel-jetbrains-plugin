@@ -583,19 +583,6 @@ class SupplyChainCheckerTest(unittest.TestCase):
         self.write_inventory()
         self.assert_rejected("unexpected tool")
 
-    def test_accepts_task4_qodana_dotnet_inventory(self):
-        self.inventory["dependencies"].append(
-            {
-                "name": "Qodana .NET image", "kind": "container",
-                "version": "sha256:" + "c" * 64, "release": "2026.1",
-                "releasedAt": "2026-04-21T09:02:03Z",
-                "source": "https://hub.docker.com/r/jetbrains/qodana-dotnet",
-            }
-        )
-        self.write_inventory()
-        result = self.run_checker()
-        self.assertEqual(0, result.returncode, result.stderr)
-
     def test_accepts_qodana_cli_as_an_official_audited_tool(self):
         self.inventory["dependencies"].append(
             {

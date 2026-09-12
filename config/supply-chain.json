@@ -507,14 +507,6 @@
       "releasedAt": "2026-08-11T11:10:46.644395Z",
       "source": "https://hub.docker.com/r/jetbrains/qodana-jvm-community",
       "declaration": "qodana.yml#linter"
-    },
-    {
-      "name": "Qodana .NET image",
-      "kind": "container",
-      "version": "sha256:083e222c54d976b29a3118036559340a18e804f82d30947548468443ca60de59",
-      "release": "2026.2",
-      "releasedAt": "2026-08-11T11:12:26.699355Z",
-      "source": "https://hub.docker.com/r/jetbrains/qodana-dotnet"
     }
   ],
   "exceptions": [

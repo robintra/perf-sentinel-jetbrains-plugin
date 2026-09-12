@@ -1,5 +1,5 @@
 # Lint configuration for the repository's own Python tooling (scripts/, tools/).
-# The plugin ships no Python: Qodana JVM covers Kotlin and Qodana .NET covers C#,
+# The plugin ships no Python: Qodana JVM covers Kotlin and CodeQL covers C#,
 # neither of them looks at these files, so ruff is their only automated gate.
 
 target-version = "py311"

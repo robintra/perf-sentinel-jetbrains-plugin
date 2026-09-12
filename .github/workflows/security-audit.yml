@@ -149,44 +149,9 @@ jobs:
           sarif_file: build/security/qodana-jvm/qodana.sarif.json
           category: qodana-jvm
 
-  qodana-rider:
-    name: Qodana Rider
-    runs-on: windows-2025
-    timeout-minutes: 40
-    permissions:
-      contents: read
-      security-events: write
-    env:
-      QODANA_TOKEN: ${{ secrets.QODANA_TOKEN }}
-    steps:
-      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
-        with: {persist-credentials: false}
-      - uses: actions/setup-dotnet@a98b56852c35b8e3190ac28c8c2271da59106c68
-        with: {dotnet-version: 10.0.302}
-      - uses: actions/setup-java@dd06d9cba3e5552c54d9f8ea23572deb30010f7c
-        with: {distribution: temurin, java-version-file: .java-version}
-      - uses: gradle/actions/setup-gradle@9c971963bec38e04b3d30dcc455b5382be2fdbfb
-        with: {gradle-version: "9.7.1", cache-read-only: true}
-      - run: gradle --no-daemon --dependency-verification strict :protocol:rdgen
-      # Qodana opens the solution, so both projects must be restored, not just the test one.
-      - run: dotnet restore src/dotnet/PerfSentinel.sln --locked-mode --configfile src/dotnet/NuGet.Config
-      - uses: JetBrains/qodana-action@10be11607eb323a180e2b76b26c9c5cdceac3e77
-        with:
-          args: --config qodana-dotnet.yml
-          results-dir: build/security/qodana-rider
-          upload-result: false
-          use-caches: false
-          use-annotations: false
-          post-pr-comment: false
-          push-fixes: none
-      - uses: github/codeql-action/upload-sarif@cdf488f595d80d6e07e03d4674febd5ab45fa938
-        with:
-          sarif_file: build/security/qodana-rider/qodana.sarif.json
-          category: qodana-rider
-
   notify:
     name: Reconcile scheduled audit alert
-    needs: [osv, dependencies, scorecard, qodana-jvm, qodana-rider]
+    needs: [osv, dependencies, scorecard, qodana-jvm]
     if: ${{ always() && github.event_name == 'schedule' }}
     runs-on: ubuntu-24.04
     timeout-minutes: 5
@@ -201,7 +166,7 @@ jobs:
           github-token: ${{ github.token }}
           script: |
             const needs = JSON.parse(process.env.NEEDS_JSON);
-            const expected = ['dependencies', 'osv', 'qodana-jvm', 'qodana-rider', 'scorecard'];
+            const expected = ['dependencies', 'osv', 'qodana-jvm', 'scorecard'];
             if (Object.keys(needs).sort().join(',') !== expected.join(',')) throw new Error('audit results are incomplete');
             const failed = expected.filter(name => needs[name].result !== 'success');
             const title = '[Security Audit] scheduled failure';

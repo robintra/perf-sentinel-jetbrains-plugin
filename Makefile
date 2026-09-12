@@ -54,11 +54,6 @@ verify: check-locks verify-fast
 	@cd "$(ROOT)" && $(PYTHON) scripts/check-analysis-config.py
 	@$(MAKE) --no-print-directory check-disk
 	@cd "$(ROOT)" && $(GRADLE) $(GRADLE_FLAGS) verifyPluginProjectConfiguration verifyPlugin buildPlugin qodanaScan
-ifeq ($(OS),Windows_NT)
-	@cd "$(ROOT)" && $(QODANA) scan --config qodana-dotnet.yml --results-dir build/qodana-rider/results
-else
-	@echo "Native Rider Qodana requires trusted Windows execution." >&2; exit 1
-endif
 	@cd "$(ROOT)" && $(PYTHON) scripts/inspect-plugin-zip.py "$(PLUGIN_ZIP)"
 	@$(MAKE) --no-print-directory check-locks
 

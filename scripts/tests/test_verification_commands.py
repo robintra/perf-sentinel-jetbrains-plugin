@@ -186,7 +186,6 @@ class VerificationCommandTests(unittest.TestCase):
             "verifyPlugin",
             "verifyPluginProjectConfiguration",
             "qodanaScan",
-            "qodana scan --config qodana-dotnet.yml",
             "--results-dir",
             "check-supply-chain.py",
             "check-analysis-config.py",

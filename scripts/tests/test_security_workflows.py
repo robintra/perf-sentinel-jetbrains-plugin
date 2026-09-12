@@ -55,19 +55,14 @@ class DailySecurityWorkflowTests(unittest.TestCase):
         self.assertNotIn("python3 - <<'PY'", self.text)
         self.assertGreaterEqual(self.text.count("mkdir -p build/security"), 2)
 
-    def test_runs_both_qodana_surfaces_without_exposing_tokens_to_forks(self):
+    def test_runs_the_qodana_surface_without_exposing_tokens_to_forks(self):
+        # The .NET surface left with the Community licence: qodana-dotnet is an
+        # Ultimate linter, and CodeQL already analyses csharp.
         self.assertIn("name: Qodana JVM", self.text)
-        self.assertIn("name: Qodana Rider", self.text)
-        self.assertIn("runs-on: windows-2025", self.text)
         self.assertIn("qodana.yml", self.text)
-        self.assertIn("qodana-dotnet.yml", self.text)
         self.assertIn("category: qodana-jvm", self.text)
-        self.assertIn("category: qodana-rider", self.text)
-        self.assertEqual(2, self.text.count("QODANA_TOKEN: ${{ secrets.QODANA_TOKEN }}"))
-        rider = self.text.split("  qodana-rider:\n", 1)[1].split("\n  notify:\n", 1)[0]
-        self.assertIn(SETUP_JAVA, rider)
-        self.assertIn(SETUP_GRADLE, rider)
-        self.assertLess(rider.index(":protocol:rdgen"), rider.index("dotnet restore"))
+        self.assertNotIn("qodana-rider", self.text)
+        self.assertEqual(1, self.text.count("QODANA_TOKEN: ${{ secrets.QODANA_TOKEN }}"))
 
     def test_scheduled_failure_reconciles_one_sanitized_issue(self):
         self.assertIn("name: Reconcile scheduled audit alert", self.text)

@@ -49,7 +49,6 @@ google/osv-scanner-action gitleaks/gitleaks-action zizmorcore/zizmor-action grad
 REQUIRED_TOOLS = {
     "Kover", "OSV-Scanner", "Gitleaks", "TruffleHog", "Zizmor",
     "Syft", "actionlint", "Ruff", "Marketplace ZIP Signer", "Qodana CLI", "Qodana JVM Community image",
-    "Qodana .NET image",
 }
 REQUIRED_TRANSITIVE_EXCEPTIONS = {
     "com.jgoodies:forms:1.1-preview",
@@ -125,7 +124,6 @@ GITHUB_REPOS = {
 }
 CONTAINER_REPOSITORIES = {
     "Qodana JVM Community image": "jetbrains/qodana-jvm-community",
-    "Qodana .NET image": "jetbrains/qodana-dotnet",
 }
 PRODUCT_CODES = {
     "IntelliJ IDEA": "IIU",

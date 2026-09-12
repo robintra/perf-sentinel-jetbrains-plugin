@@ -19,7 +19,6 @@ MAX_INVENTORY_BYTES = 1024 * 1024
 MAX_WORKFLOW_BYTES = 1024 * 1024
 MAX_LINE_LENGTH = 4096
 JVM_DIGEST = "sha256:8ff36b5cebc0a6d720f77dcf3e0a94a03c39b4c42c3724a99ce5f7e462e42f99"
-DOTNET_DIGEST = "sha256:083e222c54d976b29a3118036559340a18e804f82d30947548468443ca60de59"
 IMAGE = re.compile(r"^(jetbrains/[a-z0-9-]+):(\d{4}\.\d+)@(sha256:[0-9a-f]{64})$")
 PROPERTY_KEY = re.compile(r"^[A-Za-z][A-Za-z0-9_.-]*$")
 YAML_KEY = re.compile(r"^([A-Za-z][A-Za-z0-9]*):(?: (.*))?$")
@@ -273,27 +272,6 @@ def validate_jvm_qodana(config: dict, text: str) -> None:
         raise AnalysisError("JVM Qodana narrow suppression rationale is missing")
 
 
-def validate_dotnet_qodana(config: dict) -> None:
-    fields(config, {"version", "linter", "withinDocker", "profile", "onlyDirectory", "dotnet", "failThreshold"}, "Qodana .NET config")
-    if config["linter"] != "qodana-dotnet" or type(config["withinDocker"]) is not bool or config["withinDocker"]:
-        raise AnalysisError("Qodana .NET net472 analysis must use native mode")
-    expected = {
-        "version": "1.0",
-        "profile": {"name": "qodana.recommended"},
-        "onlyDirectory": "src/dotnet",
-        # The solution, not one project: opened on a single csproj, Qodana cannot see the types
-        # the test project references, and reports them as unresolved compiler errors.
-        "dotnet": {
-            "solution": "src/dotnet/PerfSentinel.sln",
-            "configuration": "Release",
-        },
-    }
-    if any(config[name] != value for name, value in expected.items()):
-        raise AnalysisError("Qodana .NET must analyze only src/dotnet through the Release solution")
-    if type(config["failThreshold"]) is not int or config["failThreshold"] != 0:
-        raise AnalysisError("Qodana .NET failThreshold must be integer zero")
-
-
 def validate_secret_inventory(inventory) -> set[str]:
     if type(inventory) is dict:
         for secret in inventory.get("secrets", []):
@@ -309,7 +287,7 @@ def validate_secret_inventory(inventory) -> set[str]:
         "PRIVATE_KEY": ["jetbrains-release"],
         "PRIVATE_KEY_PASSWORD": ["jetbrains-release"],
         "PUBLISH_TOKEN": ["jetbrains-release"],
-        "QODANA_TOKEN": ["qodana-jvm", "qodana-rider"],
+        "QODANA_TOKEN": ["qodana-jvm"],
     }
     declared_names = [item.get("name") for item in inventory["secrets"] if type(item) is dict]
     if set(declared_names) != set(expected_scopes) or len(declared_names) != len(expected_scopes):
@@ -392,7 +370,7 @@ def validate_workflow_secrets(root: Path, inventory_names: set[str]) -> None:
         unknown = references - inventory_names
         if unknown:
             raise AnalysisError(f"workflow secret reference is absent from inventory: {', '.join(sorted(unknown))}")
-        references = list(re.finditer(r"(?<![\w.-])(qodana-dotnet\.yml|qodana\.yml)(?![\w.-])", text))
+        references = list(re.finditer(r"(?<![\w.-])(qodana\.yml)(?![\w.-])", text))
         # A retried Qodana step repeats its own `--config`, so collapse a run of
         # references to the same file. The invariant is one SARIF upload per
         # linter under its own category, not one mention of the config per linter.
@@ -400,7 +378,7 @@ def validate_workflow_secrets(root: Path, inventory_names: set[str]) -> None:
             reference for index, reference in enumerate(references)
             if index == 0 or reference.group(1) != references[index - 1].group(1)
         ]
-        categories = {"qodana.yml": "qodana-jvm", "qodana-dotnet.yml": "qodana-rider"}
+        categories = {"qodana.yml": "qodana-jvm"}
         for index, reference in enumerate(references):
             end = references[index + 1].start() if index + 1 < len(references) else len(text)
             segment = text[reference.end():end]
@@ -498,10 +476,6 @@ def validate_supply_bindings(inventory, jvm_linter: str) -> None:
             "kind": "container", "version": match_jvm.group(3), "release": match_jvm.group(2),
             "source": "https://hub.docker.com/r/jetbrains/qodana-jvm-community", "declaration": "qodana.yml#linter",
         },
-        "Qodana .NET image": {
-            "kind": "container", "version": DOTNET_DIGEST, "release": "2026.2",
-            "source": "https://hub.docker.com/r/jetbrains/qodana-dotnet",
-        },
     }
     for name, contract in expected.items():
         dependency = by_name.get(name)
@@ -511,9 +485,7 @@ def validate_supply_bindings(inventory, jvm_linter: str) -> None:
 
 def check(root: Path) -> None:
     jvm_qodana, jvm_text = parse_yaml(root / "qodana.yml", "JVM Qodana config")
-    dotnet_qodana, _ = parse_yaml(root / "qodana-dotnet.yml", "Qodana .NET config")
     validate_jvm_qodana(jvm_qodana, jvm_text)
-    validate_dotnet_qodana(dotnet_qodana)
     secret_inventory = read_json(root / "config/secret-inventory.json", MAX_CONFIG_BYTES, "secret inventory")
     inventory_names = validate_secret_inventory(secret_inventory)
     validate_workflow_secrets(root, inventory_names)
