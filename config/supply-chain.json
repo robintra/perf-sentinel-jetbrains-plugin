@@ -310,10 +310,10 @@
     {
       "name": "TruffleHog",
       "kind": "audited-tool",
-      "version": "3.97.2",
-      "releasedAt": "2026-09-02T16:55:13Z",
-      "source": "https://github.com/trufflesecurity/trufflehog/releases/tag/v3.97.2",
-      "release": "v3.97.2"
+      "version": "3.97.4",
+      "releasedAt": "2026-09-03T20:01:40Z",
+      "source": "https://github.com/trufflesecurity/trufflehog/releases/tag/v3.97.4",
+      "release": "v3.97.4"
     },
     {
       "name": "Zizmor",
@@ -334,10 +334,10 @@
     {
       "name": "Ruff",
       "kind": "audited-tool",
-      "version": "0.16.5",
-      "releasedAt": "2026-08-27T16:37:58Z",
-      "source": "https://github.com/astral-sh/ruff/releases/tag/0.16.5",
-      "release": "0.16.5"
+      "version": "0.16.6",
+      "releasedAt": "2026-09-03T17:20:13Z",
+      "source": "https://github.com/astral-sh/ruff/releases/tag/0.16.6",
+      "release": "0.16.6"
     },
     {
       "name": "actionlint",
