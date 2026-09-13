@@ -20,6 +20,9 @@ jobs:
         with: {persist-credentials: false}
       - uses: actions/setup-java@dd06d9cba3e5552c54d9f8ea23572deb30010f7c
         with: {distribution: temurin, java-version-file: .java-version}
+      # The action restores and then re-saves a Gradle cache of about 31 GB, which ran the runner
+      # out of disk mid-restore and killed the worker before any log was kept.
+      - run: scripts/free-hosted-runner-space.sh
       # Bumping this action can change the plugin it injects on the Gradle classpath, which then
       # needs its checksum in gradle/verification-metadata.xml or strict verification rejects it.
       - uses: gradle/actions/dependency-submission@9c971963bec38e04b3d30dcc455b5382be2fdbfb

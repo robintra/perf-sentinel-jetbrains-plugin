@@ -146,6 +146,14 @@ class VerificationCommandTests(unittest.TestCase):
             java_job.index("uses: gradle/actions/setup-gradle@"),
         )
 
+        submission = (REPOSITORY / ".github" / "workflows" / "dependency-submission.yml").read_text(
+            encoding="utf-8"
+        )
+        self.assertLess(
+            submission.index("scripts/free-hosted-runner-space.sh"),
+            submission.index("uses: gradle/actions/dependency-submission@"),
+        )
+
     @staticmethod
     def dry_run(target, **variables):
         arguments = ["make", "--no-print-directory", "-n", target]
