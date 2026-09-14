@@ -44,7 +44,7 @@ jobs:
         with:
           fetch-depth: 0
           persist-credentials: false
-      - uses: actions/setup-java@dd06d9cba3e5552c54d9f8ea23572deb30010f7c
+      - uses: actions/setup-java@de7274f081f381c8f8158605e0321c36c376e2e6
         with: {distribution: temurin, java-version-file: .java-version}
       - uses: actions/setup-dotnet@a98b56852c35b8e3190ac28c8c2271da59106c68
         with: {dotnet-version: 10.0.302}
@@ -71,7 +71,7 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ github.token }}
           GITLEAKS_VERSION: 8.30.1
-      - uses: zizmorcore/zizmor-action@70fb788f84895a7701f5643d103d587e460b5c99
+      - uses: zizmorcore/zizmor-action@cc914d7f3750a2d13d75c7f184a1060aa0e9d482
         with:
           version: 1.30.0
           collect: workflows
@@ -131,7 +131,7 @@ jobs:
           results_format: sarif
           repo_token: ${{ github.token }}
           publish_results: true
-      - uses: github/codeql-action/upload-sarif@cdf488f595d80d6e07e03d4674febd5ab45fa938
+      - uses: github/codeql-action/upload-sarif@b96794f015dfd88f77b49b1c93e0fa7110f94c63
         with:
           sarif_file: build/security/scorecard.sarif
           category: security-audit/scorecard
@@ -169,7 +169,7 @@ jobs:
           use-annotations: false
           post-pr-comment: false
           push-fixes: none
-      - uses: github/codeql-action/upload-sarif@cdf488f595d80d6e07e03d4674febd5ab45fa938
+      - uses: github/codeql-action/upload-sarif@b96794f015dfd88f77b49b1c93e0fa7110f94c63
         with:
           sarif_file: build/security/qodana-jvm/qodana.sarif.json
           category: qodana-jvm
