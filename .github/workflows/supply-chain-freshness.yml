@@ -2,8 +2,11 @@ name: Supply Chain Freshness
 
 # check-supply-chain.py --online asks every pin whether it is still the latest
 # upstream stable. That answer changes on other people's release schedules, not
-# on ours, so it runs on a schedule and never on push: a red run here means the
-# repository is behind, not that a commit is broken.
+# on ours, so it runs on a schedule and never on push.
+#
+# A pin behind upstream means the repository is behind, not that anything is
+# broken, so drift keeps the run green and lives in one tracking issue instead.
+# The run turns red only when the audit itself could not complete.
 
 on:
   schedule:
@@ -22,10 +25,65 @@ jobs:
     name: Compare every pin with its latest upstream stable
     runs-on: ubuntu-24.04
     timeout-minutes: 10
+    outputs:
+      drift: ${{ steps.audit.outputs.drift }}
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
         with: {persist-credentials: false}
-      - name: Audit pinned versions against upstream
+      - id: audit
+        name: Audit pinned versions against upstream
         env:
           GITHUB_TOKEN: ${{ github.token }}
-        run: python3 scripts/check-supply-chain.py --online
+        # The checker exits 2 when every error is drift. Anything else, a timeout
+        # included, is an audit that did not complete and stays red.
+        run: |
+          set -uo pipefail
+          exit_status=0
+          python3 scripts/check-supply-chain.py --online 2> errors.txt || exit_status=$?
+          cat errors.txt >&2
+          if [ "$exit_status" -ne 0 ] && [ "$exit_status" -ne 2 ]; then
+            exit "$exit_status"
+          fi
+          {
+            echo 'drift<<DRIFT_EOF'
+            if [ "$exit_status" -eq 2 ]; then
+              sed 's/^error: online validation failed for //' errors.txt
+            fi
+            echo 'DRIFT_EOF'
+          } >> "$GITHUB_OUTPUT"
+
+  notify:
+    name: Reconcile supply-chain drift
+    needs: freshness
+    runs-on: ubuntu-24.04
+    timeout-minutes: 5
+    permissions:
+      contents: read
+      issues: write  # opens, updates and closes the single drift tracking issue
+    steps:
+      - uses: actions/github-script@3a2844b7e9c422d3c10d287c895573f7108da1b3
+        env:
+          DRIFT: ${{ needs.freshness.outputs.drift }}
+        with:
+          github-token: ${{ github.token }}
+          script: |
+            const drift = (process.env.DRIFT || '').trim();
+            const title = '[Supply Chain] pins behind upstream';
+            const label = 'supply-chain';
+            const all = await github.paginate(github.rest.issues.listForRepo, {...context.repo, state: 'all', labels: label, per_page: 100});
+            const matches = all.filter(issue => !issue.pull_request && issue.title === title).sort((a, b) => a.number - b.number);
+            if (!drift) {
+              for (const issue of matches.filter(issue => issue.state === 'open')) await github.rest.issues.update({...context.repo, issue_number: issue.number, state: 'closed', state_reason: 'completed'});
+              return;
+            }
+            try {
+              await github.rest.issues.getLabel({...context.repo, name: label});
+            } catch (error) {
+              if (error.status !== 404) throw error;
+              await github.rest.issues.createLabel({...context.repo, name: label, color: 'fbca04', description: 'Pins behind their latest upstream stable'});
+            }
+            const run = `${context.serverUrl}/${context.repo.owner}/${context.repo.repo}/actions/runs/${context.runId}`;
+            const body = `These pins are behind their latest eligible upstream stable.\n\n\`\`\`\n${drift}\n\`\`\`\n\nRun: ${run}`;
+            if (!matches.length) await github.rest.issues.create({...context.repo, title, body, labels: [label]});
+            else await github.rest.issues.update({...context.repo, issue_number: matches[0].number, body, labels: [label], state: 'open'});
+            for (const duplicate of matches.slice(1).filter(issue => issue.state === 'open')) await github.rest.issues.update({...context.repo, issue_number: duplicate.number, state: 'closed', state_reason: 'not_planned'});

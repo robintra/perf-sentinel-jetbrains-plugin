@@ -1,3 +1,4 @@
+import importlib.util
 import json
 import subprocess
 import sys
@@ -8,6 +9,41 @@ from typing import Any
 
 
 CHECKER = Path(__file__).parents[1] / "check-supply-chain.py"
+
+
+def load_checker():
+    spec = importlib.util.spec_from_file_location("check_supply_chain", CHECKER)
+    module = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(module)
+    return module
+
+
+class ExitStatusTest(unittest.TestCase):
+    """A pin behind upstream is drift, not a broken audit, and exits apart.
+
+    The scheduled freshness workflow turns drift into one tracking issue and
+    keeps a red run for an audit that could not complete, such as a timeout.
+    """
+
+    def setUp(self):
+        self.status = load_checker().exit_status
+
+    def test_a_clean_audit_exits_zero(self):
+        self.assertEqual(0, self.status([]))
+
+    def test_an_audit_that_only_found_drift_exits_two(self):
+        self.assertEqual(2, self.status([
+            "online validation failed for Ruff: not latest eligible stable GitHub release (0.16.6)",
+            "online validation failed for GoLand 2026.2: not latest eligible stable JetBrains product (2026.2.2)",
+        ]))
+
+    def test_any_error_that_is_not_drift_keeps_the_audit_red(self):
+        self.assertEqual(1, self.status([
+            "online validation failed for Ruff: not latest eligible stable GitHub release (0.16.6)",
+            "online validation failed for coverlet.collector: The read operation timed out",
+        ]))
+        self.assertEqual(1, self.status(["missing dependency lock: gradle.lockfile"]))
+
 
 
 class SupplyChainCheckerTest(unittest.TestCase):

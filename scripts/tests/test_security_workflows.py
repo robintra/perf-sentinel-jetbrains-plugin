@@ -78,6 +78,33 @@ class DailySecurityWorkflowTests(unittest.TestCase):
             self.assertNotIn(forbidden, notify)
 
 
+class SupplyChainFreshnessWorkflowTests(unittest.TestCase):
+    @classmethod
+    def setUpClass(cls):
+        cls.text = (WORKFLOWS / "supply-chain-freshness.yml").read_text(encoding="utf-8")
+        cls.audit, cls.notify = cls.text.split("\n  notify:\n", 1)
+
+    def test_drift_is_reconciled_into_one_issue_instead_of_a_red_run(self):
+        # check-supply-chain.py exits 2 when every error is drift; only then is
+        # the run green, and the issue carries the list of pins behind.
+        self.assertIn('[ "$exit_status" -ne 2 ]', self.audit)
+        self.assertIn("name: Reconcile supply-chain drift", self.notify)
+        self.assertIn("[Supply Chain] pins behind upstream", self.notify)
+        self.assertIn("state: 'all'", self.notify)
+        self.assertIn("createLabel", self.notify)
+
+    def test_only_the_notify_job_can_write_issues(self):
+        self.assertNotIn("issues: write", self.audit)
+        self.assertIn("issues: write", self.notify)
+
+    def test_the_drift_list_reaches_the_script_through_the_environment(self):
+        # Interpolating ${{ }} into a github-script body is template injection;
+        # the list must arrive as an environment variable and be read there.
+        script = self.notify.split("script: |", 1)[1]
+        self.assertNotIn("${{", script)
+        self.assertIn("process.env.DRIFT", script)
+
+
 class CodeQLWorkflowTests(unittest.TestCase):
     @classmethod
     def setUpClass(cls):

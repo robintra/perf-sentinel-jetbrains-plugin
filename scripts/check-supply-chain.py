@@ -1098,6 +1098,18 @@ def check_online(inventory, errors, now):
             errors.append(f"online validation failed for {dependency.get('name')}: {exc}")
 
 
+# Drift is the only error the freshness schedule should not paint red: the
+# repository fell behind an upstream release, nothing about it is broken. Any
+# other error, a timeout included, means the audit itself did not complete.
+DRIFT = re.compile(r"^online validation failed for .+: not latest eligible stable ")
+
+
+def exit_status(errors):
+    if not errors:
+        return 0
+    return 2 if all(DRIFT.match(error) for error in errors) else 1
+
+
 def main():
     parser = argparse.ArgumentParser()
     parser.add_argument("--root", type=Path, default=Path(__file__).resolve().parents[1])
@@ -1115,7 +1127,7 @@ def main():
         check_online(inventory, errors, now)
     if errors:
         print("\n".join(f"error: {error}" for error in errors), file=sys.stderr)
-        return 1
+        return exit_status(errors)
     print("Supply-chain inputs are locked, complete, and stable.")
     return 0
 
