@@ -14,9 +14,15 @@ may be grouped within their manager. Major updates remain separate. The Rider ID
 ReSharper SDKs move together in one pull request, because the IDE and the SDK must match.
 
 GitHub Actions updates carry the same automerge eligibility as ordinary Gradle and NuGet updates, but
-are adopted by a human in practice: their commit SHAs are mirrored exactly in `scripts/tests`, which
-`sync-supply-chain.py` deliberately never rewrites, so a bump fails `Workflow security` until a
-maintainer edits the named line — `CI / Gate` stays red until then, which blocks automerge.
+most are adopted by a human in practice: their commit SHAs are mirrored exactly in `scripts/tests`,
+which `sync-supply-chain.py` deliberately never rewrites, so a bump fails `Workflow security` until a
+maintainer edits the named line — `CI / Gate` stays red until then, which blocks automerge. A handful
+are not mirrored — `JetBrains/qodana-action`, `actions/dependency-review-action` and
+`actions/github-script` — and do merge unattended once matured; they run in ordinary CI with the
+default `GITHUB_TOKEN`, which is the accepted design. `step-security/harden-runner` and
+`actions/create-github-app-token` are different again: they run inside the Renovate job itself,
+holding or minting the App key, and `CI / Gate` never exercises that workflow, so a dedicated rule
+keeps them off automerge entirely, regardless of whether their SHA happens to be mirrored.
 
 Only stable releases are eligible, and stable releases are eligible immediately: Renovate opens their
 pull request at once, held by a `renovate/stability-days` pending check that Renovate itself posts —
@@ -27,9 +33,11 @@ request itself, on its next scheduled run after both conditions hold, at most a 
 native auto-merge is deliberately unused for this — it merges as soon as required checks pass and
 cannot be made to wait on the seven-day stability check, so `platformAutomerge` stays `false`. The
 seven days are the freshness grace in `scripts/check-supply-chain.py`, read by the policy check
-rather than repeated. Major updates and the Rider group are always merged by a maintainer.
-Prereleases such as alpha, beta, RC, EAP, preview, nightly, and snapshot builds are rejected unless a
-separate compatibility decision changes the declared product matrix.
+rather than repeated. Major updates are always merged by a maintainer, as are the Rider group, the
+Renovate image, and the actions that run inside the Renovate job itself — `renovatebot/github-action`,
+`step-security/harden-runner`, `actions/create-github-app-token` — the dependencies excluded from
+automerge above. Prereleases such as alpha, beta, RC, EAP, preview, nightly, and snapshot builds are
+rejected unless a separate compatibility decision changes the declared product matrix.
 
 JetBrains IDE and SDK updates stay within the declared 2025.3 or 2026.2 compatibility line. The
 Rider test collector stays below Coverlet 7 because the project still uses JetBrains' `net472` test
