@@ -12,8 +12,9 @@ on:
     - cron: '17 5 * * *'
   workflow_dispatch:
 
+# Read-only: the hook only reads public release metadata; Renovate writes with the App token.
 permissions:
-  contents: read  # the hook reads public release metadata; Renovate writes with the App token
+  contents: read
 
 concurrency:
   group: renovate
@@ -36,17 +37,15 @@ jobs:
           app-id: ${{ secrets.RENOVATE_APP_ID }}
           private-key: ${{ secrets.RENOVATE_APP_PRIVATE_KEY }}
           # Scoped explicitly so the token stops inheriting the App's blanket installation
-          # permissions. All read for now: dryRun "full" writes nothing: Task 6 raises the
-          # ones Renovate must write (contents, pull requests, issues, checks, statuses,
-          # workflows) when it lifts the dry run.
-          permission-administration: read
+          # permissions. All read for now: dryRun "full" writes nothing, so Renovate needs
+          # none of these permissions at more than read. They rise to write once the dry
+          # run is lifted and Renovate starts pushing branches and opening pull requests.
           permission-checks: read
           permission-contents: read
           permission-issues: read
           permission-metadata: read
           permission-pull-requests: read
           permission-statuses: read
-          permission-workflows: read
       - uses: renovatebot/github-action@37beffda261423addd537c33f2d126df7f6ffbab
         env:
           RENOVATE_CUSTOM_ENV_VARIABLES: '{"GITHUB_TOKEN": "${{ github.token }}"}'
