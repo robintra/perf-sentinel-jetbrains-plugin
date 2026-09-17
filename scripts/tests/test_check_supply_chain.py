@@ -4,6 +4,7 @@ import subprocess
 import sys
 import tempfile
 import unittest
+from datetime import UTC, datetime
 from pathlib import Path
 from typing import Any
 
@@ -44,6 +45,67 @@ class ExitStatusTest(unittest.TestCase):
         ]))
         self.assertEqual(1, self.status(["missing dependency lock: gradle.lockfile"]))
 
+
+class RenovateImageTest(unittest.TestCase):
+    """Renovate ships several releases a day, faster than one page of 100 covers seven days."""
+
+    NOW = datetime(2026, 9, 17, 12, 0, tzinfo=UTC)
+    DIGEST = "sha256:" + "b" * 64
+
+    def setUp(self):
+        self.checker = load_checker()
+
+    @staticmethod
+    def release(tag, published):
+        return {"tag_name": tag, "published_at": published, "draft": False, "prerelease": False}
+
+    def client(self):
+        pages = [
+            [self.release("44.80.0", "2026-09-16T10:00:00Z"), self.release("44.79.0", "2026-09-12T10:00:00Z")],
+            [self.release("44.74.1", "2026-09-09T23:48:34Z"), self.release("44.70.0", "2026-09-05T08:00:00Z")],
+        ]
+        digest = self.DIGEST
+
+        class Client:
+            def __init__(self):
+                self.urls = []
+
+            def json(self, url):
+                self.urls.append(url)
+                if url.startswith("https://hub.docker.com/"):
+                    return {"digest": digest}
+                page = int(url.rsplit("page=", 1)[1])
+                return pages[page - 1] if page <= len(pages) else []
+
+        return Client()
+
+    def image(self, release, released_at):
+        return {
+            "name": "Renovate image", "kind": "container", "version": self.DIGEST,
+            "release": release, "releasedAt": released_at,
+            "source": "https://hub.docker.com/r/renovate/renovate",
+        }
+
+    def test_the_workflow_declares_the_image_as_tag_at_digest(self):
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            workflow = root / ".github" / "workflows" / "renovate.yml"
+            workflow.parent.mkdir(parents=True)
+            workflow.write_text(f"          renovate-version: 44.74.1@{self.DIGEST}\n", encoding="utf-8")
+            self.assertEqual(
+                [f"44.74.1@{self.DIGEST}"],
+                self.checker.declared_versions(root, ".github/workflows/renovate.yml#renovate-version"),
+            )
+
+    def test_the_latest_eligible_release_is_found_past_the_first_page(self):
+        client = self.client()
+        self.checker.verify_container(client, self.image("44.74.1", "2026-09-09T23:48:34Z"), self.NOW)
+        self.assertTrue(any(url.endswith("page=2") for url in client.urls))
+        self.assertFalse(any(url.endswith("page=3") for url in client.urls))
+
+    def test_an_image_behind_the_latest_eligible_release_is_rejected(self):
+        with self.assertRaisesRegex(ValueError, r"not latest eligible stable container \(44\.74\.1\)"):
+            self.checker.verify_container(self.client(), self.image("44.70.0", "2026-09-05T08:00:00Z"), self.NOW)
 
 
 class SupplyChainCheckerTest(unittest.TestCase):
