@@ -957,6 +957,11 @@ def validate_release(dependency, candidates: list[tuple[str, datetime]], now, la
 
 def stable_release_candidates(releases):
     """Non-draft, non-prerelease, version-tagged releases, as (version, published) pairs."""
+    # Tolerates a "v" prefix here, but sync-supply-chain.py's releases/tags/{release} lookup
+    # (fetch_declaration, ~line 206) fetches the bare tag straight from the inventory and never
+    # re-adds one. Harmless while renovatebot/renovate (the only CONTAINER_RELEASE_REPOS entry)
+    # tags without "v", but that lookup would 404 the day it gains one, even though this function
+    # would keep comparing fine.
     return [
         (item["tag_name"].lstrip("v"), parse_instant(item["published_at"]))
         for item in releases

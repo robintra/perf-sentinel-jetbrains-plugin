@@ -203,6 +203,9 @@ def online_metadata(client, checker, dependency) -> dict[str, str]:
     if kind == "jetbrains-product":
         return jetbrains_published(client, checker, dependency)
     if kind == "container" and name in checker.CONTAINER_RELEASE_REPOS:
+        # Assumes the inventoried release tag has no "v" prefix, unlike
+        # check-supply-chain.py's stable_release_candidates, which tolerates either. True today
+        # for renovatebot/renovate; if that ever changes, this 404s.
         release = client.json(
             f"https://api.github.com/repos/{checker.CONTAINER_RELEASE_REPOS[name]}/releases/tags/{dependency['release']}"
         )
