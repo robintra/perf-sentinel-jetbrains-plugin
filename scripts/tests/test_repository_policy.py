@@ -364,7 +364,7 @@ class RepositoryPolicyTests(unittest.TestCase):
     def test_requires_the_renovate_environment_main_only_restriction(self):
         api = public_api_fixture()
         api["renovate_environment"]["body"]["deployment_branch_policy"]["custom_branch_policies"] = False
-        self.assert_drift(api, "renovate")
+        self.assert_drift(api, "renovate environment must restrict deployments to custom branch policies")
         for branch_policies in (
             [],
             [{"id": 60264157, "name": "main", "type": "branch"}, {"id": 1, "name": "develop", "type": "branch"}],
@@ -374,7 +374,7 @@ class RepositoryPolicyTests(unittest.TestCase):
                 api = public_api_fixture()
                 api["renovate_branch_policies"]["body"]["branch_policies"] = branch_policies
                 api["renovate_branch_policies"]["body"]["total_count"] = len(branch_policies)
-                self.assert_drift(api, "renovate")
+                self.assert_drift(api, "renovate environment must allow deployment from main only")
 
     def test_requires_exact_workflow_secret_inventory(self):
         result = run_checker(extra_secret="EXTRA_TOKEN")
