@@ -49,6 +49,11 @@ EXPECTED_PACKAGE_RULES = [
         "automerge": False,
     },
     {
+        "description": "The rdgen Gradle plugin id is redirected in settings.gradle.kts to com.jetbrains.rd:rd-gen, whose version Renovate already tracks through the shared [versions] rdGen entry in gradle/libs.versions.toml, so the com.jetbrains.rdgen:com.jetbrains.rdgen.gradle.plugin marker artifact is never published and its lookup can only fail",
+        "matchDepNames": ["com.jetbrains.rdgen"],
+        "enabled": False,
+    },
+    {
         "description": "Group ordinary non-major Gradle and NuGet updates",
         "matchManagers": ["gradle", "gradle-wrapper", "nuget", "custom.regex"],
         "matchUpdateTypes": ["minor", "patch"],

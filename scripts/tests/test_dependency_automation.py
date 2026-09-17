@@ -288,6 +288,23 @@ class DependencyAutomationTests(unittest.TestCase):
             config["packageRules"],
         )
 
+    def test_rdgen_plugin_marker_lookup_is_disabled_without_disturbing_automerge(self):
+        config = json.loads(RENOVATE.read_text(encoding="utf-8"))
+        rules = config["packageRules"]
+        marker_rule = next(
+            (rule for rule in rules if rule.get("matchDepNames") == ["com.jetbrains.rdgen"]),
+            None,
+        )
+        self.assertIsNotNone(marker_rule, "expected a packageRule disabling the rdgen plugin marker")
+        self.assertIs(False, marker_rule.get("enabled"))
+        self.assertNotIn("automerge", marker_rule)
+        self.assertIn("com.jetbrains.rd:rd-gen", marker_rule["description"])
+        self.assertIn("settings.gradle.kts", marker_rule["description"])
+        # enabled:false grants no automerge, so it must not join or shift the automerge sequence.
+        self.assertEqual([False, True, False, False, False], [rule["automerge"] for rule in rules if "automerge" in rule])
+        # ...and it must not have displaced the rider-ide-and-sdk rule from last place.
+        self.assertEqual("rider-ide-and-sdk", rules[-1].get("groupName"))
+
     def test_checker_rejects_top_level_policy_drift(self):
         mutations = (
             ("$schema", "https://example.test/schema.json"),
