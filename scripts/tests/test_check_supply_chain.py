@@ -107,6 +107,19 @@ class RenovateImageTest(unittest.TestCase):
         with self.assertRaisesRegex(ValueError, r"not latest eligible stable container \(44\.74\.1\)"):
             self.checker.verify_container(self.client(), self.image("44.70.0", "2026-09-05T08:00:00Z"), self.NOW)
 
+    def test_the_shared_filter_excludes_non_stable_and_non_version_releases(self):
+        releases = [
+            self.release("v1.2.3", "2026-09-01T00:00:00Z"),
+            {**self.release("1.3.0", "2026-09-02T00:00:00Z"), "draft": True},
+            {**self.release("1.4.0", "2026-09-03T00:00:00Z"), "prerelease": True},
+            {"tag_name": "1.5.0", "draft": False, "prerelease": False},
+            self.release("nightly", "2026-09-04T00:00:00Z"),
+        ]
+        self.assertEqual(
+            [("1.2.3", datetime(2026, 9, 1, tzinfo=UTC))],
+            self.checker.stable_release_candidates(releases),
+        )
+
 
 class SupplyChainCheckerTest(unittest.TestCase):
     def setUp(self):

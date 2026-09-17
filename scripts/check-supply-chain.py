@@ -956,13 +956,9 @@ def validate_release(dependency, candidates: list[tuple[str, datetime]], now, la
         raise ValueError(f"not latest eligible stable {label} ({eligible[0]})")
 
 
-def verify_github(client, dependency, now):
-    match = re.fullmatch(r"https://github\.com/([^/]+/[^/]+)/releases/tag/([^/]+)", dependency["source"])
-    if not match or dependency.get("release") != match.group(2):
-        raise ValueError("GitHub source/release mismatch")
-    repo, tag = match.groups()
-    releases = client.json(f"https://api.github.com/repos/{repo}/releases?per_page=100")
-    candidates = [
+def stable_release_candidates(releases):
+    """Non-draft, non-prerelease, version-tagged releases, as (version, published) pairs."""
+    return [
         (item["tag_name"].lstrip("v"), parse_instant(item["published_at"]))
         for item in releases
         if not item["draft"]
@@ -970,6 +966,15 @@ def verify_github(client, dependency, now):
         and item.get("published_at")
         and re.fullmatch(r"v?\d+(?:\.\d+)+", item["tag_name"])
     ]
+
+
+def verify_github(client, dependency, now):
+    match = re.fullmatch(r"https://github\.com/([^/]+/[^/]+)/releases/tag/([^/]+)", dependency["source"])
+    if not match or dependency.get("release") != match.group(2):
+        raise ValueError("GitHub source/release mismatch")
+    repo, tag = match.groups()
+    releases = client.json(f"https://api.github.com/repos/{repo}/releases?per_page=100")
+    candidates = stable_release_candidates(releases)
     release_dependency = dict(dependency, version=tag.lstrip("v"))
     validate_release(release_dependency, candidates, now, "GitHub release")
     if dependency["kind"] == "github-action":
@@ -1075,11 +1080,7 @@ def github_release_candidates(client, repo, now):
     candidates = []
     for page in range(1, 6):
         releases = client.json(f"https://api.github.com/repos/{repo}/releases?per_page=100&page={page}")
-        stable = [
-            (item["tag_name"].lstrip("v"), parse_instant(item["published_at"]))
-            for item in releases
-            if not item["draft"] and not item["prerelease"] and item.get("published_at")
-        ]
+        stable = stable_release_candidates(releases)
         candidates += stable
         if not releases or any(published <= now - FRESHNESS_GRACE for _, published in stable):
             break
