@@ -70,6 +70,11 @@ def policy() -> dict[str, Any]:
             "minimum_required_reviewers": 1,
             "prevent_self_review": False,
         },
+        "renovate_environment": {
+            "name": "renovate",
+            "custom_branch_policies": True,
+            "branch_policies": ["main"],
+        },
         "workflow_secrets": list(SECRETS),
     }
 
@@ -166,6 +171,25 @@ def public_api_fixture() -> dict[str, Any]:
                             {"type": "User", "reviewer": {"id": 11, "name": "robintra"}}
                         ],
                     }
+                ],
+            },
+        },
+        "renovate_environment": {
+            "status": 200,
+            "body": {
+                "name": "renovate",
+                "deployment_branch_policy": {
+                    "protected_branches": False,
+                    "custom_branch_policies": True,
+                },
+            },
+        },
+        "renovate_branch_policies": {
+            "status": 200,
+            "body": {
+                "total_count": 1,
+                "branch_policies": [
+                    {"id": 60264157, "name": "main", "type": "branch"}
                 ],
             },
         },
@@ -336,6 +360,21 @@ class RepositoryPolicyTests(unittest.TestCase):
                 api = public_api_fixture()
                 api["environment"]["body"]["protection_rules"] = rules
                 self.assert_drift(api, "jetbrains-release")
+
+    def test_requires_the_renovate_environment_main_only_restriction(self):
+        api = public_api_fixture()
+        api["renovate_environment"]["body"]["deployment_branch_policy"]["custom_branch_policies"] = False
+        self.assert_drift(api, "renovate")
+        for branch_policies in (
+            [],
+            [{"id": 60264157, "name": "main", "type": "branch"}, {"id": 1, "name": "develop", "type": "branch"}],
+            [{"id": 1, "name": "develop", "type": "branch"}],
+        ):
+            with self.subTest(branch_policies=branch_policies):
+                api = public_api_fixture()
+                api["renovate_branch_policies"]["body"]["branch_policies"] = branch_policies
+                api["renovate_branch_policies"]["body"]["total_count"] = len(branch_policies)
+                self.assert_drift(api, "renovate")
 
     def test_requires_exact_workflow_secret_inventory(self):
         result = run_checker(extra_secret="EXTRA_TOKEN")

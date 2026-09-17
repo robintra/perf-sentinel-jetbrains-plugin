@@ -57,6 +57,13 @@
     "minimum_required_reviewers": 1,
     "prevent_self_review": false
   },
+  "renovate_environment": {
+    "name": "renovate",
+    "custom_branch_policies": true,
+    "branch_policies": [
+      "main"
+    ]
+  },
   "workflow_secrets": [
     "CERTIFICATE_CHAIN",
     "PRIVATE_KEY",
