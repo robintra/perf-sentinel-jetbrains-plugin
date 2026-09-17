@@ -22,7 +22,8 @@ SETTINGS = {
     "allow_squash_merge": True,
     "allow_rebase_merge": True,
     "allow_merge_commit": False,
-    "allow_auto_merge": False,
+    # Matured non-major dependency updates merge through GitHub's native auto-merge.
+    "allow_auto_merge": True,
     "delete_branch_on_merge": True,
 }
 SECURITY = {
@@ -33,7 +34,7 @@ SECURITY = {
 }
 SECRETS = {
     "CERTIFICATE_CHAIN", "PRIVATE_KEY", "PRIVATE_KEY_PASSWORD",
-    "PUBLISH_TOKEN", "QODANA_TOKEN",
+    "PUBLISH_TOKEN", "QODANA_TOKEN", "RENOVATE_APP_ID", "RENOVATE_APP_PRIVATE_KEY",
 }
 
 CHECK_SCHEMA = {"context": str}

@@ -16,6 +16,8 @@ SECRETS = (
     "PRIVATE_KEY_PASSWORD",
     "PUBLISH_TOKEN",
     "QODANA_TOKEN",
+    "RENOVATE_APP_ID",
+    "RENOVATE_APP_PRIVATE_KEY",
 )
 
 
@@ -29,7 +31,7 @@ def policy() -> dict[str, Any]:
             "allow_squash_merge": True,
             "allow_rebase_merge": True,
             "allow_merge_commit": False,
-            "allow_auto_merge": False,
+            "allow_auto_merge": True,
             "delete_branch_on_merge": True,
         },
         "security": {
@@ -98,7 +100,7 @@ def public_api_fixture() -> dict[str, Any]:
                 "allow_squash_merge": True,
                 "allow_rebase_merge": True,
                 "allow_merge_commit": False,
-                "allow_auto_merge": False,
+                "allow_auto_merge": True,
                 "delete_branch_on_merge": True,
                 "security_and_analysis": {
                     "secret_scanning": {"status": "enabled"},
