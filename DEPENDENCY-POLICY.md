@@ -13,8 +13,14 @@ Renovate checks every day between 06:00 and 10:00 in `Europe/Paris`. Ordinary mi
 may be grouped within their manager. Major updates remain separate. The Rider IDE and the Rider and
 ReSharper SDKs move together in one pull request, because the IDE and the SDK must match.
 
+GitHub Actions updates carry the same automerge eligibility as ordinary Gradle and NuGet updates, but
+are adopted by a human in practice: their commit SHAs are mirrored exactly in `scripts/tests`, which
+`sync-supply-chain.py` deliberately never rewrites, so a bump fails `Workflow security` until a
+maintainer edits the named line — `CI / Gate` stays red until then, which blocks automerge.
+
 Only stable releases are eligible, and stable releases are eligible immediately: Renovate opens their
-pull request at once, held by a pending stability check rather than a delayed pull request. Minor,
+pull request at once, held by a `renovate/stability-days` pending check that Renovate itself posts —
+the platform does not provide it — rather than a delayed pull request. Minor,
 patch and digest updates merge on their own once seven days old, the same window after which the
 freshness audit calls a pin behind, and only when `CI / Gate` is green: Renovate merges the pull
 request itself, on its next scheduled run after both conditions hold, at most a day later. GitHub's
@@ -45,6 +51,11 @@ Renovate's custom JetBrains manager reads the official JetBrains product release
 IDE version embedded in the Gradle build. Its NuGet manager covers SDK-style project files and
 `packages.lock.json`; its Gradle managers cover `settings.gradle.kts`, `gradle/libs.versions.toml`,
 RDGen, plugins, `gradle/wrapper/gradle-wrapper.properties`, Gradle locks, and verification metadata.
+
+The default branch ruleset requires signed commits, and Renovate's branches satisfy it only because
+`platformCommit` defaults to `auto` and promotes itself to signed for a GitHub App installation
+token; if that default ever regressed, every Renovate branch would be rejected at push, and a dry run
+cannot reveal it, since it never pushes.
 
 ## The JDK pin
 

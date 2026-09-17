@@ -38,8 +38,22 @@ jobs:
           private-key: ${{ secrets.RENOVATE_APP_PRIVATE_KEY }}
           # Scoped explicitly so the token stops inheriting the App's blanket installation
           # permissions. All read for now: dryRun "full" writes nothing, so Renovate needs
-          # none of these permissions at more than read. They rise to write once the dry
-          # run is lifted and Renovate starts pushing branches and opening pull requests.
+          # none of these permissions at more than read. Lifting the dry run needs this
+          # minimum permission set, so the next task does not have to rediscover it (only
+          # checks and metadata stay at read; every other one below needs to rise):
+          #   contents        rises to push branches
+          #   pull-requests   rises to open and update them
+          #   issues          rises because the dependency dashboard issue is enabled
+          #   statuses        rises because Renovate POSTs the renovate/stability-days
+          #                   pending check itself (setStability -> POST
+          #                   .../statuses/{sha}); without the rise that call throws,
+          #                   Renovate turns it into REPOSITORY_CHANGED, and the whole
+          #                   run aborts
+          #   workflows       rises because the github-actions manager and the
+          #                   renovate/renovate custom manager both target
+          #                   .github/workflows/, and GitHub refuses any push touching a
+          #                   workflow file without it; those two managers fail on push
+          #                   otherwise
           permission-checks: read
           permission-contents: read
           permission-issues: read
