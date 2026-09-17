@@ -1,0 +1,13 @@
+{
+  "platform": "github",
+  "repositories": [
+    "robintra/perf-sentinel-jetbrains-plugin"
+  ],
+  "onboarding": false,
+  "requireConfig": "required",
+  "binarySource": "install",
+  "allowedCommands": [
+    "^python3 scripts/sync-supply-chain\\.py --online$"
+  ],
+  "dryRun": "full"
+}

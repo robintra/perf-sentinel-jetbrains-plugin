@@ -291,6 +291,8 @@ def validate_secret_inventory(inventory) -> set[str]:
         "PRIVATE_KEY_PASSWORD": ["jetbrains-release"],
         "PUBLISH_TOKEN": ["jetbrains-release"],
         "QODANA_TOKEN": ["qodana-jvm"],
+        "RENOVATE_APP_ID": ["renovate"],
+        "RENOVATE_APP_PRIVATE_KEY": ["renovate"],
     }
     declared_names = [item.get("name") for item in inventory["secrets"] if type(item) is dict]
     if set(declared_names) != set(expected_scopes) or len(declared_names) != len(expected_scopes):

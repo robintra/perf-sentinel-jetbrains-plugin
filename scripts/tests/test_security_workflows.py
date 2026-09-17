@@ -1,3 +1,5 @@
+import json
+import re
 import unittest
 from pathlib import Path
 
@@ -103,6 +105,38 @@ class SupplyChainFreshnessWorkflowTests(unittest.TestCase):
         script = self.notify.split("script: |", 1)[1]
         self.assertNotIn("${{", script)
         self.assertIn("process.env.DRIFT", script)
+
+
+class RenovateWorkflowTests(unittest.TestCase):
+    @classmethod
+    def setUpClass(cls):
+        cls.text = (WORKFLOWS / "renovate.yml").read_text(encoding="utf-8")
+        cls.triggers = cls.text.split("\non:\n", 1)[1].split("\npermissions:", 1)[0]
+        cls.global_config = json.loads((REPOSITORY / ".github/renovate-global.json").read_text(encoding="utf-8"))
+
+    def test_never_runs_on_a_pull_request(self):
+        self.assertIn("schedule:", self.triggers)
+        self.assertIn("workflow_dispatch:", self.triggers)
+        self.assertNotIn("pull_request", self.triggers)
+
+    def test_the_app_key_is_reachable_only_through_the_renovate_environment(self):
+        self.assertIn("    environment: renovate\n", self.text)
+        self.assertEqual({"RENOVATE_APP_ID", "RENOVATE_APP_PRIVATE_KEY"}, set(re.findall(r"secrets\.(\w+)", self.text)))
+        self.assertNotIn(": write", self.text)
+
+    def test_runs_the_digest_pinned_image_behind_harden_runner(self):
+        self.assertIn("renovate-image: renovate/renovate\n", self.text)
+        self.assertRegex(self.text, r"renovate-version: \d+\.\d+\.\d+@sha256:[0-9a-f]{64}\n")
+        self.assertIn("step-security/harden-runner@", self.text)
+        self.assertIn("persist-credentials: false", self.text)
+
+    def test_the_hook_gets_the_read_only_workflow_token_not_the_app_token(self):
+        self.assertIn("""RENOVATE_CUSTOM_ENV_VARIABLES: '{"GITHUB_TOKEN": "${{ github.token }}"}'""", self.text)
+        self.assertIn("token: ${{ steps.app-token.outputs.token }}", self.text)
+
+    def test_global_config_allows_only_the_sync_hook_and_starts_in_dry_run(self):
+        self.assertEqual(["^python3 scripts/sync-supply-chain\\.py --online$"], self.global_config["allowedCommands"])
+        self.assertEqual("full", self.global_config["dryRun"])
 
 
 class CodeQLWorkflowTests(unittest.TestCase):

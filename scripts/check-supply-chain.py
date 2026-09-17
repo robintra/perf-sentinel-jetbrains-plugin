@@ -44,11 +44,11 @@ REQUIRED_ACTIONS = set("""
 actions/checkout actions/setup-java actions/setup-dotnet actions/setup-python actions/upload-artifact actions/github-script
 actions/download-artifact actions/dependency-review-action github/codeql-action
 JetBrains/qodana-action anchore/sbom-action ossf/scorecard-action step-security/harden-runner
-google/osv-scanner-action gitleaks/gitleaks-action zizmorcore/zizmor-action gradle/actions
+google/osv-scanner-action gitleaks/gitleaks-action zizmorcore/zizmor-action gradle/actions renovatebot/github-action actions/create-github-app-token
 """.split())
 REQUIRED_TOOLS = {
     "Kover", "OSV-Scanner", "Gitleaks", "TruffleHog", "Zizmor",
-    "Syft", "actionlint", "Ruff", "Marketplace ZIP Signer", "Qodana CLI", "Qodana JVM Community image",
+    "Syft", "actionlint", "Ruff", "Marketplace ZIP Signer", "Qodana CLI", "Qodana JVM Community image", "Renovate image",
 }
 REQUIRED_TRANSITIVE_EXCEPTIONS = {
     "com.jgoodies:forms:1.1-preview",
@@ -82,10 +82,9 @@ build.gradle.kts#IntelliJ IDEA 2025.3;build.gradle.kts#IntelliJ IDEA 2026.2;buil
 build.gradle.kts#PhpStorm 2025.3;build.gradle.kts#PhpStorm 2026.2;build.gradle.kts#RustRover 2025.3;build.gradle.kts#RustRover 2026.2;build.gradle.kts#RubyMine 2025.3;build.gradle.kts#RubyMine 2026.2
 build.gradle.kts#WebStorm 2025.3;build.gradle.kts#WebStorm 2026.2;build.gradle.kts#GoLand 2025.3;build.gradle.kts#GoLand 2026.2
 src/dotnet/Plugin.props#SdkVersion:JetBrains.Rider.SDK;src/dotnet/Plugin.props#SdkVersion:JetBrains.ReSharper.SDK.Tests;src/dotnet/Directory.Build.props#Microsoft.NETFramework.ReferenceAssemblies;src/dotnet/Directory.Build.props#Microsoft.Bcl.Memory
-src/dotnet/PerfSentinel.Rider.Tests/PerfSentinel.Rider.Tests.csproj#Microsoft.NET.Test.Sdk;src/dotnet/PerfSentinel.Rider.Tests/PerfSentinel.Rider.Tests.csproj#NUnit3TestAdapter;qodana.yml#linter
+src/dotnet/PerfSentinel.Rider.Tests/PerfSentinel.Rider.Tests.csproj#Microsoft.NET.Test.Sdk;src/dotnet/PerfSentinel.Rider.Tests/PerfSentinel.Rider.Tests.csproj#NUnit3TestAdapter;qodana.yml#linter;.github/workflows/renovate.yml#renovate-version
 """.replace("\n", ";").strip(";").split(";"))
 OPTIONAL_DIRECT_DECLARATIONS = {
-    ".github/workflows/renovate.yml#renovate-version",
     "gradle/libs.versions.toml#kover",
     "src/dotnet/PerfSentinel.Rider.Tests/PerfSentinel.Rider.Tests.csproj#coverlet.collector",
 }

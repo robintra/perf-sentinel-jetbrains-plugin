@@ -142,8 +142,8 @@ Test-driven, like the rest of the repository:
 
 ## Rollout
 
-1. **Merge in dry run.** The scheduled run forces `dryRun: "full"`; `workflow_dispatch` accepts the
-   same input. Renovate computes everything and writes nothing.
+1. **Merge in dry run.** `.github/renovate-global.json` sets `dryRun: "full"` for every run,
+   scheduled or dispatched. Renovate computes everything and writes nothing.
 2. **One manual dry run**, whose logs are reviewed together: branches it would open, whether Python
    installs, whether the hook reaches the network, whether the grouped Rider update is recognised.
 3. **Lift the dry run** in a dedicated commit, the only change that enables writing.

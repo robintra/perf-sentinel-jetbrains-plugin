@@ -1,0 +1,57 @@
+name: Renovate
+
+# Self-hosted Renovate. It runs from main only and never on a pull request, so no
+# proposed change can reach the App key the renovate environment holds. Renovate
+# pushes with the App token, which lets CI run on its branches; the sync hook only
+# reads public release data and gets the read-only workflow token instead.
+
+on:
+  schedule:
+    # 05:17 UTC stays inside the 06:00-10:00 Europe/Paris window of renovate.json
+    # in summer and winter time, even when GitHub starts the job late.
+    - cron: '17 5 * * *'
+  workflow_dispatch:
+
+permissions:
+  contents: read  # the hook reads public release metadata; Renovate writes with the App token
+
+concurrency:
+  group: renovate
+  cancel-in-progress: false
+
+jobs:
+  renovate:
+    name: Propose dependency updates
+    runs-on: ubuntu-24.04
+    timeout-minutes: 30
+    environment: renovate
+    steps:
+      - uses: step-security/harden-runner@e14015d583714f6e62063499dc959a02595150a1
+        with: {egress-policy: audit}
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
+        with: {persist-credentials: false}
+      - id: app-token
+        uses: actions/create-github-app-token@bcd2ba49218906704ab6c1aa796996da409d3eb1
+        with:
+          app-id: ${{ secrets.RENOVATE_APP_ID }}
+          private-key: ${{ secrets.RENOVATE_APP_PRIVATE_KEY }}
+          # Scoped explicitly so the token stops inheriting the App's blanket installation
+          # permissions. All read for now: dryRun "full" writes nothing: Task 6 raises the
+          # ones Renovate must write (contents, pull requests, issues, checks, statuses,
+          # workflows) when it lifts the dry run.
+          permission-administration: read
+          permission-checks: read
+          permission-contents: read
+          permission-issues: read
+          permission-metadata: read
+          permission-pull-requests: read
+          permission-statuses: read
+          permission-workflows: read
+      - uses: renovatebot/github-action@37beffda261423addd537c33f2d126df7f6ffbab
+        env:
+          RENOVATE_CUSTOM_ENV_VARIABLES: '{"GITHUB_TOKEN": "${{ github.token }}"}'
+        with:
+          configurationFile: .github/renovate-global.json
+          token: ${{ steps.app-token.outputs.token }}
+          renovate-image: renovate/renovate
+          renovate-version: 44.79.2@sha256:9327fbe499d0e01d090480e43e9b35fb6e56a7d4f7e4f806882c56f752da4ad4

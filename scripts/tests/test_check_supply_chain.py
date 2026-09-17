@@ -158,7 +158,7 @@ class SupplyChainCheckerTest(unittest.TestCase):
             "JetBrains/qodana-action", "anchore/sbom-action",
             "ossf/scorecard-action", "step-security/harden-runner", "google/osv-scanner-action",
             "gitleaks/gitleaks-action", "zizmorcore/zizmor-action",
-            "gradle/actions",
+            "gradle/actions", "renovatebot/github-action", "actions/create-github-app-token",
         )
         self.inventory["dependencies"].extend(
             {
