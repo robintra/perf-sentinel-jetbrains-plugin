@@ -22,7 +22,9 @@ SETTINGS = {
     "allow_squash_merge": True,
     "allow_rebase_merge": True,
     "allow_merge_commit": False,
-    # Matured non-major dependency updates merge through GitHub's native auto-merge.
+    # Renovate merges matured non-major updates itself, on its next run once CI / Gate is green
+    # (platformAutomerge is false). This setting is not part of that path; it stays on only so a
+    # maintainer can use `gh pr merge --auto` or the UI button, which the ruleset still gates.
     "allow_auto_merge": True,
     "delete_branch_on_merge": True,
 }
