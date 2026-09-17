@@ -122,6 +122,8 @@ class RenovateWorkflowTests(unittest.TestCase):
     def test_the_app_key_is_reachable_only_through_the_renovate_environment(self):
         self.assertIn("    environment: renovate\n", self.text)
         self.assertEqual({"RENOVATE_APP_ID", "RENOVATE_APP_PRIVATE_KEY"}, set(re.findall(r"secrets\.(\w+)", self.text)))
+
+    def test_the_token_is_read_only_until_the_dry_run_is_lifted(self):
         self.assertIn("permissions:\n  contents: read\n", self.text)
         self.assertNotIn(": write", self.text)
 
