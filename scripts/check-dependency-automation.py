@@ -235,8 +235,8 @@ def validate(root: Path):
     automerge_values = [value for key, value in walk_key_values(renovate) if key == "automerge"]
     if automerge_values != [False, True, False]:
         errors.append("auto-merge is allowed only through the matured non-major rule")
-    if renovate.get("platformAutomerge") is not True or renovate.get("automergeStrategy") != "squash":
-        errors.append("matured updates must merge through native auto-merge, squashed")
+    if renovate.get("platformAutomerge") is not False or renovate.get("automergeStrategy") != "squash":
+        errors.append("matured updates must merge through Renovate's own merge, squashed, never native auto-merge")
     if renovate.get("internalChecksFilter") != "none" or renovate.get("rebaseWhen") != "behind-base-branch":
         errors.append("pull requests must open immediately and stay up to date with main")
     if renovate.get("postUpgradeTasks") != EXPECTED_POST_UPGRADE_TASKS:

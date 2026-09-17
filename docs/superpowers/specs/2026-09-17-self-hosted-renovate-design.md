@@ -103,7 +103,7 @@ green, Rider group excluded. Merges squash, which `required_linear_history` need
 | `dependabot.yml` must hold a `github-actions` block | `dependabot.yml` must be absent |
 | One catch-all rule disables automerge | automerge stays `false` by default; one rule enables it for `minor`, `patch` and `digest` updates |
 | `minimumReleaseAge` forbidden everywhere | allowed only inside the automerge rule, only as `"7 days"`, the value of `FRESHNESS_GRACE` |
-| `platformAutomerge` forbidden | required to be `true` |
+| `platformAutomerge` forbidden | required to be `false`: GitHub's native auto-merge does not honour `minimumReleaseAge`, so Renovate must merge matured updates itself (resolved 2026-09-17, see the verification table below) |
 | none | Rider IDE (`RD`), `JetBrains.Rider.SDK` and `JetBrains.ReSharper.SDK.Tests` share one group with automerge `false` |
 | none | the hook is exactly one command, `executionMode: "branch"`, and `fileFilters` lists exactly `config/supply-chain.json`, `gradle.lockfile` and `gradle/verification-metadata.xml` |
 | none | `renovate-global.json` `allowedCommands` is exactly the anchored hook regex |
@@ -154,7 +154,7 @@ Test-driven, like the rest of the repository:
 | Question | If confirmed | If not |
 |---|---|---|
 | Can `renovatebot/github-action` run the Renovate image pinned by digest? | pin by digest | stop and report before going further: an image pinned by tag alone breaks the supply-chain policy |
-| With `platformAutomerge: true`, does Renovate withhold enabling native auto-merge until the release age is met? | keep `platformAutomerge: true` | set `platformAutomerge: false`: Renovate merges on its next run once every check, stability included, passes, at most a day later |
+| With `platformAutomerge: true`, does Renovate withhold enabling native auto-merge until the release age is met? | keep `platformAutomerge: true` | set `platformAutomerge: false`: Renovate merges on its next run once every check, stability included, passes, at most a day later — **not confirmed**, verified 2026-09-17 against the pinned `renovate/renovate` source (tag `44.79.2`) rather than the dry run, which cannot exercise GitHub's merge behaviour: `internalChecksFilter` defaults to `"strict"`, so our `"none"` override already removes the branch-creation hold; `usePlatformAutomerge` (`lib/workers/repository/update/pr/index.ts:61-65`) is derived from static config booleans only, never check status; and `tryPrAutomerge` (`lib/modules/platform/github/index.ts:2013`) enables GitHub's native auto-merge right after `createPr`, gated only on GHE version and the repo's `autoMergeAllowed` setting — GitHub's native auto-merge itself waits only on required status checks, and `renovate/stability-days` is not one. `platformAutomerge: false` applied |
 | Does the hook receive the read-only `GITHUB_TOKEN` through the self-hosted environment options? | keep it | the dry run shows GitHub lookups failing; stop and report |
 | For an ordinary Gradle library bump, does Renovate update `gradle.lockfile` and `verification-metadata.xml` inside its container without the damage described above? | keep Renovate's artifact update | those pull requests arrive red without derived files and stay manual, as today: no regression, and the gap is reported |
 

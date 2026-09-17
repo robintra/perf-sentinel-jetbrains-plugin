@@ -293,7 +293,7 @@
       "versioningTemplate": "docker"
     }
   ],
-  "platformAutomerge": true,
+  "platformAutomerge": false,
   "automergeStrategy": "squash",
   "internalChecksFilter": "none",
   "rebaseWhen": "behind-base-branch",

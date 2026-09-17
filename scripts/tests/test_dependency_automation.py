@@ -324,7 +324,7 @@ class DependencyAutomationTests(unittest.TestCase):
     def test_checker_rejects_policy_switches_drifting(self):
         for key, value, message in (
             ("lockFileMaintenance", {"enabled": True}, "lock maintenance"),
-            ("platformAutomerge", False, "native auto-merge"),
+            ("platformAutomerge", True, "native auto-merge"),
             ("postUpgradeTasks", {"commands": ["bash -c env"]}, "sync hook"),
         ):
             with self.subTest(key=key), tempfile.TemporaryDirectory() as directory:

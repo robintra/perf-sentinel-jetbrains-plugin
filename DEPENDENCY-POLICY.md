@@ -14,9 +14,13 @@ may be grouped within their manager. Major updates remain separate. The Rider ID
 ReSharper SDKs move together in one pull request, because the IDE and the SDK must match.
 
 Only stable releases are eligible, and stable releases are eligible immediately: Renovate opens their
-pull request at once. Minor, patch and digest updates merge on their own once seven days old, the
-same window after which the freshness audit calls a pin behind, and only when `CI / Gate` is green.
-The seven days are the freshness grace in `scripts/check-supply-chain.py`, read by the policy check
+pull request at once, held by a pending stability check rather than a delayed pull request. Minor,
+patch and digest updates merge on their own once seven days old, the same window after which the
+freshness audit calls a pin behind, and only when `CI / Gate` is green: Renovate merges the pull
+request itself, on its next scheduled run after both conditions hold, at most a day later. GitHub's
+native auto-merge is deliberately unused for this — it merges as soon as required checks pass and
+cannot be made to wait on the seven-day stability check, so `platformAutomerge` stays `false`. The
+seven days are the freshness grace in `scripts/check-supply-chain.py`, read by the policy check
 rather than repeated. Major updates and the Rider group are always merged by a maintainer.
 Prereleases such as alpha, beta, RC, EAP, preview, nightly, and snapshot builds are rejected unless a
 separate compatibility decision changes the declared product matrix.
