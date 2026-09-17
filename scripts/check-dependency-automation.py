@@ -3,6 +3,7 @@
 
 from __future__ import annotations
 
+import importlib.util
 import json
 import re
 import sys
@@ -10,22 +11,36 @@ from collections import Counter
 from pathlib import Path
 
 
-EXPECTED_MANAGERS = {"gradle", "gradle-wrapper", "nuget", "custom.regex"}
+def load_supply_chain_checker():
+    path = Path(__file__).resolve().parent / "check-supply-chain.py"
+    spec = importlib.util.spec_from_file_location("check_supply_chain", path)
+    module = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(module)
+    return module
+
+
+# The automerge rule waits exactly as long as the freshness check does before
+# calling a pin behind, so the two windows can never drift apart.
+RELEASE_AGE = f"{load_supply_chain_checker().FRESHNESS_GRACE.days} days"
+HOOK_COMMAND = "python3 scripts/sync-supply-chain.py --online"
+
+
+EXPECTED_MANAGERS = {"gradle", "gradle-wrapper", "nuget", "custom.regex", "github-actions"}
 EXPECTED_JETBRAINS_CODES = {"GO", "IIU", "PCP", "PS", "RD", "RM", "RR", "WS"}
 JETBRAINS_PRODUCT_CODES = {
     "GoLand": "GO", "IntellijIdea": "IIU", "PhpStorm": "PS", "PyCharm": "PCP",
     "PyCharmProfessional": "PCP", "Rider": "RD", "RubyMine": "RM", "RustRover": "RR",
     "WebStorm": "WS",
 }
-FORBIDDEN_DELAY_KEYS = {"cooldown", "minimumReleaseAge", "stabilityDays"}
-FORBIDDEN_AUTOMERGE_KEYS = {"automergeType", "platformAutomerge"}
+FORBIDDEN_DELAY_KEYS = {"cooldown", "stabilityDays"}
+FORBIDDEN_AUTOMERGE_KEYS = {"automergeType"}
 RENOVATE_KEYS = {
-    "$schema", "customDatasources", "customManagers", "dependencyDashboard", "enabledManagers",
-    "ignoreUnstable", "labels", "lockFileMaintenance", "packageRules", "prConcurrentLimit",
-    "osvVulnerabilityAlerts", "rangeStrategy", "respectLatest", "schedule", "timezone",
+    "$schema", "automergeStrategy", "customDatasources", "customManagers", "dependencyDashboard",
+    "enabledManagers", "internalChecksFilter", "ignoreUnstable", "labels", "lockFileMaintenance",
+    "packageRules", "osvVulnerabilityAlerts", "platformAutomerge", "postUpgradeTasks",
+    "prConcurrentLimit", "rebaseWhen", "rangeStrategy", "respectLatest", "schedule", "timezone",
     "vulnerabilityAlerts",
 }
-DEPENDABOT_KEYS = {"directory", "groups", "labels", "open-pull-requests-limit", "package-ecosystem", "schedule"}
 CUSTOM_MANAGER_KEYS = {"customType", "datasourceTemplate", "depNameTemplate", "managerFilePatterns", "matchStrings", "versioningTemplate"}
 EXPECTED_PACKAGE_RULES = [
     {
@@ -38,6 +53,23 @@ EXPECTED_PACKAGE_RULES = [
         "matchManagers": ["gradle", "gradle-wrapper", "nuget", "custom.regex"],
         "matchUpdateTypes": ["minor", "patch"],
         "groupName": "ordinary-build-dependencies",
+    },
+    {
+        "description": "Group ordinary non-major GitHub Actions updates",
+        "matchManagers": ["github-actions"],
+        "matchUpdateTypes": ["minor", "patch", "digest"],
+        "groupName": "ordinary-github-actions",
+    },
+    {
+        "description": "Keep the Renovate image update on its own",
+        "matchPackageNames": ["renovate/renovate"],
+        "groupName": "renovate-image",
+    },
+    {
+        "description": "Merge non-major updates on their own once they have matured",
+        "matchUpdateTypes": ["minor", "patch", "digest"],
+        "minimumReleaseAge": RELEASE_AGE,
+        "automerge": True,
     },
     {
         "description": "Use stable Maven releases rather than repository publication order",
@@ -66,6 +98,12 @@ EXPECTED_PACKAGE_RULES = [
         "matchPackageNames": ["java-jdk"],
         "allowedVersions": "/^21\\./",
     },
+    {
+        "description": "Move the Rider IDE and SDKs together, merged by hand",
+        "matchPackageNames": ["JetBrains.ReSharper.SDK.Tests", "JetBrains.Rider.SDK", "RD"],
+        "groupName": "rider-ide-and-sdk",
+        "automerge": False,
+    },
 ]
 EXPECTED_CUSTOM_MANAGERS = {
     "IIU": {
@@ -90,6 +128,7 @@ EXPECTED_CUSTOM_MANAGERS = {
     "GO": {"files": ["/^build\\.gradle\\.kts$/"], "patterns": ["type\\s*=\\s*IntelliJPlatformType\\.GoLand[\\s\\S]{0,120}?version\\s*=\\s*\"(?<currentValue>[0-9.]+)\"", "create\\(\\s*IntelliJPlatformType\\.GoLand\\s*,\\s*\"(?<currentValue>[0-9.]+)\"\\s*\\)"], "datasource": "custom.jetbrains-products", "versioning": "loose"},
     "JetBrains.Rider.SDK": {"files": ["/^src/dotnet/Plugin\\.props$/"], "patterns": ["<SdkVersion>(?<currentValue>[0-9.]+)</SdkVersion>"], "datasource": "nuget", "versioning": "nuget"},
     "java-jdk": {"files": ["/^\\.java-version$/"], "patterns": ["(?<currentValue>[0-9]+\\.[0-9]+\\.[0-9]+\\+\\S+)"], "datasource": "java-version", "versioning": "loose"},
+    "renovate/renovate": {"files": ["/^\\.github/workflows/renovate\\.yml$/"], "patterns": ["renovate-version:\\s*\"?(?<currentValue>[0-9.]+)@(?<currentDigest>sha256:[0-9a-f]{64})\"?"], "datasource": "docker", "versioning": "docker"},
 }
 EXPECTED_DATASOURCE = {
     "defaultRegistryUrlTemplate": "https://data.services.jetbrains.com/products/releases?code={{{packageName}}}&type=release",
@@ -97,6 +136,20 @@ EXPECTED_DATASOURCE = {
     "transformTemplates": [
         '{"releases": $reduce($each($, function($items) { $items }), $append, []).{"version": version, "releaseTimestamp": date}}'
     ],
+}
+EXPECTED_POST_UPGRADE_TASKS = {
+    "commands": [HOOK_COMMAND],
+    "fileFilters": ["config/supply-chain.json", "gradle.lockfile", "gradle/verification-metadata.xml"],
+    "executionMode": "branch",
+}
+EXPECTED_GLOBAL_CONFIG = {
+    "platform": "github",
+    "repositories": ["robintra/perf-sentinel-jetbrains-plugin"],
+    "onboarding": False,
+    "requireConfig": "required",
+    "binarySource": "install",
+    "allowedCommands": ["^python3 scripts/sync-supply-chain\\.py --online$"],
+    "dryRun": "full",
 }
 
 
@@ -139,9 +192,11 @@ def validate(root: Path):
     except (OSError, ValueError, TypeError) as error:
         return [f"renovate configuration is invalid: {error}"]
     try:
-        dependabot = load_json(root / ".github/dependabot.yml")
+        global_config = load_json(root / ".github/renovate-global.json")
     except (OSError, ValueError, TypeError) as error:
-        return [f"Dependabot configuration is invalid: {error}"]
+        return [f"Renovate global configuration is invalid: {error}"]
+    if (root / ".github/dependabot.yml").exists() or (root / ".github/dependabot.yaml").exists():
+        errors.append("Dependabot version updates must be absent: Renovate owns GitHub Actions")
     try:
         policy = (root / "DEPENDENCY-POLICY.md").read_text(encoding="utf-8")
     except OSError as error:
@@ -151,18 +206,16 @@ def validate(root: Path):
         return ["Renovate configuration schema is not closed"]
     if set(renovate) != RENOVATE_KEYS:
         errors.append("Renovate configuration schema is not closed")
-    if not isinstance(dependabot, dict):
-        return ["Dependabot configuration schema is not closed"]
-    if set(dependabot) != {"version", "updates"} or type(dependabot.get("version")) is not int or dependabot.get("version") != 2:
-        errors.append("Dependabot configuration schema is not closed")
+    if not isinstance(global_config, dict):
+        return ["Renovate global configuration schema is not closed"]
+    if global_config != EXPECTED_GLOBAL_CONFIG or not re.fullmatch(global_config["allowedCommands"][0], HOOK_COMMAND):
+        errors.append("Renovate global configuration must allow only the sync hook")
 
     managers = renovate.get("enabledManagers") if isinstance(renovate, dict) else None
     manager_set = set(managers) if isinstance(managers, list) and all(isinstance(item, str) for item in managers) else set()
     manager_count = len(managers) if isinstance(managers, list) else -1
     if manager_set != EXPECTED_MANAGERS or manager_count != len(EXPECTED_MANAGERS):
         errors.append("Renovate manager ownership is not exact")
-    if "github-actions" in manager_set:
-        errors.append("duplicate ownership: Renovate must not own GitHub Actions")
     expected_top_level = {
         "$schema": "https://docs.renovatebot.com/renovate-schema.json",
         "dependencyDashboard": True,
@@ -171,32 +224,23 @@ def validate(root: Path):
     if any(renovate.get(key) != value for key, value in expected_top_level.items()):
         errors.append("Renovate top-level policy is not canonical")
 
-    updates = dependabot.get("updates")
-    if not isinstance(updates, list) or len(updates) != 1 or not isinstance(updates[0], dict):
-        errors.append("Dependabot must own exactly one ecosystem")
-    else:
-        update = updates[0]
-        if set(update) != DEPENDABOT_KEYS:
-            errors.append("Dependabot update schema is not closed")
-        if update.get("package-ecosystem") != "github-actions" or update.get("directory") != "/":
-            errors.append("Dependabot ownership must be limited to GitHub Actions")
-        expected_schedule = {"interval": "weekly", "day": "monday", "time": "06:00", "timezone": "Europe/Paris"}
-        if update.get("schedule") != expected_schedule:
-            errors.append("Dependabot schedule must be Monday 06:00 Europe/Paris")
-        expected_group = {"applies-to": "version-updates", "patterns": ["*"], "update-types": ["minor", "patch"]}
-        if update.get("groups") != {"ordinary-github-actions": expected_group}:
-            errors.append("ordinary GitHub Action grouping must exclude security and major updates")
-        if type(update.get("open-pull-requests-limit")) is not int or update.get("open-pull-requests-limit") != 5 or update.get("labels") != ["dependencies", "ecosystem:github-actions"]:
-            errors.append("Dependabot pull request policy is not canonical")
-
-    keys = set(walk_keys(renovate)) | set(walk_keys(dependabot))
+    keys = set(walk_keys(renovate))
     if keys & FORBIDDEN_DELAY_KEYS:
         errors.append("stable releases must be immediate; release delays are forbidden")
     if keys & FORBIDDEN_AUTOMERGE_KEYS:
-        errors.append("dependency auto-merge is forbidden")
+        errors.append("auto-merge is allowed only through the matured non-major rule")
+    ages = [value for key, value in walk_key_values(renovate) if key == "minimumReleaseAge"]
+    if ages != [RELEASE_AGE]:
+        errors.append(f"a release delay is allowed only on the automerge rule, at {RELEASE_AGE}")
     automerge_values = [value for key, value in walk_key_values(renovate) if key == "automerge"]
-    if automerge_values != [False]:
-        errors.append("dependency auto-merge must be disabled explicitly")
+    if automerge_values != [False, True, False]:
+        errors.append("auto-merge is allowed only through the matured non-major rule")
+    if renovate.get("platformAutomerge") is not True or renovate.get("automergeStrategy") != "squash":
+        errors.append("matured updates must merge through native auto-merge, squashed")
+    if renovate.get("internalChecksFilter") != "none" or renovate.get("rebaseWhen") != "behind-base-branch":
+        errors.append("pull requests must open immediately and stay up to date with main")
+    if renovate.get("postUpgradeTasks") != EXPECTED_POST_UPGRADE_TASKS:
+        errors.append("the sync hook must be exactly the supply-chain synchronisation")
     if renovate.get("ignoreUnstable") is not True or renovate.get("respectLatest") is not True:
         errors.append("stable-only Renovate policy is required")
     if renovate.get("vulnerabilityAlerts") != {"enabled": False} or renovate.get("osvVulnerabilityAlerts") is not False:
@@ -206,11 +250,11 @@ def validate(root: Path):
         errors.append("Renovate pull requests must be bounded")
     if renovate.get("labels") != ["dependencies"] or renovate.get("timezone") != "Europe/Paris":
         errors.append("Renovate labels and timezone are not canonical")
-    if renovate.get("schedule") != ["after 6:00am and before 7:00am on monday"]:
+    if renovate.get("schedule") != ["after 6:00am and before 10:00am"]:
         errors.append("Renovate schedule is not canonical")
-    maintenance = renovate.get("lockFileMaintenance")
-    if maintenance != {"enabled": True, "schedule": ["after 6:00am and before 7:00am on monday"]}:
-        errors.append("Renovate lock maintenance is not canonical")
+    # A global relock drops bundled-module entries and locks prerelease IDEs; see the design.
+    if renovate.get("lockFileMaintenance") != {"enabled": False}:
+        errors.append("Renovate lock maintenance must stay disabled")
     if "stable releases are eligible immediately" not in policy:
         errors.append("policy must state immediate stable eligibility")
 

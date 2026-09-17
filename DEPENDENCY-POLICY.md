@@ -1,38 +1,46 @@
 # Dependency update policy
 
 Renovate owns Gradle dependencies and plugins, the Gradle wrapper, JetBrains IDE and SDK versions,
-RDGen, Rider NuGet packages, lock files, and Gradle verification metadata. Dependabot owns GitHub
-Actions and GitHub-native security alerts only. The two services must never manage the same file or
-ecosystem. Renovate also owns the JDK build recorded in `.java-version`.
+RDGen, Rider NuGet packages, lock files, and Gradle verification metadata. Renovate also owns GitHub
+Actions, the JDK build recorded in `.java-version`, and its own image in
+`.github/workflows/renovate.yml`. Dependabot keeps GitHub-native security alerts; it opens no version
+update. Renovate runs self-hosted from `main` in `.github/workflows/renovate.yml`, never on a pull
+request, with a GitHub App token held by the `renovate` environment.
 
 ## Update rules
 
-Both services check on Monday at 06:00 in `Europe/Paris`. Ordinary minor and patch updates may be
-grouped within their owner. Major updates remain separate. Security updates remain isolated from
-ordinary groups. A catch-all Renovate rule explicitly disables automatic merging, including any
-setting inherited from an organization preset.
+Renovate checks every day between 06:00 and 10:00 in `Europe/Paris`. Ordinary minor and patch updates
+may be grouped within their manager. Major updates remain separate. The Rider IDE and the Rider and
+ReSharper SDKs move together in one pull request, because the IDE and the SDK must match.
 
-Only stable releases are eligible, and stable releases are eligible immediately. The repository
-does not impose a three-day or 72-hour waiting period. Prereleases such as alpha, beta, RC, EAP,
-preview, nightly, and snapshot builds are rejected unless a separate compatibility decision changes
-the declared product matrix.
+Only stable releases are eligible, and stable releases are eligible immediately: Renovate opens their
+pull request at once. Minor, patch and digest updates merge on their own once seven days old, the
+same window after which the freshness audit calls a pin behind, and only when `CI / Gate` is green.
+The seven days are the freshness grace in `scripts/check-supply-chain.py`, read by the policy check
+rather than repeated. Major updates and the Rider group are always merged by a maintainer.
+Prereleases such as alpha, beta, RC, EAP, preview, nightly, and snapshot builds are rejected unless a
+separate compatibility decision changes the declared product matrix.
 
 JetBrains IDE and SDK updates stay within the declared 2025.3 or 2026.2 compatibility line. The
 Rider test collector stays below Coverlet 7 because the project still uses JetBrains' `net472` test
 host; newer stable collectors target modern .NET only and cannot run there.
 
+Lock file maintenance is disabled. It regenerates every Gradle lock at once, which drops the bundled
+module entries of products it did not resolve and can lock a prerelease IDE.
+
 ## Review
 
-Every dependency pull request must update the supply-chain inventory, lock files, verification
-metadata, and immutable action pins together when applicable. The full CI gate, vulnerability audit,
-CodeQL, Qodana, and reproducibility checks must pass before a maintainer merges manually.
+Before pushing a branch, Renovate runs `python3 scripts/sync-supply-chain.py --online`, the only
+command its global configuration allows. The script rewrites the supply-chain inventory and, for a
+JetBrains product only the plugin verifier uses, the lock line and the verification metadata with
+the checksums JetBrains publishes. The pins mirrored in `scripts/tests` stay a deliberate second
+edit: a pull request that moves one fails `Workflow security` until a maintainer edits the named
+line. A product a test IDE resolves, such as Rider or RustRover, still needs a Gradle relock by hand.
 
 Renovate's custom JetBrains manager reads the official JetBrains product release service for every
-IDE version embedded in the Gradle build. Its NuGet manager covers SDK-style project files and locks;
-its Gradle managers cover `settings.gradle.kts`, `gradle/libs.versions.toml`, RDGen, plugins,
-`gradle/wrapper/gradle-wrapper.properties`, Gradle locks, and verification metadata. Its NuGet
-manager updates SDK-style project files and `packages.lock.json`. Dependabot is deliberately limited
-to `.github/workflows` action references.
+IDE version embedded in the Gradle build. Its NuGet manager covers SDK-style project files and
+`packages.lock.json`; its Gradle managers cover `settings.gradle.kts`, `gradle/libs.versions.toml`,
+RDGen, plugins, `gradle/wrapper/gradle-wrapper.properties`, Gradle locks, and verification metadata.
 
 ## The JDK pin
 
@@ -51,8 +59,8 @@ A package rule holds the JDK on the Java 21 line the IntelliJ Platform targets.
 
 ## Bringing the inventory back in step
 
-Neither bot writes `config/supply-chain.json`, so a pull request that bumps a manifest fails
-`check-supply-chain.py` until the matching entry is rewritten. `make sync-supply-chain` performs
+Renovate runs `sync-supply-chain` on its own branches. A manifest bumped by hand fails
+`check-supply-chain.py` until the matching entry is rewritten, and `make sync-supply-chain` performs
 that rewrite: it resolves every declaration through `check-supply-chain.py` itself, so the writer
 and the gate cannot disagree, and it follows the commit SHA the workflows pin for each action.
 `make sync-supply-chain ONLINE=1` also refreshes the release dates, tags, source URLs and Gradle
@@ -60,9 +68,10 @@ checksums that no file in the working tree can prove, which is what the `--onlin
 
 A Gradle bump reaches further than the wrapper: the hosted `gradle-version` inputs in the
 workflows and the `gradle-<version>-src.zip` checksum in `gradle/verification-metadata.xml`, which
-Qodana downloads, both move with it. `sync-supply-chain` owns the inventory only, so those two stay
-manual, and so do the pins mirrored in `scripts/tests`, which exist precisely so a pin cannot move
-without a second, conscious edit. The command lists them on every run that changes something.
+Qodana downloads, both move with it. `sync-supply-chain` writes the inventory and a verifier-only
+JetBrains product's lock and verification entries, not these, so those two stay manual, and so do
+the pins mirrored in `scripts/tests`, which exist precisely so a pin cannot move without a second,
+conscious edit. The command lists them on every run that changes something.
 
 A test IDE bump reaches just as far: the platform arrives without a runtime, so `com.jetbrains:jbr`
 moves with it, and `build.gradle.kts` keeps that coordinate out of dependency locking. Pin the new

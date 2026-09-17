@@ -1,3 +1,4 @@
+import importlib.util
 import json
 import subprocess
 import tempfile
@@ -8,7 +9,7 @@ from pathlib import Path
 REPOSITORY = Path(__file__).resolve().parents[2]
 CHECKER = REPOSITORY / "scripts/check-dependency-automation.py"
 RENOVATE = REPOSITORY / ".github/renovate.json"
-DEPENDABOT = REPOSITORY / ".github/dependabot.yml"
+GLOBAL = REPOSITORY / ".github/renovate-global.json"
 POLICY = REPOSITORY / "DEPENDENCY-POLICY.md"
 SOURCE_FILES = (
     Path("build.gradle.kts"),
@@ -29,7 +30,7 @@ def run_checker(root=REPOSITORY):
 
 def make_fixture(directory):
     root = Path(directory)
-    for relative in (Path(".github/renovate.json"), Path(".github/dependabot.yml"), Path("DEPENDENCY-POLICY.md"), *SOURCE_FILES):
+    for relative in (Path(".github/renovate.json"), Path(".github/renovate-global.json"), Path("DEPENDENCY-POLICY.md"), *SOURCE_FILES):
         target = root / relative
         target.parent.mkdir(parents=True, exist_ok=True)
         target.write_bytes((REPOSITORY / relative).read_bytes())
@@ -51,25 +52,10 @@ class DependencyAutomationTests(unittest.TestCase):
         result = run_checker()
         self.assertEqual(0, result.returncode, result.stderr)
 
-    def test_dependabot_owns_only_github_actions(self):
-        text = DEPENDABOT.read_text(encoding="utf-8")
-        self.assertEqual(1, text.count('"package-ecosystem": "github-actions"'))
-        for forbidden in ('"package-ecosystem": "gradle"', '"package-ecosystem": "nuget"', '"cooldown"', '"automerge"'):
-            self.assertNotIn(forbidden, text)
-        for expected in (
-            '"interval": "weekly"',
-            '"day": "monday"',
-            '"time": "06:00"',
-            '"timezone": "Europe/Paris"',
-            '"applies-to": "version-updates"',
-            '"update-types": ["minor", "patch"]',
-        ):
-            self.assertIn(expected, text)
-
     def test_renovate_owns_gradle_nuget_and_every_jetbrains_version_surface(self):
         config = json.loads(RENOVATE.read_text(encoding="utf-8"))
         self.assertEqual(
-            {"gradle", "gradle-wrapper", "nuget", "custom.regex"},
+            {"gradle", "gradle-wrapper", "nuget", "custom.regex", "github-actions"},
             set(config["enabledManagers"]),
         )
         patterns = [pattern for manager in config["customManagers"] for pattern in manager["managerFilePatterns"]]
@@ -85,19 +71,22 @@ class DependencyAutomationTests(unittest.TestCase):
         ):
             self.assertIn(expected, policy)
         encoded = json.dumps(config, sort_keys=True)
-        self.assertNotIn("github-actions", config["enabledManagers"])
-        self.assertNotIn("minimumReleaseAge", encoded)
+        self.assertIn("github-actions", config["enabledManagers"])
+        self.assertEqual(1, encoded.count("minimumReleaseAge"))
 
-    def test_policy_is_stable_only_without_release_delay_or_auto_merge(self):
+    def test_policy_is_stable_only_and_merges_matured_non_major_updates(self):
         policy = POLICY.read_text(encoding="utf-8")
-        self.assertIn("stable releases are eligible immediately", policy)
-        self.assertIn("Renovate owns Gradle", policy)
-        self.assertIn("Dependabot owns GitHub\nActions", policy)
-        for forbidden in ("cooldown", "auto-merge", "automerge"):
-            self.assertNotIn(forbidden, policy)
-        combined = RENOVATE.read_text(encoding="utf-8") + DEPENDABOT.read_text(encoding="utf-8")
-        for forbidden in ("minimumReleaseAge", "stabilityDays", "cooldown", '"automerge": true'):
-            self.assertNotIn(forbidden, combined)
+        for expected in (
+            "stable releases are eligible immediately",
+            "Renovate owns Gradle",
+            "Renovate also owns GitHub\nActions",
+            "merge on their own once seven days old",
+        ):
+            self.assertIn(expected, policy)
+        self.assertFalse((REPOSITORY / ".github/dependabot.yml").exists())
+        config = RENOVATE.read_text(encoding="utf-8")
+        for forbidden in ("stabilityDays", "cooldown", "automergeType"):
+            self.assertNotIn(forbidden, config)
 
     def test_checker_rejects_missing_custom_jetbrains_coverage(self):
         with tempfile.TemporaryDirectory() as directory:
@@ -122,20 +111,20 @@ class DependencyAutomationTests(unittest.TestCase):
             (root / ".github/renovate.json").write_text(json.dumps(config), encoding="utf-8")
             result = run_checker(root)
             self.assertNotEqual(0, result.returncode)
-            self.assertIn("stable releases must be immediate", result.stderr)
+            self.assertIn("release delay is allowed only", result.stderr)
             self.assertIn("stable-only", result.stderr)
 
-    def test_checker_rejects_duplicate_ownership_and_auto_merge(self):
+    def test_checker_rejects_automerge_outside_its_rule_and_a_returning_dependabot(self):
         with tempfile.TemporaryDirectory() as directory:
             root = make_fixture(directory)
             config = json.loads((root / ".github/renovate.json").read_text(encoding="utf-8"))
-            config["enabledManagers"].append("github-actions")
             config["automerge"] = True
             (root / ".github/renovate.json").write_text(json.dumps(config), encoding="utf-8")
+            (root / ".github/dependabot.yml").write_text('{"version": 2, "updates": []}', encoding="utf-8")
             result = run_checker(root)
             self.assertNotEqual(0, result.returncode)
-            self.assertIn("duplicate ownership", result.stderr)
-            self.assertIn("auto-merge", result.stderr)
+            self.assertIn("auto-merge is allowed only", result.stderr)
+            self.assertIn("Dependabot version updates must be absent", result.stderr)
 
     def test_catch_all_rule_disables_inherited_auto_merge(self):
         config = json.loads(RENOVATE.read_text(encoding="utf-8"))
@@ -274,7 +263,7 @@ class DependencyAutomationTests(unittest.TestCase):
                 self.assertNotIn("Traceback", result.stderr)
 
     def test_checker_rejects_non_object_roots_without_traceback(self):
-        for relative in (Path(".github/renovate.json"), Path(".github/dependabot.yml")):
+        for relative in (Path(".github/renovate.json"), Path(".github/renovate-global.json")):
             with self.subTest(relative=relative), tempfile.TemporaryDirectory() as directory:
                 root = make_fixture(directory)
                 (root / relative).write_text("[]", encoding="utf-8")
@@ -286,7 +275,7 @@ class DependencyAutomationTests(unittest.TestCase):
         config = json.loads(RENOVATE.read_text(encoding="utf-8"))
         self.assertEqual({"enabled": False}, config["vulnerabilityAlerts"])
         self.assertIs(False, config["osvVulnerabilityAlerts"])
-        self.assertIn("GitHub-native security alerts only", POLICY.read_text(encoding="utf-8"))
+        self.assertIn("GitHub-native security alerts", POLICY.read_text(encoding="utf-8"))
 
     def test_coverlet_stays_on_the_net472_compatible_line(self):
         config = json.loads(RENOVATE.read_text(encoding="utf-8"))
@@ -322,20 +311,49 @@ class DependencyAutomationTests(unittest.TestCase):
             self.assertNotEqual(0, result.returncode)
             self.assertIn("official release service", result.stderr)
 
-    def test_checker_rejects_dependabot_limit_or_label_drift(self):
-        for key, value in (
-            ("open-pull-requests-limit", True),
-            ("labels", ["dependencies"]),
+    def test_matured_non_major_updates_merge_after_the_freshness_grace(self):
+        spec = importlib.util.spec_from_file_location("check_supply_chain", REPOSITORY / "scripts/check-supply-chain.py")
+        supply = importlib.util.module_from_spec(spec)
+        spec.loader.exec_module(supply)
+        rules = json.loads(RENOVATE.read_text(encoding="utf-8"))["packageRules"]
+        automerge = [rule for rule in rules if rule.get("automerge") is True]
+        self.assertEqual(1, len(automerge))
+        self.assertEqual(["minor", "patch", "digest"], automerge[0]["matchUpdateTypes"])
+        self.assertEqual(f"{supply.FRESHNESS_GRACE.days} days", automerge[0]["minimumReleaseAge"])
+
+    def test_checker_rejects_policy_switches_drifting(self):
+        for key, value, message in (
+            ("lockFileMaintenance", {"enabled": True}, "lock maintenance"),
+            ("platformAutomerge", False, "native auto-merge"),
+            ("postUpgradeTasks", {"commands": ["bash -c env"]}, "sync hook"),
         ):
             with self.subTest(key=key), tempfile.TemporaryDirectory() as directory:
-                root = make_fixture(directory)
-                config_path = root / ".github/dependabot.yml"
-                config = json.loads(config_path.read_text(encoding="utf-8"))
-                config["updates"][0][key] = value
-                config_path.write_text(json.dumps(config), encoding="utf-8")
-                result = run_checker(root)
+                result = run_with_mutation(directory, key, value)
                 self.assertNotEqual(0, result.returncode)
-                self.assertIn("Dependabot pull request policy", result.stderr)
+                self.assertIn(message, result.stderr)
+
+    def test_checker_rejects_a_global_config_allowing_more_than_the_hook(self):
+        with tempfile.TemporaryDirectory() as directory:
+            root = make_fixture(directory)
+            path = root / ".github/renovate-global.json"
+            config = json.loads(path.read_text(encoding="utf-8"))
+            config["allowedCommands"].append(".*")
+            path.write_text(json.dumps(config), encoding="utf-8")
+            result = run_checker(root)
+            self.assertNotEqual(0, result.returncode)
+            self.assertIn("global configuration", result.stderr)
+
+    def test_rider_ide_and_sdks_move_together_by_hand(self):
+        rules = json.loads(RENOVATE.read_text(encoding="utf-8"))["packageRules"]
+        self.assertEqual(
+            {
+                "description": "Move the Rider IDE and SDKs together, merged by hand",
+                "matchPackageNames": ["JetBrains.ReSharper.SDK.Tests", "JetBrains.Rider.SDK", "RD"],
+                "groupName": "rider-ide-and-sdk",
+                "automerge": False,
+            },
+            rules[-1],
+        )
 
 
 if __name__ == "__main__":
