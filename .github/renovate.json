@@ -61,13 +61,6 @@
       "groupName": "ordinary-github-actions"
     },
     {
-      "description": "Keep the Renovate image update on its own",
-      "matchPackageNames": [
-        "renovate/renovate"
-      ],
-      "groupName": "renovate-image"
-    },
-    {
       "description": "Merge non-major updates on their own once they have matured",
       "matchUpdateTypes": [
         "minor",
@@ -76,6 +69,22 @@
       ],
       "minimumReleaseAge": "7 days",
       "automerge": true
+    },
+    {
+      "description": "Keep the Renovate image update on its own, never automerged: it runs holding the App token",
+      "matchPackageNames": [
+        "renovate/renovate"
+      ],
+      "groupName": "renovate-image",
+      "automerge": false
+    },
+    {
+      "description": "Keep the Renovate action update on its own, never automerged: it runs holding the App token",
+      "matchPackageNames": [
+        "renovatebot/github-action"
+      ],
+      "groupName": "renovate-action",
+      "automerge": false
     },
     {
       "description": "Use stable Maven releases rather than repository publication order",

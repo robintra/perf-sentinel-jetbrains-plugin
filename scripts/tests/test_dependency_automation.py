@@ -343,6 +343,23 @@ class DependencyAutomationTests(unittest.TestCase):
             self.assertNotEqual(0, result.returncode)
             self.assertIn("global configuration", result.stderr)
 
+    def test_the_runner_never_automerges_itself(self):
+        rules = json.loads(RENOVATE.read_text(encoding="utf-8"))["packageRules"]
+        maturity_index = next(index for index, rule in enumerate(rules) if rule.get("automerge") is True)
+        non_automerging_after = {
+            name
+            for rule in rules[maturity_index + 1:]
+            if rule.get("automerge") is False
+            for name in rule.get("matchPackageNames", [])
+        }
+        self.assertEqual(
+            {
+                "renovate/renovate", "renovatebot/github-action",
+                "JetBrains.ReSharper.SDK.Tests", "JetBrains.Rider.SDK", "RD",
+            },
+            non_automerging_after,
+        )
+
     def test_rider_ide_and_sdks_move_together_by_hand(self):
         rules = json.loads(RENOVATE.read_text(encoding="utf-8"))["packageRules"]
         self.assertEqual(

@@ -61,15 +61,22 @@ EXPECTED_PACKAGE_RULES = [
         "groupName": "ordinary-github-actions",
     },
     {
-        "description": "Keep the Renovate image update on its own",
-        "matchPackageNames": ["renovate/renovate"],
-        "groupName": "renovate-image",
-    },
-    {
         "description": "Merge non-major updates on their own once they have matured",
         "matchUpdateTypes": ["minor", "patch", "digest"],
         "minimumReleaseAge": RELEASE_AGE,
         "automerge": True,
+    },
+    {
+        "description": "Keep the Renovate image update on its own, never automerged: it runs holding the App token",
+        "matchPackageNames": ["renovate/renovate"],
+        "groupName": "renovate-image",
+        "automerge": False,
+    },
+    {
+        "description": "Keep the Renovate action update on its own, never automerged: it runs holding the App token",
+        "matchPackageNames": ["renovatebot/github-action"],
+        "groupName": "renovate-action",
+        "automerge": False,
     },
     {
         "description": "Use stable Maven releases rather than repository publication order",
@@ -233,7 +240,7 @@ def validate(root: Path):
     if ages != [RELEASE_AGE]:
         errors.append(f"a release delay is allowed only on the automerge rule, at {RELEASE_AGE}")
     automerge_values = [value for key, value in walk_key_values(renovate) if key == "automerge"]
-    if automerge_values != [False, True, False]:
+    if automerge_values != [False, True, False, False, False]:
         errors.append("auto-merge is allowed only through the matured non-major rule")
     if renovate.get("platformAutomerge") is not False or renovate.get("automergeStrategy") != "squash":
         errors.append("matured updates must merge through Renovate's own merge, squashed, never native auto-merge")
