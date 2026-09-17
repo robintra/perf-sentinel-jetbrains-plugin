@@ -73,9 +73,9 @@ EXPECTED_PACKAGE_RULES = [
         "automerge": False,
     },
     {
-        "description": "Keep the Renovate action update on its own, never automerged: it runs holding the App token",
-        "matchPackageNames": ["renovatebot/github-action"],
-        "groupName": "renovate-action",
+        "description": "Never automerge the actions that run inside the Renovate job itself: they hold or mint the App key, and CI / Gate never exercises that workflow",
+        "matchPackageNames": ["renovatebot/github-action", "step-security/harden-runner", "actions/create-github-app-token"],
+        "groupName": "renovate-job-actions",
         "automerge": False,
     },
     {

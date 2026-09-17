@@ -355,6 +355,7 @@ class DependencyAutomationTests(unittest.TestCase):
         self.assertEqual(
             {
                 "renovate/renovate", "renovatebot/github-action",
+                "step-security/harden-runner", "actions/create-github-app-token",
                 "JetBrains.ReSharper.SDK.Tests", "JetBrains.Rider.SDK", "RD",
             },
             non_automerging_after,
