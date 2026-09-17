@@ -180,6 +180,27 @@ class SyncSupplyChainTest(unittest.TestCase):
         self.assertEqual({"releasedAt": "2026-09-03"}, metadata)
         self.assertEqual([dependency["source"]], client.urls)
 
+    def test_an_image_declaration_splits_into_release_and_digest(self):
+        module = load_sync()
+        digest = "sha256:" + "c" * 64
+        self.assertEqual(
+            {"release": "44.74.1", "version": digest},
+            module.declared_fields(module.load_checker(), ".github/workflows/renovate.yml#renovate-version", f"44.74.1@{digest}"),
+        )
+
+    def test_the_renovate_image_release_date_comes_from_its_github_release(self):
+        module = load_sync()
+        client = FeedClient({"tag_name": "44.74.1", "published_at": "2026-09-09T23:48:34Z"})
+        dependency = {
+            "name": "Renovate image", "kind": "container", "version": "sha256:" + "c" * 64,
+            "release": "44.74.1", "source": "https://hub.docker.com/r/renovate/renovate",
+        }
+
+        metadata = module.online_metadata(client, module.load_checker(), dependency)
+
+        self.assertEqual({"releasedAt": "2026-09-09T23:48:34Z"}, metadata)
+        self.assertEqual(["https://api.github.com/repos/renovatebot/renovate/releases/tags/44.74.1"], client.urls)
+
     def write_verifier_pin(self, version):
         """A verifier-only product, as the lock file and the metadata hold it."""
         (self.root / "gradle").mkdir(exist_ok=True)
