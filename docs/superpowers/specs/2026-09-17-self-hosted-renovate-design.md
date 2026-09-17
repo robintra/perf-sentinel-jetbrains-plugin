@@ -143,7 +143,11 @@ Test-driven, like the rest of the repository:
 ## Rollout
 
 1. **Merge in dry run.** `.github/renovate-global.json` sets `dryRun: "full"` for every run,
-   scheduled or dispatched. Renovate computes everything and writes nothing.
+   scheduled or dispatched. Renovate computes everything and writes nothing — except
+   `postUpgradeTasks`: there is no dry-run guard at that call site, so `dryRun: "full"` does not
+   suppress it. The hook still runs and still makes live network calls (`python3
+   scripts/sync-supply-chain.py --online`, in the throwaway clone), which is good news for what the
+   dry run can answer but means nobody should assume the dry run is inert.
 2. **One manual dry run**, whose logs are reviewed together: branches it would open, whether Python
    installs, whether the hook reaches the network, whether the grouped Rider update is recognised.
 3. **Lift the dry run** in a dedicated commit, the only change that enables writing.
@@ -154,7 +158,7 @@ Test-driven, like the rest of the repository:
 | Question | If confirmed | If not |
 |---|---|---|
 | Can `renovatebot/github-action` run the Renovate image pinned by digest? | pin by digest | stop and report before going further: an image pinned by tag alone breaks the supply-chain policy |
-| With `platformAutomerge: true`, does Renovate withhold enabling native auto-merge until the release age is met? | keep `platformAutomerge: true` | set `platformAutomerge: false`: Renovate merges on its next run once every check, stability included, passes, at most a day later — **not confirmed**, verified 2026-09-17 against the pinned `renovate/renovate` source (tag `44.79.2`) rather than the dry run, which cannot exercise GitHub's merge behaviour: `internalChecksFilter` defaults to `"strict"`, so our `"none"` override already removes the branch-creation hold; `usePlatformAutomerge` (`lib/workers/repository/update/pr/index.ts:61-65`) is derived from static config booleans only, never check status; and `tryPrAutomerge` (`lib/modules/platform/github/index.ts:2013`) enables GitHub's native auto-merge right after `createPr`, gated only on GHE version and the repo's `autoMergeAllowed` setting — GitHub's native auto-merge itself waits only on required status checks, and `renovate/stability-days` is not one. `platformAutomerge: false` applied |
+| With `platformAutomerge: true`, does Renovate withhold enabling native auto-merge until the release age is met? | keep `platformAutomerge: true` | set `platformAutomerge: false`: Renovate merges on its next run once every check, stability included, passes, at most a day later — **not confirmed**, verified 2026-09-17 against the pinned `renovate/renovate` source (tag `44.79.2`) rather than the dry run, which cannot exercise GitHub's merge behaviour: the `renovate/stability-days` check itself is unaffected by `internalChecksFilter` — `config.stabilityStatus` is computed by the branch worker directly from `minimumReleaseAge` and `releaseTimestamp`; `internalChecksFilter` only controls whether *branch creation* is held pending internal checks, and our `"none"` override removes only that creation hold, not the check Renovate still posts. `usePlatformAutomerge` (`lib/workers/repository/update/pr/index.ts:61-65`) is derived from static config booleans only, never check status; and `tryPrAutomerge` (`lib/modules/platform/github/index.ts:2013`) enables GitHub's native auto-merge right after `createPr`, gated only on GHE version and the repo's `autoMergeAllowed` setting — GitHub's native auto-merge itself waits only on required status checks, and `renovate/stability-days` is not one. `platformAutomerge: false` applied |
 | Does the hook receive the read-only `GITHUB_TOKEN` through the self-hosted environment options? | keep it | the dry run shows GitHub lookups failing; stop and report |
 | For an ordinary Gradle library bump, does Renovate update `gradle.lockfile` and `verification-metadata.xml` inside its container without the damage described above? | keep Renovate's artifact update | those pull requests arrive red without derived files and stay manual, as today: no regression, and the gap is reported |
 
