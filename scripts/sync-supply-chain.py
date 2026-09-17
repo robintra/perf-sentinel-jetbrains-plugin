@@ -2,11 +2,11 @@
 """Bring config/supply-chain.json back in step with the repository.
 
 check-supply-chain.py refuses an inventory that disagrees with what the
-repository declares, and nothing writes that inventory. A Renovate or
-Dependabot pull request therefore bumps a manifest and fails the gate until
-somebody rewrites the matching entry by hand. This performs that rewrite,
-resolving every declaration through check-supply-chain.py itself so the two
-cannot drift apart.
+repository declares, and nothing writes that inventory. A Renovate pull
+request therefore bumps a manifest and fails the gate until the matching
+entry is rewritten — which Renovate does itself, running this script as a
+postUpgradeTask. This performs that rewrite, resolving every declaration
+through check-supply-chain.py itself so the two cannot drift apart.
 
 Offline it refreshes what the working tree already proves: the version behind
 each `declaration`, and the commit SHA the workflows pin for each action.
