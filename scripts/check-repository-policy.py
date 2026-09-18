@@ -22,7 +22,10 @@ SETTINGS = {
     "allow_squash_merge": True,
     "allow_rebase_merge": True,
     "allow_merge_commit": False,
-    "allow_auto_merge": False,
+    # Renovate merges matured non-major updates itself, on its next run once CI / Gate is green
+    # (platformAutomerge is false). This setting is not part of that path; it stays on only so a
+    # maintainer can use `gh pr merge --auto` or the UI button, which the ruleset still gates.
+    "allow_auto_merge": True,
     "delete_branch_on_merge": True,
 }
 SECURITY = {
@@ -33,7 +36,7 @@ SECURITY = {
 }
 SECRETS = {
     "CERTIFICATE_CHAIN", "PRIVATE_KEY", "PRIVATE_KEY_PASSWORD",
-    "PUBLISH_TOKEN", "QODANA_TOKEN",
+    "PUBLISH_TOKEN", "QODANA_TOKEN", "RENOVATE_APP_ID", "RENOVATE_APP_PRIVATE_KEY",
 }
 
 CHECK_SCHEMA = {"context": str}
@@ -89,6 +92,11 @@ POLICY_SCHEMA = {
         "minimum_required_reviewers": int,
         "prevent_self_review": bool,
     },
+    "renovate_environment": {
+        "name": str,
+        "custom_branch_policies": bool,
+        "branch_policies": (LIST, str),
+    },
     "workflow_secrets": (LIST, str),
 }
 REPOSITORY_SCHEMA = {
@@ -117,6 +125,10 @@ ENVIRONMENT_SCHEMA = {
         "reviewers": (LIST, {"type": str, "reviewer": {"id": int, "name": str}}),
     }),
 }
+DEPLOYMENT_BRANCH_POLICY_SCHEMA = {"protected_branches": bool, "custom_branch_policies": bool}
+RENOVATE_ENVIRONMENT_SCHEMA = {"name": str, "deployment_branch_policy": DEPLOYMENT_BRANCH_POLICY_SCHEMA}
+BRANCH_POLICY_SCHEMA = {"id": int, "name": str, "type": str}
+BRANCH_POLICIES_SCHEMA = {"total_count": int, "branch_policies": (LIST, BRANCH_POLICY_SCHEMA)}
 
 
 class PolicyError(ValueError):
@@ -188,6 +200,9 @@ def validate_policy(value):
         and value["release_environment"] == {
             "name": "jetbrains-release", "minimum_required_reviewers": 1,
             "prevent_self_review": False,
+        }
+        and value["renovate_environment"] == {
+            "name": "renovate", "custom_branch_policies": True, "branch_policies": ["main"],
         }
         and len(value["workflow_secrets"]) == len(set(value["workflow_secrets"]))
         and set(value["workflow_secrets"]) == SECRETS
@@ -285,6 +300,25 @@ def normalize_environment(value):
     return result
 
 
+def normalize_renovate_environment(value):
+    result = selected(value, ("name", "deployment_branch_policy"), "renovate environment")
+    policy_value = result["deployment_branch_policy"]
+    if type(policy_value) is not dict:
+        raise PolicyError("renovate environment deployment branch policy is missing")
+    result["deployment_branch_policy"] = selected(
+        policy_value, ("protected_branches", "custom_branch_policies"), "deployment branch policy"
+    )
+    return result
+
+
+def normalize_branch_policies(value):
+    result = selected(value, ("total_count", "branch_policies"), "renovate branch policies")
+    result["branch_policies"] = [
+        selected(item, ("id", "name", "type"), "branch policy") for item in result["branch_policies"]
+    ]
+    return result
+
+
 class GitHubApi:
     def __init__(self, repository, fixture):
         self.repository = repository
@@ -304,6 +338,10 @@ class GitHubApi:
             return f"ruleset:{endpoint.rsplit('/', 1)[1]}"
         if endpoint == f"{base}/environments/{quote('jetbrains-release', safe='')}":
             return "environment"
+        if endpoint == f"{base}/environments/{quote('renovate', safe='')}/deployment-branch-policies":
+            return "renovate_branch_policies"
+        if endpoint == f"{base}/environments/{quote('renovate', safe='')}":
+            return "renovate_environment"
         raise PolicyError(f"unrecognized endpoint {endpoint}")
 
     def fetch(self, endpoint, *, page=None, schema=None, validator=None, normalize=lambda value: value, status=200):
@@ -363,6 +401,16 @@ class GitHubApi:
     def environment(self):
         return self.fetch(f"repos/{self.repository}/environments/{quote('jetbrains-release', safe='')}",
                           schema=ENVIRONMENT_SCHEMA, normalize=normalize_environment)
+
+    def renovate_environment(self):
+        return self.fetch(f"repos/{self.repository}/environments/{quote('renovate', safe='')}",
+                          schema=RENOVATE_ENVIRONMENT_SCHEMA, normalize=normalize_renovate_environment)
+
+    def renovate_branch_policies(self):
+        return self.fetch(
+            f"repos/{self.repository}/environments/{quote('renovate', safe='')}/deployment-branch-policies",
+            schema=BRANCH_POLICIES_SCHEMA, normalize=normalize_branch_policies,
+        )
 
 
 def workflow_secrets(root):
@@ -487,6 +535,14 @@ def validate(repository, root, policy, api):
     )
     if not valid or reviewers[0]["prevent_self_review"] is not False:
         errors.append("jetbrains-release requires one manual approval")
+
+    renovate_environment = api.renovate_environment()
+    if renovate_environment["deployment_branch_policy"]["custom_branch_policies"] is not True:
+        errors.append("renovate environment must restrict deployments to custom branch policies")
+    branch_policies = api.renovate_branch_policies()
+    names = [item["name"] for item in branch_policies["branch_policies"]]
+    if branch_policies["total_count"] != 1 or names != ["main"]:
+        errors.append("renovate environment must allow deployment from main only")
     return errors
 
 

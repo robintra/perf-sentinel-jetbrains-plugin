@@ -44,11 +44,11 @@ REQUIRED_ACTIONS = set("""
 actions/checkout actions/setup-java actions/setup-dotnet actions/setup-python actions/upload-artifact actions/github-script
 actions/download-artifact actions/dependency-review-action github/codeql-action
 JetBrains/qodana-action anchore/sbom-action ossf/scorecard-action step-security/harden-runner
-google/osv-scanner-action gitleaks/gitleaks-action zizmorcore/zizmor-action gradle/actions
+google/osv-scanner-action gitleaks/gitleaks-action zizmorcore/zizmor-action gradle/actions renovatebot/github-action actions/create-github-app-token
 """.split())
 REQUIRED_TOOLS = {
     "Kover", "OSV-Scanner", "Gitleaks", "TruffleHog", "Zizmor",
-    "Syft", "actionlint", "Ruff", "Marketplace ZIP Signer", "Qodana CLI", "Qodana JVM Community image",
+    "Syft", "actionlint", "Ruff", "Marketplace ZIP Signer", "Qodana CLI", "Qodana JVM Community image", "Renovate image",
 }
 REQUIRED_TRANSITIVE_EXCEPTIONS = {
     "com.jgoodies:forms:1.1-preview",
@@ -82,7 +82,7 @@ build.gradle.kts#IntelliJ IDEA 2025.3;build.gradle.kts#IntelliJ IDEA 2026.2;buil
 build.gradle.kts#PhpStorm 2025.3;build.gradle.kts#PhpStorm 2026.2;build.gradle.kts#RustRover 2025.3;build.gradle.kts#RustRover 2026.2;build.gradle.kts#RubyMine 2025.3;build.gradle.kts#RubyMine 2026.2
 build.gradle.kts#WebStorm 2025.3;build.gradle.kts#WebStorm 2026.2;build.gradle.kts#GoLand 2025.3;build.gradle.kts#GoLand 2026.2
 src/dotnet/Plugin.props#SdkVersion:JetBrains.Rider.SDK;src/dotnet/Plugin.props#SdkVersion:JetBrains.ReSharper.SDK.Tests;src/dotnet/Directory.Build.props#Microsoft.NETFramework.ReferenceAssemblies;src/dotnet/Directory.Build.props#Microsoft.Bcl.Memory
-src/dotnet/PerfSentinel.Rider.Tests/PerfSentinel.Rider.Tests.csproj#Microsoft.NET.Test.Sdk;src/dotnet/PerfSentinel.Rider.Tests/PerfSentinel.Rider.Tests.csproj#NUnit3TestAdapter;qodana.yml#linter
+src/dotnet/PerfSentinel.Rider.Tests/PerfSentinel.Rider.Tests.csproj#Microsoft.NET.Test.Sdk;src/dotnet/PerfSentinel.Rider.Tests/PerfSentinel.Rider.Tests.csproj#NUnit3TestAdapter;qodana.yml#linter;.github/workflows/renovate.yml#renovate-version
 """.replace("\n", ";").strip(";").split(";"))
 OPTIONAL_DIRECT_DECLARATIONS = {
     "gradle/libs.versions.toml#kover",
@@ -124,7 +124,15 @@ GITHUB_REPOS = {
 }
 CONTAINER_REPOSITORIES = {
     "Qodana JVM Community image": "jetbrains/qodana-jvm-community",
+    "Renovate image": "renovate/renovate",
 }
+# Images whose tags are GitHub releases. Their digest still comes from Docker Hub,
+# but eligibility is read from the releases, which carry an exact publication time.
+CONTAINER_RELEASE_REPOS = {
+    "Renovate image": "renovatebot/renovate",
+}
+# Declarations that pin an image as `tag@digest`, compared as `release@version`.
+IMAGE_DECLARATIONS = {"qodana.yml#linter", ".github/workflows/renovate.yml#renovate-version"}
 PRODUCT_CODES = {
     "IntelliJ IDEA": "IIU",
     "Rider": "RD",
@@ -456,6 +464,9 @@ def declared_versions(root, declaration):
     if relative == "qodana.yml":
         match = re.search(r"^linter:\s*jetbrains/qodana-jvm-community:([^@\s]+)@(sha256:[0-9a-f]{64})$", text, re.M)
         return [f"{match.group(1)}@{match.group(2)}"] if match else []
+    if relative == ".github/workflows/renovate.yml":
+        match = re.search(r'^\s*renovate-version:\s*"?([0-9][0-9.]*)@(sha256:[0-9a-f]{64})"?\s*$', text, re.M)
+        return [f"{match.group(1)}@{match.group(2)}"] if match else []
     return []
 
 
@@ -482,7 +493,7 @@ def check_declarations(root, inventory, errors):
             actual = declared_versions(root, declaration)
         except (OSError, ElementTree.ParseError, ValueError, tomllib.TOMLDecodeError):
             actual = []
-        if declaration == "qodana.yml#linter":
+        if declaration in IMAGE_DECLARATIONS:
             expected = f"{dependency.get('release', '')}@{dependency.get('version', '')}"
         else:
             expected = dependency.get("sha256", "") if declaration.endswith("#sha256") else dependency.get("version", "")
@@ -944,13 +955,14 @@ def validate_release(dependency, candidates: list[tuple[str, datetime]], now, la
         raise ValueError(f"not latest eligible stable {label} ({eligible[0]})")
 
 
-def verify_github(client, dependency, now):
-    match = re.fullmatch(r"https://github\.com/([^/]+/[^/]+)/releases/tag/([^/]+)", dependency["source"])
-    if not match or dependency.get("release") != match.group(2):
-        raise ValueError("GitHub source/release mismatch")
-    repo, tag = match.groups()
-    releases = client.json(f"https://api.github.com/repos/{repo}/releases?per_page=100")
-    candidates = [
+def stable_release_candidates(releases):
+    """Non-draft, non-prerelease, version-tagged releases, as (version, published) pairs."""
+    # Tolerates a "v" prefix here, but sync-supply-chain.py's online_metadata() has a
+    # releases/tags/{release} lookup that fetches the bare tag straight from the inventory and
+    # never re-adds one. Harmless while renovatebot/renovate (the only CONTAINER_RELEASE_REPOS
+    # entry) tags without "v", but that lookup would 404 the day it gains one, even though this
+    # function would keep comparing fine.
+    return [
         (item["tag_name"].lstrip("v"), parse_instant(item["published_at"]))
         for item in releases
         if not item["draft"]
@@ -958,6 +970,15 @@ def verify_github(client, dependency, now):
         and item.get("published_at")
         and re.fullmatch(r"v?\d+(?:\.\d+)+", item["tag_name"])
     ]
+
+
+def verify_github(client, dependency, now):
+    match = re.fullmatch(r"https://github\.com/([^/]+/[^/]+)/releases/tag/([^/]+)", dependency["source"])
+    if not match or dependency.get("release") != match.group(2):
+        raise ValueError("GitHub source/release mismatch")
+    repo, tag = match.groups()
+    releases = client.json(f"https://api.github.com/repos/{repo}/releases?per_page=100")
+    candidates = stable_release_candidates(releases)
     release_dependency = dict(dependency, version=tag.lstrip("v"))
     validate_release(release_dependency, candidates, now, "GitHub release")
     if dependency["kind"] == "github-action":
@@ -1058,17 +1079,33 @@ def verify_nuget(client, dependency, now):
     validate_release(dependency, [(version, published) for version, published, _ in candidates], now, "NuGet release", compatible + "." if compatible else None)
 
 
+def github_release_candidates(client, repo, now):
+    """Stable releases, read back until one is old enough to be eligible."""
+    candidates = []
+    for page in range(1, 6):
+        releases = client.json(f"https://api.github.com/repos/{repo}/releases?per_page=100&page={page}")
+        stable = stable_release_candidates(releases)
+        candidates += stable
+        if not releases or any(published <= now - FRESHNESS_GRACE for _, published in stable):
+            break
+    return candidates
+
+
 def verify_container(client, dependency, now):
     repository = CONTAINER_REPOSITORIES[dependency["name"]]
     data = client.json(f"https://hub.docker.com/v2/repositories/{repository}/tags/{dependency['release']}")
     if dependency["version"] != data.get("digest"):
         raise ValueError("container digest mismatch")
-    tags = client.json(f"https://hub.docker.com/v2/repositories/{repository}/tags?page_size=30")["results"]
-    candidates = [
-        (item["name"], parse_instant(item["last_updated"]))
-        for item in tags
-        if re.fullmatch(r"\d{4}\.\d+", item["name"])
-    ]
+    release_repository = CONTAINER_RELEASE_REPOS.get(dependency["name"])
+    if release_repository:
+        candidates = github_release_candidates(client, release_repository, now)
+    else:
+        tags = client.json(f"https://hub.docker.com/v2/repositories/{repository}/tags?page_size=30")["results"]
+        candidates = [
+            (item["name"], parse_instant(item["last_updated"]))
+            for item in tags
+            if re.fullmatch(r"\d{4}\.\d+", item["name"])
+        ]
     tag_dependency = dict(dependency, version=dependency["release"])
     validate_release(tag_dependency, candidates, now, "container")
 

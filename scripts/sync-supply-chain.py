@@ -2,11 +2,11 @@
 """Bring config/supply-chain.json back in step with the repository.
 
 check-supply-chain.py refuses an inventory that disagrees with what the
-repository declares, and nothing writes that inventory. A Renovate or
-Dependabot pull request therefore bumps a manifest and fails the gate until
-somebody rewrites the matching entry by hand. This performs that rewrite,
-resolving every declaration through check-supply-chain.py itself so the two
-cannot drift apart.
+repository declares, and nothing writes that inventory. A Renovate pull
+request therefore bumps a manifest and fails the gate until the matching
+entry is rewritten — which Renovate does itself, running this script as a
+postUpgradeTask. This performs that rewrite, resolving every declaration
+through check-supply-chain.py itself so the two cannot drift apart.
 
 Offline it refreshes what the working tree already proves: the version behind
 each `declaration`, and the commit SHA the workflows pin for each action.
@@ -53,9 +53,9 @@ def load_checker():
     return module
 
 
-def declared_fields(declaration: str, actual: str) -> dict[str, str]:
+def declared_fields(checker, declaration: str, actual: str) -> dict[str, str]:
     """The fields check-supply-chain compares for one declaration."""
-    if declaration == "qodana.yml#linter":
+    if declaration in checker.IMAGE_DECLARATIONS:
         release, _, digest = actual.partition("@")
         return {"release": release, "version": digest}
     if declaration.endswith("#sha256"):
@@ -82,7 +82,7 @@ def declaration_changes(root, checker, dependencies, problems):
             # hide a real divergence behind a green gate.
             problems.append(f"{dependency['name']}: {declaration} resolves to {values}")
             continue
-        for field, value in declared_fields(declaration, distinct.pop()).items():
+        for field, value in declared_fields(checker, declaration, distinct.pop()).items():
             if dependency.get(field) != value:
                 changes.append((dependency, field, dependency.get(field), value))
     return changes
@@ -202,6 +202,14 @@ def online_metadata(client, checker, dependency) -> dict[str, str]:
         return nuget_published(client, checker, dependency)
     if kind == "jetbrains-product":
         return jetbrains_published(client, checker, dependency)
+    if kind == "container" and name in checker.CONTAINER_RELEASE_REPOS:
+        # Assumes the inventoried release tag has no "v" prefix, unlike
+        # check-supply-chain.py's stable_release_candidates, which tolerates either. True today
+        # for renovatebot/renovate; if that ever changes, this 404s.
+        release = client.json(
+            f"https://api.github.com/repos/{checker.CONTAINER_RELEASE_REPOS[name]}/releases/tags/{dependency['release']}"
+        )
+        return {"releasedAt": instant(release["published_at"])}
     repo = name if kind == "github-action" else checker.GITHUB_REPOS.get(name)
     if repo:
         tag, published = github_release(client, repo, dependency["version"])

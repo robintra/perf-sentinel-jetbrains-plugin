@@ -7,7 +7,7 @@
     "allow_squash_merge": true,
     "allow_rebase_merge": true,
     "allow_merge_commit": false,
-    "allow_auto_merge": false,
+    "allow_auto_merge": true,
     "delete_branch_on_merge": true
   },
   "security": {
@@ -57,11 +57,20 @@
     "minimum_required_reviewers": 1,
     "prevent_self_review": false
   },
+  "renovate_environment": {
+    "name": "renovate",
+    "custom_branch_policies": true,
+    "branch_policies": [
+      "main"
+    ]
+  },
   "workflow_secrets": [
     "CERTIFICATE_CHAIN",
     "PRIVATE_KEY",
     "PRIVATE_KEY_PASSWORD",
     "PUBLISH_TOKEN",
-    "QODANA_TOKEN"
+    "QODANA_TOKEN",
+    "RENOVATE_APP_ID",
+    "RENOVATE_APP_PRIVATE_KEY"
   ]
 }

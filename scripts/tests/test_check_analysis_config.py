@@ -71,6 +71,16 @@ class AnalysisConfigCheckerTests(unittest.TestCase):
                     {
                         "name": name,
                         "owner": "Maintainers",
+                        "trustedJobScope": ["renovate"],
+                        "purpose": f"Let the scheduled Renovate job mint its installation token from {name}.",
+                        "rotationProcedure": f"Regenerate {name} on the GitHub App, replace it in the renovate environment, and run Renovate once by hand.",
+                    }
+                    for name in ("RENOVATE_APP_ID", "RENOVATE_APP_PRIVATE_KEY")
+                ],
+                *[
+                    {
+                        "name": name,
+                        "owner": "Maintainers",
                         "trustedJobScope": ["jetbrains-release"],
                         "purpose": f"Provide protected JetBrains release material for {name}.",
                         "rotationProcedure": f"Replace {name} in the protected jetbrains-release environment and verify a dry-run before publication.",

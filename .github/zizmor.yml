@@ -1,12 +1,10 @@
 # Findings this repository accepts, with the reasoning that earned the exception.
+#
+# No exceptions are currently accepted. The dependabot-cooldown exception this file used to hold
+# no longer applies: Dependabot opens no version updates (.github/dependabot.yml is gone), and
+# Renovate satisfies the rule's intent on its own — matured non-major updates wait seven days
+# (renovate.json's minimumReleaseAge) before merging, major updates and the Rider group always go
+# through a maintainer, and Gradle dependency verification pins every checksum regardless. Removed
+# 2026-09-17; see DEPENDENCY-POLICY.md for the update rules.
 
-rules:
-  # zizmor asks for at least seven days before Dependabot proposes a release, as protection against
-  # consuming a freshly compromised version before it is yanked. This repository takes updates
-  # immediately instead, and check-dependency-automation.py actively forbids any delay key: every
-  # bump is reviewed by a human, Gradle dependency verification pins every checksum, and the full
-  # pipeline runs before anything merges, so a bad release is caught by the gate rather than by
-  # waiting. Matches the same decision taken in PerfSentinelHub. Reviewed 2026-08-14.
-  dependabot-cooldown:
-    ignore:
-      - dependabot.yml
+rules: {}

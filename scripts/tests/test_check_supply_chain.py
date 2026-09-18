@@ -4,6 +4,7 @@ import subprocess
 import sys
 import tempfile
 import unittest
+from datetime import UTC, datetime
 from pathlib import Path
 from typing import Any
 
@@ -45,6 +46,80 @@ class ExitStatusTest(unittest.TestCase):
         self.assertEqual(1, self.status(["missing dependency lock: gradle.lockfile"]))
 
 
+class RenovateImageTest(unittest.TestCase):
+    """Renovate ships several releases a day, faster than one page of 100 covers seven days."""
+
+    NOW = datetime(2026, 9, 17, 12, 0, tzinfo=UTC)
+    DIGEST = "sha256:" + "b" * 64
+
+    def setUp(self):
+        self.checker = load_checker()
+
+    @staticmethod
+    def release(tag, published):
+        return {"tag_name": tag, "published_at": published, "draft": False, "prerelease": False}
+
+    def client(self):
+        pages = [
+            [self.release("44.80.0", "2026-09-16T10:00:00Z"), self.release("44.79.0", "2026-09-12T10:00:00Z")],
+            [self.release("44.74.1", "2026-09-09T23:48:34Z"), self.release("44.70.0", "2026-09-05T08:00:00Z")],
+        ]
+        digest = self.DIGEST
+
+        class Client:
+            def __init__(self):
+                self.urls = []
+
+            def json(self, url):
+                self.urls.append(url)
+                if url.startswith("https://hub.docker.com/"):
+                    return {"digest": digest}
+                page = int(url.rsplit("page=", 1)[1])
+                return pages[page - 1] if page <= len(pages) else []
+
+        return Client()
+
+    def image(self, release, released_at):
+        return {
+            "name": "Renovate image", "kind": "container", "version": self.DIGEST,
+            "release": release, "releasedAt": released_at,
+            "source": "https://hub.docker.com/r/renovate/renovate",
+        }
+
+    def test_the_workflow_declares_the_image_as_tag_at_digest(self):
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            workflow = root / ".github" / "workflows" / "renovate.yml"
+            workflow.parent.mkdir(parents=True)
+            workflow.write_text(f"          renovate-version: 44.74.1@{self.DIGEST}\n", encoding="utf-8")
+            self.assertEqual(
+                [f"44.74.1@{self.DIGEST}"],
+                self.checker.declared_versions(root, ".github/workflows/renovate.yml#renovate-version"),
+            )
+
+    def test_the_latest_eligible_release_is_found_past_the_first_page(self):
+        client = self.client()
+        self.checker.verify_container(client, self.image("44.74.1", "2026-09-09T23:48:34Z"), self.NOW)
+        self.assertTrue(any(url.endswith("page=2") for url in client.urls))
+        self.assertFalse(any(url.endswith("page=3") for url in client.urls))
+
+    def test_an_image_behind_the_latest_eligible_release_is_rejected(self):
+        with self.assertRaisesRegex(ValueError, r"not latest eligible stable container \(44\.74\.1\)"):
+            self.checker.verify_container(self.client(), self.image("44.70.0", "2026-09-05T08:00:00Z"), self.NOW)
+
+    def test_the_shared_filter_excludes_non_stable_and_non_version_releases(self):
+        releases = [
+            self.release("v1.2.3", "2026-09-01T00:00:00Z"),
+            {**self.release("1.3.0", "2026-09-02T00:00:00Z"), "draft": True},
+            {**self.release("1.4.0", "2026-09-03T00:00:00Z"), "prerelease": True},
+            {"tag_name": "1.5.0", "draft": False, "prerelease": False},
+            self.release("nightly", "2026-09-04T00:00:00Z"),
+        ]
+        self.assertEqual(
+            [("1.2.3", datetime(2026, 9, 1, tzinfo=UTC))],
+            self.checker.stable_release_candidates(releases),
+        )
+
 
 class SupplyChainCheckerTest(unittest.TestCase):
     def setUp(self):
@@ -83,7 +158,7 @@ class SupplyChainCheckerTest(unittest.TestCase):
             "JetBrains/qodana-action", "anchore/sbom-action",
             "ossf/scorecard-action", "step-security/harden-runner", "google/osv-scanner-action",
             "gitleaks/gitleaks-action", "zizmorcore/zizmor-action",
-            "gradle/actions",
+            "gradle/actions", "renovatebot/github-action", "actions/create-github-app-token",
         )
         self.inventory["dependencies"].extend(
             {
