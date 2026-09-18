@@ -181,7 +181,7 @@ class CiWorkflowTests(unittest.TestCase):
         self.assertIn("name: jvm-analysis-inputs", self.text)
         self.assertIn("actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a", self.text)
         self.assertIn("actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c", self.text)
-        self.assertIn("zizmorcore/zizmor-action@70fb788f84895a7701f5643d103d587e460b5c99", self.text)
+        self.assertIn("zizmorcore/zizmor-action@cc914d7f3750a2d13d75c7f184a1060aa0e9d482", self.text)
         self.assertIn("version: 1.30.0", self.text)
         self.assertIn("actionlint_1.7.12_linux_amd64.tar.gz", self.text)
         self.assertIn("8aca8db96f1b94770f1b0d72b6dddcb1ebb8123cb3712530b08cc387b349a3d8", self.text)

@@ -1,6 +1,6 @@
 {
   "schemaVersion": 1,
-  "auditedAt": "2026-09-12T09:17:38Z",
+  "auditedAt": "2026-09-18T06:18:01Z",
   "approvedNuGetSources": [
     "https://api.nuget.org/v3/index.json"
   ],
@@ -374,10 +374,10 @@
     {
       "name": "actions/setup-java",
       "kind": "github-action",
-      "version": "dd06d9cba3e5552c54d9f8ea23572deb30010f7c",
-      "release": "v6.0.0",
-      "releasedAt": "2026-08-24T15:53:25Z",
-      "source": "https://github.com/actions/setup-java/releases/tag/v6.0.0"
+      "version": "de7274f081f381c8f8158605e0321c36c376e2e6",
+      "release": "v6.0.1",
+      "releasedAt": "2026-09-09T12:10:42Z",
+      "source": "https://github.com/actions/setup-java/releases/tag/v6.0.1"
     },
     {
       "name": "actions/setup-dotnet",
@@ -430,10 +430,10 @@
     {
       "name": "github/codeql-action",
       "kind": "github-action",
-      "version": "cdf488f595d80d6e07e03d4674febd5ab45fa938",
-      "release": "v4.37.9",
-      "releasedAt": "2026-08-26T14:41:23Z",
-      "source": "https://github.com/github/codeql-action/releases/tag/v4.37.9"
+      "version": "b96794f015dfd88f77b49b1c93e0fa7110f94c63",
+      "release": "v4.38.0",
+      "releasedAt": "2026-09-09T14:04:03Z",
+      "source": "https://github.com/github/codeql-action/releases/tag/v4.38.0"
     },
     {
       "name": "JetBrains/qodana-action",
@@ -470,10 +470,10 @@
     {
       "name": "google/osv-scanner-action",
       "kind": "github-action",
-      "version": "6e4298ebc4db23e847df9b2e2de2939d6f066c67",
-      "release": "v2.5.1",
-      "releasedAt": "2026-08-17T04:41:51Z",
-      "source": "https://github.com/google/osv-scanner-action/releases/tag/v2.5.1"
+      "version": "a345acffa64b0eaede81a3d9aae6141214d9c8fc",
+      "release": "v2.6.0",
+      "releasedAt": "2026-09-14T04:46:33Z",
+      "source": "https://github.com/google/osv-scanner-action/releases/tag/v2.6.0"
     },
     {
       "name": "gitleaks/gitleaks-action",
@@ -486,10 +486,10 @@
     {
       "name": "zizmorcore/zizmor-action",
       "kind": "github-action",
-      "version": "70fb788f84895a7701f5643d103d587e460b5c99",
-      "release": "v0.6.3",
-      "releasedAt": "2026-08-30T21:35:33Z",
-      "source": "https://github.com/zizmorcore/zizmor-action/releases/tag/v0.6.3"
+      "version": "cc914d7f3750a2d13d75c7f184a1060aa0e9d482",
+      "release": "v0.6.4",
+      "releasedAt": "2026-09-09T05:40:54Z",
+      "source": "https://github.com/zizmorcore/zizmor-action/releases/tag/v0.6.4"
     },
     {
       "name": "gradle/actions",

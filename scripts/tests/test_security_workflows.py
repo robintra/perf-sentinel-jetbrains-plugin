@@ -7,11 +7,11 @@ from pathlib import Path
 REPOSITORY = Path(__file__).resolve().parents[2]
 WORKFLOWS = REPOSITORY / ".github/workflows"
 CHECKOUT = "actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1"
-SETUP_JAVA = "actions/setup-java@dd06d9cba3e5552c54d9f8ea23572deb30010f7c"
+SETUP_JAVA = "actions/setup-java@de7274f081f381c8f8158605e0321c36c376e2e6"
 SETUP_DOTNET = "actions/setup-dotnet@a98b56852c35b8e3190ac28c8c2271da59106c68"
 SETUP_GRADLE = "gradle/actions/setup-gradle@9c971963bec38e04b3d30dcc455b5382be2fdbfb"
 CODEQL = "github/codeql-action"
-CODEQL_SHA = "cdf488f595d80d6e07e03d4674febd5ab45fa938"
+CODEQL_SHA = "b96794f015dfd88f77b49b1c93e0fa7110f94c63"
 
 
 class DailySecurityWorkflowTests(unittest.TestCase):
@@ -39,14 +39,14 @@ class DailySecurityWorkflowTests(unittest.TestCase):
             "--dependency-verification strict dependencies :protocol:dependencies :rider-frontend:dependencies --configuration runtimeClasspath",
             "--locked-mode",
             "NuGetAuditMode=all",
-            "google/osv-scanner-action/.github/workflows/osv-scanner-reusable.yml@6e4298ebc4db23e847df9b2e2de2939d6f066c67",
+            "google/osv-scanner-action/.github/workflows/osv-scanner-reusable.yml@a345acffa64b0eaede81a3d9aae6141214d9c8fc",
             "--config=osv-scanner.toml",
             "gitleaks/gitleaks-action@e0c47f4f8be36e29cdc102c57e68cb5cbf0e8d1e",
             "GITLEAKS_VERSION: 8.30.1",
-            "zizmorcore/zizmor-action@70fb788f84895a7701f5643d103d587e460b5c99",
+            "zizmorcore/zizmor-action@cc914d7f3750a2d13d75c7f184a1060aa0e9d482",
             "anchore/sbom-action@3ad7283483fc7af8ff2b4ea19663c2d5ca935e26",
             "syft-version: v1.51.1",
-            "google/osv-scanner-action/osv-scanner-action@6e4298ebc4db23e847df9b2e2de2939d6f066c67",
+            "google/osv-scanner-action/osv-scanner-action@a345acffa64b0eaede81a3d9aae6141214d9c8fc",
             "name: Enforce the SPDX package-source policy",
             "build/security/source.spdx.json",
             "ossf/scorecard-action@2d1146689b8cda280b9bc96326124645441f03bc",
