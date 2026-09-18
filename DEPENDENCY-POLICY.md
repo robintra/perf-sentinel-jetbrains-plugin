@@ -9,7 +9,8 @@ request, with a GitHub App token held by the `renovate` environment.
 
 ## Update rules
 
-Renovate checks every day between 06:00 and 10:00 in `Europe/Paris`. Ordinary minor and patch updates
+Renovate checks once a day, whenever GitHub starts the workflow's cron; it has no time window of its
+own, because GitHub starts this repository's crons hours late. Ordinary minor and patch updates
 may be grouped within their manager. Major updates remain separate. The Rider IDE and the Rider and
 ReSharper SDKs move together in one pull request, because the IDE and the SDK must match.
 

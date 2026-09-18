@@ -349,6 +349,18 @@ class DependencyAutomationTests(unittest.TestCase):
                 self.assertNotEqual(0, result.returncode)
                 self.assertIn(message, result.stderr)
 
+    def test_the_workflow_cron_is_the_only_schedule(self):
+        # GitHub starts this repository's crons hours late, so a Renovate window would turn every
+        # scheduled run into a silent no-op.
+        config = json.loads((REPOSITORY / ".github/renovate.json").read_text(encoding="utf-8"))
+        self.assertNotIn("schedule", config)
+        self.assertNotIn("timezone", config)
+        for key, value in (("schedule", ["after 6:00am and before 10:00am"]), ("timezone", "Europe/Paris")):
+            with self.subTest(key=key), tempfile.TemporaryDirectory() as directory:
+                result = run_with_mutation(directory, key, value)
+                self.assertNotEqual(0, result.returncode)
+                self.assertIn("workflow cron", result.stderr)
+
     def test_checker_rejects_a_global_config_allowing_more_than_the_hook(self):
         with tempfile.TemporaryDirectory() as directory:
             root = make_fixture(directory)

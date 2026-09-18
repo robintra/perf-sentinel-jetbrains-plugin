@@ -38,8 +38,7 @@ RENOVATE_KEYS = {
     "$schema", "automergeStrategy", "customDatasources", "customManagers", "dependencyDashboard",
     "enabledManagers", "internalChecksFilter", "ignoreUnstable", "labels", "lockFileMaintenance",
     "packageRules", "osvVulnerabilityAlerts", "platformAutomerge", "postUpgradeTasks",
-    "prConcurrentLimit", "rebaseWhen", "rangeStrategy", "respectLatest", "schedule", "timezone",
-    "vulnerabilityAlerts",
+    "prConcurrentLimit", "rebaseWhen", "rangeStrategy", "respectLatest", "vulnerabilityAlerts",
 }
 CUSTOM_MANAGER_KEYS = {"customType", "datasourceTemplate", "depNameTemplate", "managerFilePatterns", "matchStrings", "versioningTemplate"}
 EXPECTED_PACKAGE_RULES = [
@@ -260,10 +259,11 @@ def validate(root: Path):
     limit = renovate.get("prConcurrentLimit")
     if not isinstance(limit, int) or isinstance(limit, bool) or not 1 <= limit <= 5:
         errors.append("Renovate pull requests must be bounded")
-    if renovate.get("labels") != ["dependencies"] or renovate.get("timezone") != "Europe/Paris":
-        errors.append("Renovate labels and timezone are not canonical")
-    if renovate.get("schedule") != ["after 6:00am and before 10:00am"]:
-        errors.append("Renovate schedule is not canonical")
+    if renovate.get("labels") != ["dependencies"]:
+        errors.append("Renovate labels are not canonical")
+    # GitHub starts this repository's crons hours late; a Renovate window would silently skip every run.
+    if "schedule" in renovate or "timezone" in renovate:
+        errors.append("Renovate must not carry its own schedule: the workflow cron is the only one")
     # A global relock drops bundled-module entries and locks prerelease IDEs; see the design.
     if renovate.get("lockFileMaintenance") != {"enabled": False}:
         errors.append("Renovate lock maintenance must stay disabled")

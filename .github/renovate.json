@@ -19,10 +19,6 @@
   "labels": [
     "dependencies"
   ],
-  "schedule": [
-    "after 6:00am and before 10:00am"
-  ],
-  "timezone": "Europe/Paris",
   "lockFileMaintenance": {
     "enabled": false
   },

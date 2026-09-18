@@ -7,8 +7,8 @@ name: Renovate
 
 on:
   schedule:
-    # 05:17 UTC stays inside the 06:00-10:00 Europe/Paris window of renovate.json
-    # in summer and winter time, even when GitHub starts the job late.
+    # The only schedule: renovate.json carries no window of its own, because GitHub starts
+    # this repository's crons hours late and a window would make every scheduled run a no-op.
     - cron: '17 5 * * *'
   workflow_dispatch:
 
