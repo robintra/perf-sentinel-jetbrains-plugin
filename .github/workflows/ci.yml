@@ -378,8 +378,8 @@ jobs:
         shell: bash
         run: |
           set -euo pipefail
-          curl -fsSLO https://github.com/astral-sh/ruff/releases/download/0.16.6/ruff-x86_64-unknown-linux-gnu.tar.gz
-          echo '0696335ef16615d8c7445ad438750eb0f55b3da6f153df21265a7c6d5750254f  ruff-x86_64-unknown-linux-gnu.tar.gz' | sha256sum --check --strict
+          curl -fsSLO https://github.com/astral-sh/ruff/releases/download/0.16.8/ruff-x86_64-unknown-linux-gnu.tar.gz
+          echo 'c4a8c7c152532bcb7e7ede4bd6ccd440dcacddffcdcdd79b90090ac6021f41c2  ruff-x86_64-unknown-linux-gnu.tar.gz' | sha256sum --check --strict
           tar -xzf ruff-x86_64-unknown-linux-gnu.tar.gz
           ./ruff-x86_64-unknown-linux-gnu/ruff check scripts tools
       - name: Actionlint
@@ -396,7 +396,7 @@ jobs:
           GITLEAKS_VERSION: 8.30.1
       - uses: zizmorcore/zizmor-action@cc914d7f3750a2d13d75c7f184a1060aa0e9d482
         with:
-          version: 1.30.0
+          version: 1.30.1
           collect: workflows
           online-audits: false
           advanced-security: false

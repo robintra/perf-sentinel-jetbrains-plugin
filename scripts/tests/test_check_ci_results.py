@@ -182,11 +182,11 @@ class CiWorkflowTests(unittest.TestCase):
         self.assertIn("actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a", self.text)
         self.assertIn("actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c", self.text)
         self.assertIn("zizmorcore/zizmor-action@cc914d7f3750a2d13d75c7f184a1060aa0e9d482", self.text)
-        self.assertIn("version: 1.30.0", self.text)
+        self.assertIn("version: 1.30.1", self.text)
         self.assertIn("actionlint_1.7.12_linux_amd64.tar.gz", self.text)
         self.assertIn("8aca8db96f1b94770f1b0d72b6dddcb1ebb8123cb3712530b08cc387b349a3d8", self.text)
         self.assertIn("ruff-x86_64-unknown-linux-gnu.tar.gz", self.text)
-        self.assertIn("0696335ef16615d8c7445ad438750eb0f55b3da6f153df21265a7c6d5750254f", self.text)
+        self.assertIn("c4a8c7c152532bcb7e7ede4bd6ccd440dcacddffcdcdd79b90090ac6021f41c2", self.text)
         self.assertIn("./ruff-x86_64-unknown-linux-gnu/ruff check scripts tools", self.text)
         self.assertIn("gitleaks/gitleaks-action@e0c47f4f8be36e29cdc102c57e68cb5cbf0e8d1e", self.text)
         workflow_security = self.text.split("  workflow-security:\n", 1)[1].split("\n  qodana-jvm:\n", 1)[0]
