@@ -318,11 +318,11 @@ class VerificationCommandTests(unittest.TestCase):
         props = (REPOSITORY / "src/dotnet/Directory.Build.props").read_text(encoding="utf-8")
         inventory = (REPOSITORY / "config/supply-chain.json").read_text(encoding="utf-8")
         self.assertIn(
-            '<PackageReference Include="Microsoft.Bcl.Memory" Version="9.0.19" NoWarn="NU1608"',
+            '<PackageReference Include="Microsoft.Bcl.Memory" Version="9.0.20" NoWarn="NU1608"',
             props,
         )
         self.assertIn('"name": "Microsoft.Bcl.Memory"', inventory)
-        self.assertIn('"version": "9.0.19"', inventory)
+        self.assertIn('"version": "9.0.20"', inventory)
         self.assertIn('"release": "9.0"', inventory)
         self.assertIn("<NoWarn>MSB3277;NU1603</NoWarn>", props)
 
