@@ -60,11 +60,11 @@ jobs:
           permission-metadata: read
           permission-pull-requests: read
           permission-statuses: read
-      - uses: renovatebot/github-action@37beffda261423addd537c33f2d126df7f6ffbab
+      - uses: renovatebot/github-action@9fea9f0fbf80401026d11d03911d62b1f70fef1f
         env:
           RENOVATE_CUSTOM_ENV_VARIABLES: '{"GITHUB_TOKEN": "${{ github.token }}"}'
         with:
           configurationFile: .github/renovate-global.json
           token: ${{ steps.app-token.outputs.token }}
           renovate-image: renovate/renovate
-          renovate-version: 44.79.2@sha256:9327fbe499d0e01d090480e43e9b35fb6e56a7d4f7e4f806882c56f752da4ad4
+          renovate-version: 44.111.2@sha256:253ff2045cd2c8cdd2d07770a60bf8d3dd590ba8e82d85fd4ed381e43dccad9b

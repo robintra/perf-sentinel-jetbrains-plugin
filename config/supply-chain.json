@@ -511,10 +511,10 @@
     {
       "name": "renovatebot/github-action",
       "kind": "github-action",
-      "version": "37beffda261423addd537c33f2d126df7f6ffbab",
-      "release": "v46.2.6",
-      "releasedAt": "2026-09-07T01:23:33Z",
-      "source": "https://github.com/renovatebot/github-action/releases/tag/v46.2.6"
+      "version": "9fea9f0fbf80401026d11d03911d62b1f70fef1f",
+      "release": "v46.3.3",
+      "releasedAt": "2026-09-21T09:53:49Z",
+      "source": "https://github.com/renovatebot/github-action/releases/tag/v46.3.3"
     },
     {
       "name": "actions/create-github-app-token",
@@ -527,9 +527,9 @@
     {
       "name": "Renovate image",
       "kind": "container",
-      "version": "sha256:9327fbe499d0e01d090480e43e9b35fb6e56a7d4f7e4f806882c56f752da4ad4",
-      "release": "44.79.2",
-      "releasedAt": "2026-09-10T16:52:57Z",
+      "version": "sha256:253ff2045cd2c8cdd2d07770a60bf8d3dd590ba8e82d85fd4ed381e43dccad9b",
+      "release": "44.111.2",
+      "releasedAt": "2026-09-23T16:22:35Z",
       "source": "https://hub.docker.com/r/renovate/renovate",
       "declaration": ".github/workflows/renovate.yml#renovate-version"
     }
