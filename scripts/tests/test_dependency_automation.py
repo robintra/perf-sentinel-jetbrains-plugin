@@ -231,8 +231,8 @@ class DependencyAutomationTests(unittest.TestCase):
             props = root / "src/dotnet/Plugin.props"
             props.write_text(
                 props.read_text(encoding="utf-8").replace(
-                    "<SdkVersion>2025.3.5.1</SdkVersion>",
-                    "<SdkVersion>\n    2025.3.5.1\n  </SdkVersion>",
+                    "<SdkVersion>2025.3.5.2</SdkVersion>",
+                    "<SdkVersion>\n    2025.3.5.2\n  </SdkVersion>",
                 ),
                 encoding="utf-8",
             )

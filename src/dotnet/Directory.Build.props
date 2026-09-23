@@ -25,6 +25,6 @@
 
   <ItemGroup>
     <PackageReference Include="Microsoft.NETFramework.ReferenceAssemblies" Version="1.0.3" PrivateAssets="All" />
-    <PackageReference Include="Microsoft.Bcl.Memory" Version="9.0.19" NoWarn="NU1608" />
+    <PackageReference Include="Microsoft.Bcl.Memory" Version="9.0.20" NoWarn="NU1608" />
   </ItemGroup>
 </Project>
