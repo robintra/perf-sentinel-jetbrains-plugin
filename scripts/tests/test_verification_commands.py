@@ -46,7 +46,7 @@ class VerificationCommandTests(unittest.TestCase):
         expected = {
             ("idea", "idea", "2025.3.6.1", "idea-2025.3.6.1.tar.gz"),
             ("idea", "idea", "2025.3.6.1", "idea-2025.3.6.1-win.zip"),
-            ("idea", "idea", "2026.2.2", "idea-2026.2.2.tar.gz"),
+            ("idea", "idea", "2026.2.3", "idea-2026.2.3.tar.gz"),
             ("python", "pycharm-professional", "2025.3.6.1", "pycharm-professional-2025.3.6.1.tar.gz"),
             ("python", "pycharm-professional", "2026.2.2", "pycharm-professional-2026.2.2.tar.gz"),
             ("webide", "PhpStorm", "2025.3.6.1", "PhpStorm-2025.3.6.1.tar.gz"),
@@ -58,7 +58,7 @@ class VerificationCommandTests(unittest.TestCase):
             ("webstorm", "WebStorm", "2025.3.6.1", "WebStorm-2025.3.6.1.tar.gz"),
             ("webstorm", "WebStorm", "2026.2.2", "WebStorm-2026.2.2.tar.gz"),
             ("go", "goland", "2025.3.5.1", "goland-2025.3.5.1.tar.gz"),
-            ("go", "goland", "2026.2.2.1", "goland-2026.2.2.1.tar.gz"),
+            ("go", "goland", "2026.2.3", "goland-2026.2.3.tar.gz"),
         }
         self.assertEqual(expected, actual)
 
