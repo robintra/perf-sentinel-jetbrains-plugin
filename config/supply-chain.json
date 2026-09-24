@@ -26,9 +26,9 @@
     {
       "name": "Kotlin Gradle plugin",
       "kind": "gradle-plugin",
-      "version": "2.4.10",
-      "releasedAt": "2026-07-14",
-      "source": "https://plugins.gradle.org/plugin/org.jetbrains.kotlin.jvm/2.4.10",
+      "version": "2.4.20",
+      "releasedAt": "2026-09-07",
+      "source": "https://plugins.gradle.org/plugin/org.jetbrains.kotlin.jvm/2.4.20",
       "declaration": "settings.gradle.kts#org.jetbrains.kotlin.jvm"
     },
     {
@@ -602,7 +602,7 @@
       "type": "transitive-prerelease",
       "dependency": "org.jetbrains.compose.hot-reload:hot-reload-agent:1.1.0-alpha03",
       "owner": "Maintainers",
-      "reason": "Kotlin 2.4.10 contributes this exact agent to the composeHotReloadAgent configuration, which Kover report generation resolves; the plugin does not select it directly.",
+      "reason": "Kotlin 2.4.20 contributes this exact agent to the composeHotReloadAgent configuration, which Kover report generation resolves; the plugin does not select it directly.",
       "evidence": "./gradlew dependencyInsight --dependency org.jetbrains.compose.hot-reload:hot-reload-agent --configuration composeHotReloadAgent",
       "upstream": "https://repo.maven.apache.org/maven2/org/jetbrains/compose/hot-reload/hot-reload-agent/1.1.0-alpha03/hot-reload-agent-1.1.0-alpha03.pom",
       "expiresAt": "2026-11-10T07:00:00Z",

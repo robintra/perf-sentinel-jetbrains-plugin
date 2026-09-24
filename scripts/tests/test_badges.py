@@ -16,7 +16,7 @@ BADGES = {
         f"{REPO_URL}/blob/main/build.gradle.kts",
     ),
     "Kotlin": (
-        "https://img.shields.io/badge/Kotlin-2.4.10-7F52FF?logo=kotlin&logoColor=white",
+        "https://img.shields.io/badge/Kotlin-2.4.20-7F52FF?logo=kotlin&logoColor=white",
         f"{REPO_URL}/blob/main/settings.gradle.kts",
     ),
     ".NET": (
@@ -86,7 +86,7 @@ def write_root(root, readme, *, listing_id=None, missing_evidence=None, license_
         (root / "build.gradle.kts").write_text("plugins {}\n", encoding="utf-8")
     if missing_evidence != "settings.gradle.kts":
         (root / "settings.gradle.kts").write_text(
-            'id("org.jetbrains.kotlin.jvm") version "2.4.10"\n', encoding="utf-8"
+            'id("org.jetbrains.kotlin.jvm") version "2.4.20"\n', encoding="utf-8"
         )
     csproj = root / "src" / "dotnet" / "PerfSentinel.Rider"
     csproj.mkdir(parents=True)
