@@ -502,9 +502,9 @@
     {
       "name": "Qodana JVM Community image",
       "kind": "container",
-      "version": "sha256:8ff36b5cebc0a6d720f77dcf3e0a94a03c39b4c42c3724a99ce5f7e462e42f99",
+      "version": "sha256:efb07d0974a03c67dc779bb7593868a120604e9b93e91f36ee0add4247e4fc12",
       "release": "2026.2",
-      "releasedAt": "2026-08-11T11:10:46.644395Z",
+      "releasedAt": "2026-09-22T12:48:05.708347Z",
       "source": "https://hub.docker.com/r/jetbrains/qodana-jvm-community",
       "declaration": "qodana.yml#linter"
     },
