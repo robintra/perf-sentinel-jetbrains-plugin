@@ -95,7 +95,7 @@ class VerificationCommandTests(unittest.TestCase):
             if setup_count == 0:
                 continue
             with self.subTest(workflow=workflow.name):
-                self.assertEqual(setup_count, text.count('gradle-version: "9.7.1"'))
+                self.assertEqual(setup_count, text.count('gradle-version: "9.8.0"'))
                 self.assertNotIn("./gradlew", text)
                 self.assertNotIn("gradlew.bat", text)
 

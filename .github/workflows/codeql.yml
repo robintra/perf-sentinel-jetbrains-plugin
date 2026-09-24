@@ -26,7 +26,7 @@ jobs:
       - run: scripts/free-hosted-runner-space.sh
       - uses: gradle/actions/setup-gradle@9c971963bec38e04b3d30dcc455b5382be2fdbfb
         with:
-          gradle-version: "9.7.1"
+          gradle-version: "9.8.0"
           cache-read-only: ${{ github.event_name == 'pull_request' }}
       - uses: github/codeql-action/init@b96794f015dfd88f77b49b1c93e0fa7110f94c63
         with:
@@ -56,7 +56,7 @@ jobs:
         with: {dotnet-version: 10.0.302}
       - uses: gradle/actions/setup-gradle@9c971963bec38e04b3d30dcc455b5382be2fdbfb
         with:
-          gradle-version: "9.7.1"
+          gradle-version: "9.8.0"
           cache-read-only: ${{ github.event_name == 'pull_request' }}
       - uses: github/codeql-action/init@b96794f015dfd88f77b49b1c93e0fa7110f94c63
         with:
