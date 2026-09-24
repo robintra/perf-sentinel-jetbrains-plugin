@@ -94,11 +94,3 @@ ecosystem = "Maven"
 vulnerability.ignore = true
 effectiveUntil = 2026-11-13
 reason = "Recorded in gradle/verification-metadata.xml from an IDE distribution download, and no fixed version is published."
-
-[[PackageOverrides]]
-name = "org.jetbrains.kotlin:kotlin-gradle-plugin"
-version = "2.4.10"
-ecosystem = "Maven"
-vulnerability.ignore = true
-effectiveUntil = 2026-11-13
-reason = "Build tooling, never packaged. The advisory is fixed only in a 2.4.20 prerelease, which this project does not adopt. Revisit once 2.4.20 reaches a stable release."

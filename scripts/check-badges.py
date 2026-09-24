@@ -11,7 +11,7 @@ from pathlib import Path
 
 REPO_URL = "https://github.com/robintra/perf-sentinel-jetbrains-plugin"
 LICENSE_SHA256 = "8486a10c4393cee1c25392769ddd3b2d6c242d6ec7928e1414efff7dfb2f07ef"
-KOTLIN_VERSION = "2.4.10"
+KOTLIN_VERSION = "2.4.20"
 TARGET_FRAMEWORK = "net472"
 RIDER_CSPROJ = "src/dotnet/PerfSentinel.Rider/PerfSentinel.Rider.csproj"
 
@@ -22,7 +22,7 @@ BADGES = {
         "build.gradle.kts",
     ),
     "Kotlin": (
-        "https://img.shields.io/badge/Kotlin-2.4.10-7F52FF?logo=kotlin&logoColor=white",
+        "https://img.shields.io/badge/Kotlin-2.4.20-7F52FF?logo=kotlin&logoColor=white",
         f"{REPO_URL}/blob/main/settings.gradle.kts",
         "settings.gradle.kts",
     ),
