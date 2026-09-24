@@ -326,10 +326,10 @@
     {
       "name": "Syft",
       "kind": "audited-tool",
-      "version": "1.51.1",
-      "releasedAt": "2026-08-27T17:01:15Z",
-      "source": "https://github.com/anchore/syft/releases/tag/v1.51.1",
-      "release": "v1.51.1"
+      "version": "1.52.0",
+      "releasedAt": "2026-09-17T14:38:17Z",
+      "source": "https://github.com/anchore/syft/releases/tag/v1.52.0",
+      "release": "v1.52.0"
     },
     {
       "name": "Ruff",
