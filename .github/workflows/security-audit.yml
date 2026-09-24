@@ -52,7 +52,7 @@ jobs:
       - uses: gradle/actions/setup-gradle@9c971963bec38e04b3d30dcc455b5382be2fdbfb
         # Restoring the Gradle cache lands after the cleanup step above and refills the disk:
         # the cache now carries every pinned IDE archive and exhausted the runner without it.
-        with: {gradle-version: "9.7.1", cache-read-only: true}
+        with: {gradle-version: "9.8.0", cache-read-only: true}
       - name: Validate immutable inputs and Gradle dependencies
         run: |
           mkdir -p build/security
