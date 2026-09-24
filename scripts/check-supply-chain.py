@@ -1014,7 +1014,9 @@ def verify_plugin(client, dependency, now):
 def verify_gradle(client, dependency, _now):
     data = client.json("https://services.gradle.org/versions/current")
     released = datetime.strptime(data["buildTime"], "%Y%m%d%H%M%S%z")
-    if dependency["version"] != data["version"] or not same_release_date(dependency["releasedAt"], released.isoformat().replace("+00:00", "Z")):
+    if dependency["version"] != data["version"]:
+        raise ValueError(f"not latest eligible stable Gradle release ({data['version']})")
+    if not same_release_date(dependency["releasedAt"], released.isoformat().replace("+00:00", "Z")):
         raise ValueError("Gradle version/date mismatch")
     expected = data["wrapperChecksum"] if dependency["name"] == "Gradle wrapper JAR" else data["checksum"]
     if dependency.get("sha256") != expected:
@@ -1094,8 +1096,9 @@ def github_release_candidates(client, repo, now):
 def verify_container(client, dependency, now):
     repository = CONTAINER_REPOSITORIES[dependency["name"]]
     data = client.json(f"https://hub.docker.com/v2/repositories/{repository}/tags/{dependency['release']}")
+    # A tag re-pushed upstream (JetBrains rebuilds 2026.2 in place) is drift, not a broken audit.
     if dependency["version"] != data.get("digest"):
-        raise ValueError("container digest mismatch")
+        raise ValueError(f"not latest eligible stable container digest ({data.get('digest')})")
     release_repository = CONTAINER_RELEASE_REPOS.get(dependency["name"])
     if release_repository:
         candidates = github_release_candidates(client, release_repository, now)

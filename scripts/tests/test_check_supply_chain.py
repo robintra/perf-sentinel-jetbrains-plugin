@@ -45,6 +45,16 @@ class ExitStatusTest(unittest.TestCase):
         ]))
         self.assertEqual(1, self.status(["missing dependency lock: gradle.lockfile"]))
 
+    def test_a_newer_gradle_release_is_drift(self):
+        class Client:
+            def json(self, _url):
+                return {"version": "9.8.0", "buildTime": "20260924134000+0000"}
+
+        dependency = {"name": "Gradle", "version": "9.7.1", "releasedAt": "2026-08-19T14:16:09Z"}
+        with self.assertRaises(ValueError) as raised:
+            load_checker().verify_gradle(Client(), dependency, None)
+        self.assertEqual(2, self.status([f"online validation failed for Gradle: {raised.exception}"]))
+
 
 class RenovateImageTest(unittest.TestCase):
     """Renovate ships several releases a day, faster than one page of 100 covers seven days."""
@@ -106,6 +116,12 @@ class RenovateImageTest(unittest.TestCase):
     def test_an_image_behind_the_latest_eligible_release_is_rejected(self):
         with self.assertRaisesRegex(ValueError, r"not latest eligible stable container \(44\.74\.1\)"):
             self.checker.verify_container(self.client(), self.image("44.70.0", "2026-09-05T08:00:00Z"), self.NOW)
+
+    def test_a_re_pushed_tag_is_reported_as_drift(self):
+        image = dict(self.image("44.74.1", "2026-09-09T23:48:34Z"), version="sha256:" + "0" * 64)
+        with self.assertRaisesRegex(ValueError, "not latest eligible stable container digest") as raised:
+            self.checker.verify_container(self.client(), image, self.NOW)
+        self.assertEqual(2, self.checker.exit_status([f"online validation failed for Renovate image: {raised.exception}"]))
 
     def test_the_shared_filter_excludes_non_stable_and_non_version_releases(self):
         releases = [
