@@ -205,7 +205,7 @@ jobs:
           file: ${{ steps.signed.outputs.signed }}
           format: spdx-json
           output-file: build/release/perf-sentinel-${{ steps.signed.outputs.version }}.spdx.json
-          syft-version: 1.51.1
+          syft-version: 1.52.0
           dependency-snapshot: false
           upload-artifact: false
           upload-release-assets: false

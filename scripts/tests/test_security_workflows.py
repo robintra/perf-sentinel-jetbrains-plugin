@@ -45,7 +45,7 @@ class DailySecurityWorkflowTests(unittest.TestCase):
             "GITLEAKS_VERSION: 8.30.1",
             "zizmorcore/zizmor-action@cc914d7f3750a2d13d75c7f184a1060aa0e9d482",
             "anchore/sbom-action@3ad7283483fc7af8ff2b4ea19663c2d5ca935e26",
-            "syft-version: v1.51.1",
+            "syft-version: v1.52.0",
             "google/osv-scanner-action/osv-scanner-action@a345acffa64b0eaede81a3d9aae6141214d9c8fc",
             "name: Enforce the SPDX package-source policy",
             "build/security/source.spdx.json",
