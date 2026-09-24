@@ -11005,12 +11005,12 @@
             <sha256 value="3c7460a850916a4cf39eceb614570b4d31ab65dbf4a5f46d2c8e5db393181257" origin="Verified from JetBrains checksum"/>
          </artifact>
       </component>
-      <component group="go" name="goland" version="2026.2.2.1">
-         <artifact name="goland-2026.2.2.1-aarch64.dmg">
-            <sha256 value="c534cd0b8275ad11ed47ec19919b03417d71f817586e11dbe9e84e87f4e808c6" origin="Verified from JetBrains checksum"/>
+      <component group="go" name="goland" version="2026.2.3">
+         <artifact name="goland-2026.2.3-aarch64.dmg">
+            <sha256 value="91eed14a2e131f7abfe33187a3dbd996880d589271895ce2b04674befa95d276" origin="Verified from JetBrains checksum"/>
          </artifact>
-         <artifact name="goland-2026.2.2.1.tar.gz">
-            <sha256 value="10d27af7d6174fbf7c8e94d0415a45c13be586f5db425c10310c44df35f15471" origin="Verified from JetBrains checksum"/>
+         <artifact name="goland-2026.2.3.tar.gz">
+            <sha256 value="0af3e82e63f906824c49c41fdbf6c6e679a02ab94ab11fc04f27050a6970d76f" origin="Verified from JetBrains checksum"/>
          </artifact>
       </component>
       <component group="gradle" name="gradle" version="9.7.1">
@@ -11029,12 +11029,12 @@
             <sha256 value="b9be29885c50033b51863704911e9dac05655a9d8756e6e2c1818f777fbda48e" origin="Verified from JetBrains checksum"/>
          </artifact>
       </component>
-      <component group="idea" name="idea" version="2026.2.2">
-         <artifact name="idea-2026.2.2-aarch64.dmg">
-            <sha256 value="f4a45f451008c86ce4e9342d5931fd89c8553f9d3ab6e8012da7533e9fe5c249" origin="Verified from JetBrains checksum"/>
+      <component group="idea" name="idea" version="2026.2.3">
+         <artifact name="idea-2026.2.3-aarch64.dmg">
+            <sha256 value="aac3cdc6d8441b94052473fee37a9679242a36f49f60fdce6cceaa3e7ad46e33" origin="Verified from JetBrains checksum"/>
          </artifact>
-         <artifact name="idea-2026.2.2.tar.gz">
-            <sha256 value="f1cc5329a7adf3ab3bd8886744103f7d3bcf1ca12e699762ecd9bffe57335f8b" origin="Verified from JetBrains checksum"/>
+         <artifact name="idea-2026.2.3.tar.gz">
+            <sha256 value="68751c8ae4d49407251cd197df795fbed91b6fdc85d10c73c4649a99e496ab37" origin="Verified from JetBrains checksum"/>
          </artifact>
       </component>
       <component group="io.github.pdvrieze.xmlutil" name="core-jvm" version="1.0.1">
