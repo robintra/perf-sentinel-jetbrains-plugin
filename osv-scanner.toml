@@ -94,3 +94,11 @@ ecosystem = "Maven"
 vulnerability.ignore = true
 effectiveUntil = 2026-11-13
 reason = "Recorded in gradle/verification-metadata.xml from an IDE distribution download, and no fixed version is published."
+
+[[PackageOverrides]]
+name = "org.freemarker:freemarker"
+version = "2.3.32"
+ecosystem = "Maven"
+vulnerability.ignore = true
+effectiveUntil = 2026-12-24
+reason = "Build tooling, never packaged: Kover's HTML reporter pulls it through coverage-report, whose latest release 1.0.27 still pins 2.3.32. Revisit once Kover ships a reporter on 2.3.35 or later."
