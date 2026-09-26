@@ -17,7 +17,7 @@ TEST_IDE_RUNTIMES = {
     "2025.3.5.1": "jbr_jcef-21.0.11-{platform}-b1163.116",
     "2025.3.6.1": "jbr_jcef-21.0.11-{platform}-b1163.116",
     "2025.3.7": "jbr_jcef-21.0.11-{platform}-b1163.116",
-    "2026.2.2": "jbr_jcef-25.0.4-{platform}-b508.27",
+    "2026.2.3": "jbr_jcef-25.0.4-{platform}-b508.27",
 }
 
 
@@ -48,15 +48,15 @@ class VerificationCommandTests(unittest.TestCase):
             ("idea", "idea", "2025.3.6.1", "idea-2025.3.6.1-win.zip"),
             ("idea", "idea", "2026.2.3", "idea-2026.2.3.tar.gz"),
             ("python", "pycharm-professional", "2025.3.6.1", "pycharm-professional-2025.3.6.1.tar.gz"),
-            ("python", "pycharm-professional", "2026.2.2", "pycharm-professional-2026.2.2.tar.gz"),
+            ("python", "pycharm-professional", "2026.2.3", "pycharm-professional-2026.2.3.tar.gz"),
             ("webide", "PhpStorm", "2025.3.6.1", "PhpStorm-2025.3.6.1.tar.gz"),
-            ("webide", "PhpStorm", "2026.2.2", "PhpStorm-2026.2.2.tar.gz"),
+            ("webide", "PhpStorm", "2026.2.3", "PhpStorm-2026.2.3.tar.gz"),
             ("rustrover", "RustRover", "2025.3.7", "RustRover-2025.3.7.tar.gz"),
-            ("rustrover", "RustRover", "2026.2.2", "RustRover-2026.2.2.tar.gz"),
+            ("rustrover", "RustRover", "2026.2.3", "RustRover-2026.2.3.tar.gz"),
             ("ruby", "RubyMine", "2025.3.6.1", "RubyMine-2025.3.6.1.tar.gz"),
-            ("ruby", "RubyMine", "2026.2.2", "RubyMine-2026.2.2.tar.gz"),
+            ("ruby", "RubyMine", "2026.2.3", "RubyMine-2026.2.3.tar.gz"),
             ("webstorm", "WebStorm", "2025.3.6.1", "WebStorm-2025.3.6.1.tar.gz"),
-            ("webstorm", "WebStorm", "2026.2.2", "WebStorm-2026.2.2.tar.gz"),
+            ("webstorm", "WebStorm", "2026.2.3", "WebStorm-2026.2.3.tar.gz"),
             ("go", "goland", "2025.3.5.1", "goland-2025.3.5.1.tar.gz"),
             ("go", "goland", "2026.2.3", "goland-2026.2.3.tar.gz"),
         }

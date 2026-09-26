@@ -1,6 +1,6 @@
 {
   "schemaVersion": 1,
-  "auditedAt": "2026-09-24T18:57:04Z",
+  "auditedAt": "2026-09-26T06:12:49Z",
   "approvedNuGetSources": [
     "https://api.nuget.org/v3/index.json"
   ],
@@ -138,8 +138,8 @@
     {
       "name": "PyCharm 2026.2",
       "kind": "jetbrains-product",
-      "version": "2026.2.2",
-      "releasedAt": "2026-09-07",
+      "version": "2026.2.3",
+      "releasedAt": "2026-09-18",
       "source": "https://data.services.jetbrains.com/products/releases?code=PCP&type=release",
       "declaration": "build.gradle.kts#PyCharm 2026.2"
     },
@@ -154,8 +154,8 @@
     {
       "name": "PhpStorm 2026.2",
       "kind": "jetbrains-product",
-      "version": "2026.2.2",
-      "releasedAt": "2026-09-03",
+      "version": "2026.2.3",
+      "releasedAt": "2026-09-17",
       "source": "https://data.services.jetbrains.com/products/releases?code=PS&type=release",
       "declaration": "build.gradle.kts#PhpStorm 2026.2"
     },
@@ -170,8 +170,8 @@
     {
       "name": "RustRover 2026.2",
       "kind": "jetbrains-product",
-      "version": "2026.2.2",
-      "releasedAt": "2026-09-07",
+      "version": "2026.2.3",
+      "releasedAt": "2026-09-17",
       "source": "https://data.services.jetbrains.com/products/releases?code=RR&type=release",
       "declaration": "build.gradle.kts#RustRover 2026.2"
     },
@@ -186,8 +186,8 @@
     {
       "name": "RubyMine 2026.2",
       "kind": "jetbrains-product",
-      "version": "2026.2.2",
-      "releasedAt": "2026-09-03",
+      "version": "2026.2.3",
+      "releasedAt": "2026-09-18",
       "source": "https://data.services.jetbrains.com/products/releases?code=RM&type=release",
       "declaration": "build.gradle.kts#RubyMine 2026.2"
     },
@@ -202,8 +202,8 @@
     {
       "name": "WebStorm 2026.2",
       "kind": "jetbrains-product",
-      "version": "2026.2.2",
-      "releasedAt": "2026-09-03",
+      "version": "2026.2.3",
+      "releasedAt": "2026-09-17",
       "source": "https://data.services.jetbrains.com/products/releases?code=WS&type=release",
       "declaration": "build.gradle.kts#WebStorm 2026.2"
     },
