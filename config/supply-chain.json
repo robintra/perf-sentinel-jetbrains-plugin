@@ -1,6 +1,6 @@
 {
   "schemaVersion": 1,
-  "auditedAt": "2026-09-26T06:12:49Z",
+  "auditedAt": "2026-09-26T06:13:42Z",
   "approvedNuGetSources": [
     "https://api.nuget.org/v3/index.json"
   ],
@@ -430,10 +430,10 @@
     {
       "name": "github/codeql-action",
       "kind": "github-action",
-      "version": "b96794f015dfd88f77b49b1c93e0fa7110f94c63",
-      "release": "v4.38.0",
-      "releasedAt": "2026-09-09T14:04:03Z",
-      "source": "https://github.com/github/codeql-action/releases/tag/v4.38.0"
+      "version": "1c5b675653bb5c22dbe9b12b556ec555138e09fd",
+      "release": "v4.38.1",
+      "releasedAt": "2026-09-18T13:11:14Z",
+      "source": "https://github.com/github/codeql-action/releases/tag/v4.38.1"
     },
     {
       "name": "JetBrains/qodana-action",
