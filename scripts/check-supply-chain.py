@@ -1073,7 +1073,9 @@ def verify_nuget(client, dependency, now):
                         compatible.append((version, published))
             except zipfile.BadZipFile as error:
                 raise ValueError("coverlet package is not a valid NuGet archive") from error
-            if compatible:
+            # Read down to the pin: stopping at the newest compatible package loses the pin
+            # itself, so a fresh release reads as a mismatch instead of drift within grace.
+            if version_key(version) <= version_key(dependency["version"]):
                 break
         validate_release(dependency, compatible, now, "net472-compatible NuGet release")
         return

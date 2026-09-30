@@ -1,9 +1,11 @@
 import importlib.util
+import io
 import json
 import subprocess
 import sys
 import tempfile
 import unittest
+import zipfile
 from datetime import UTC, datetime
 from pathlib import Path
 from typing import Any
@@ -135,6 +137,50 @@ class RenovateImageTest(unittest.TestCase):
             [("1.2.3", datetime(2026, 9, 1, tzinfo=UTC))],
             self.checker.stable_release_candidates(releases),
         )
+
+
+class CoverletTest(unittest.TestCase):
+    """Coverlet 10.1.0 brought netstandard2.0 back after 8.x and 10.0.x dropped it."""
+
+    @staticmethod
+    def client(latest_published):
+        releases = {
+            "6.0.4": ("2025-01-19T23:24:04.97Z", True),
+            "8.0.1": ("2026-03-17T08:38:32.44Z", False),
+            "10.0.1": ("2026-05-18T08:04:46.64Z", False),
+            "10.1.0": (latest_published, True),
+        }
+
+        def package(netstandard):
+            archive = io.BytesIO()
+            with zipfile.ZipFile(archive, "w") as nupkg:
+                target = "netstandard2.0" if netstandard else "net8.0"
+                nupkg.writestr(f"build/{target}/coverlet.collector.targets", "")
+            return archive.getvalue()
+
+        class Client:
+            def json(self, _url):
+                return {"items": [{"items": [
+                    {"catalogEntry": {"version": version, "published": published}, "packageContent": version}
+                    for version, (published, _) in releases.items()
+                ]}]}
+
+            def get(self, content):
+                return package(releases[content][1]), {}
+
+        return Client()
+
+    def verify(self, latest_published):
+        pin = {"name": "coverlet.collector", "version": "6.0.4", "releasedAt": "2025-01-19T23:24:04.97Z",
+               "compatibility": "netstandard2.0"}
+        load_checker().verify_nuget(self.client(latest_published), pin, datetime(2026, 9, 29, tzinfo=UTC))
+
+    def test_a_compatible_release_within_grace_leaves_the_pin_valid(self):
+        self.verify("2026-09-27T21:36:27.42Z")
+
+    def test_a_compatible_release_past_grace_is_drift(self):
+        with self.assertRaisesRegex(ValueError, r"not latest eligible stable .*\(10\.1\.0\)"):
+            self.verify("2026-09-01T00:00:00Z")
 
 
 class SupplyChainCheckerTest(unittest.TestCase):
