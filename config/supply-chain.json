@@ -277,9 +277,9 @@
     {
       "name": "Kover",
       "kind": "audited-tool",
-      "version": "0.9.9",
-      "releasedAt": "2026-07-17",
-      "source": "https://plugins.gradle.org/plugin/org.jetbrains.kotlinx.kover/0.9.9",
+      "version": "0.9.11",
+      "releasedAt": "2026-09-29",
+      "source": "https://plugins.gradle.org/plugin/org.jetbrains.kotlinx.kover/0.9.11",
       "declaration": "gradle/libs.versions.toml#kover"
     },
     {
