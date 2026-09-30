@@ -1,6 +1,6 @@
 [versions]
 gson = "2.14.0"
-jackson = "2.22.2"
+jackson = "2.22.3"
 junit = "4.13.2"
 kover = "0.9.9"
 rdGen = "2026.3.0"
