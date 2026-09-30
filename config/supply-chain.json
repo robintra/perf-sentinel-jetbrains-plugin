@@ -50,9 +50,9 @@
     {
       "name": "JetBrains Qodana Gradle plugin",
       "kind": "gradle-plugin",
-      "version": "2026.2.0",
-      "releasedAt": "2026-07-29",
-      "source": "https://plugins.gradle.org/plugin/org.jetbrains.qodana/2026.2.0",
+      "version": "2026.2.1",
+      "releasedAt": "2026-09-02",
+      "source": "https://plugins.gradle.org/plugin/org.jetbrains.qodana/2026.2.1",
       "declaration": "settings.gradle.kts#org.jetbrains.qodana"
     },
     {
