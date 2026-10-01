@@ -150,9 +150,9 @@ class SyncSupplyChainTest(unittest.TestCase):
         self.assertEqual(settled, self.inventory_path.read_text(encoding="utf-8"))
 
     def test_a_test_mirroring_a_moved_pin_is_reported(self):
-        # The mirrored copies exist so a pin cannot move without a second,
-        # conscious edit. Reporting only hexadecimal SHAs left every version
-        # mirror invisible, and twice let a stale one reach CI.
+        # A mirrored copy blocks a Renovate update until someone edits it.
+        # Reporting only hexadecimal SHAs left every version mirror invisible,
+        # and twice let a stale one reach CI.
         mirror = self.root / "scripts" / "tests" / "test_mirror.py"
         mirror.parent.mkdir(parents=True)
         mirror.write_text('EXPECTED = "gradle-9.7.0-bin.zip"\n', encoding="utf-8")

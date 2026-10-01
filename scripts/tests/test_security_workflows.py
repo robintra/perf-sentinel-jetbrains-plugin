@@ -6,12 +6,19 @@ from pathlib import Path
 
 REPOSITORY = Path(__file__).resolve().parents[2]
 WORKFLOWS = REPOSITORY / ".github/workflows"
-CHECKOUT = "actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1"
-SETUP_JAVA = "actions/setup-java@de7274f081f381c8f8158605e0321c36c376e2e6"
-SETUP_DOTNET = "actions/setup-dotnet@a98b56852c35b8e3190ac28c8c2271da59106c68"
-SETUP_GRADLE = "gradle/actions/setup-gradle@9c971963bec38e04b3d30dcc455b5382be2fdbfb"
+
+
+def pinned(action):
+    """An action pinned to a full commit SHA. Which SHA is Renovate's to move and
+    check-supply-chain.py's to hold against the inventory, so it is not repeated here."""
+    return re.escape(action) + r"@[0-9a-f]{40}\b"
+
+
+CHECKOUT = pinned("actions/checkout")
+SETUP_JAVA = pinned("actions/setup-java")
+SETUP_DOTNET = pinned("actions/setup-dotnet")
+SETUP_GRADLE = pinned("gradle/actions/setup-gradle")
 CODEQL = "github/codeql-action"
-CODEQL_SHA = "2892aa5e19bbd11bc0cff5427e3b750a04d9e3c2"
 
 
 class DailySecurityWorkflowTests(unittest.TestCase):
@@ -33,23 +40,26 @@ class DailySecurityWorkflowTests(unittest.TestCase):
             SETUP_JAVA,
             SETUP_DOTNET,
             SETUP_GRADLE,
+            pinned("google/osv-scanner-action/.github/workflows/osv-scanner-reusable.yml"),
+            pinned("gitleaks/gitleaks-action"),
+            r"GITLEAKS_VERSION: \d+\.\d+\.\d+\n",
+            pinned("zizmorcore/zizmor-action"),
+            pinned("anchore/sbom-action"),
+            r"syft-version: v\d+\.\d+\.\d+\n",
+            pinned("google/osv-scanner-action/osv-scanner-action"),
+            pinned("ossf/scorecard-action"),
+        ):
+            self.assertRegex(self.text, expected)
+        for expected in (
             "fetch-depth: 0",
             "persist-credentials: false",
             "scripts/check-supply-chain.py",
             "--dependency-verification strict dependencies :protocol:dependencies :rider-frontend:dependencies --configuration runtimeClasspath",
             "--locked-mode",
             "NuGetAuditMode=all",
-            "google/osv-scanner-action/.github/workflows/osv-scanner-reusable.yml@a345acffa64b0eaede81a3d9aae6141214d9c8fc",
             "--config=osv-scanner.toml",
-            "gitleaks/gitleaks-action@e0c47f4f8be36e29cdc102c57e68cb5cbf0e8d1e",
-            "GITLEAKS_VERSION: 8.30.1",
-            "zizmorcore/zizmor-action@cc914d7f3750a2d13d75c7f184a1060aa0e9d482",
-            "anchore/sbom-action@3ad7283483fc7af8ff2b4ea19663c2d5ca935e26",
-            "syft-version: v1.52.0",
-            "google/osv-scanner-action/osv-scanner-action@a345acffa64b0eaede81a3d9aae6141214d9c8fc",
             "name: Enforce the SPDX package-source policy",
             "build/security/source.spdx.json",
-            "ossf/scorecard-action@2d1146689b8cda280b9bc96326124645441f03bc",
         ):
             self.assertIn(expected, self.text)
         self.assertNotIn("Require package provenance in the SBOM", self.text)
@@ -157,8 +167,8 @@ class CodeQLWorkflowTests(unittest.TestCase):
     def test_has_manual_java_kotlin_and_csharp_builds(self):
         self.assertIn("languages: java-kotlin", self.text)
         self.assertIn("languages: csharp", self.text)
-        self.assertEqual(2, self.text.count(f"{CODEQL}/init@{CODEQL_SHA}"))
-        self.assertEqual(2, self.text.count(f"{CODEQL}/analyze@{CODEQL_SHA}"))
+        self.assertEqual(2, len(re.findall(pinned(f"{CODEQL}/init"), self.text)))
+        self.assertEqual(2, len(re.findall(pinned(f"{CODEQL}/analyze"), self.text)))
         self.assertEqual(2, self.text.count("build-mode: manual"))
         self.assertEqual(2, self.text.count("queries: +security-extended"))
         self.assertIn("gradle --no-daemon --no-build-cache --dependency-verification strict compileKotlin :protocol:rdgen :rider-frontend:compileKotlin", self.text)
@@ -188,12 +198,9 @@ class DependencySubmissionWorkflowTests(unittest.TestCase):
         self.assertNotIn("if: github.ref == 'refs/heads/main'", self.text)
 
     def test_submits_the_strict_gradle_graph_at_full_sha(self):
-        self.assertIn(CHECKOUT, self.text)
-        self.assertIn(SETUP_JAVA, self.text)
-        self.assertIn(
-            "gradle/actions/dependency-submission@9c971963bec38e04b3d30dcc455b5382be2fdbfb",
-            self.text,
-        )
+        self.assertRegex(self.text, CHECKOUT)
+        self.assertRegex(self.text, SETUP_JAVA)
+        self.assertRegex(self.text, pinned("gradle/actions/dependency-submission"))
         self.assertIn("dependency-graph: generate-and-submit", self.text)
         self.assertIn("dependency-resolution-task: dependencies :protocol:dependencies :rider-frontend:dependencies", self.text)
         self.assertIn("additional-arguments: --configuration runtimeClasspath --dependency-verification strict", self.text)
@@ -207,7 +214,7 @@ class JdkPinTests(unittest.TestCase):
     def test_every_workflow_reads_the_pinned_build_from_the_version_file(self):
         for path in sorted(WORKFLOWS.glob("*.yml")):
             text = path.read_text(encoding="utf-8")
-            if SETUP_JAVA not in text:
+            if not re.search(SETUP_JAVA, text):
                 continue
             self.assertIn("java-version-file: .java-version", text, path.name)
             self.assertNotIn("java-version:", text, path.name)

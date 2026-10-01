@@ -9,7 +9,7 @@ from pathlib import Path
 REPOSITORY = Path(__file__).resolve().parents[2]
 CHECKER = REPOSITORY / "scripts" / "check-analysis-config.py"
 
-JVM_DIGEST = "sha256:3db2bdb1d846ddeca9f600a6737bc82b3993067e07e572ba7bf791d9fe41a9bf"
+JVM_DIGEST = "sha256:" + "a" * 64
 
 
 def jvm_qodana():

@@ -18,7 +18,6 @@ MAX_CONFIG_BYTES = 256 * 1024
 MAX_INVENTORY_BYTES = 1024 * 1024
 MAX_WORKFLOW_BYTES = 1024 * 1024
 MAX_LINE_LENGTH = 4096
-JVM_DIGEST = "sha256:3db2bdb1d846ddeca9f600a6737bc82b3993067e07e572ba7bf791d9fe41a9bf"
 IMAGE = re.compile(r"^(jetbrains/[a-z0-9-]+):(\d{4}\.\d+)@(sha256:[0-9a-f]{64})$")
 PROPERTY_KEY = re.compile(r"^[A-Za-z][A-Za-z0-9_.-]*$")
 YAML_KEY = re.compile(r"^([A-Za-z][A-Za-z0-9]*):(?: (.*))?$")
@@ -220,9 +219,11 @@ def suppression_comments(text: str) -> dict[str, str]:
     return result
 
 
-def parse_image(value, repository: str, release: str, digest: str) -> None:
+# Which tag and digest is the inventory's business, bound in validate_supply_bindings
+# and kept fresh by Renovate; here the image only has to be the right one, pinned.
+def parse_image(value, repository: str) -> None:
     match = IMAGE.fullmatch(value) if type(value) is str else None
-    if match is None or match.groups() != (repository, release, digest):
+    if match is None or match.group(1) != repository:
         raise AnalysisError("configuration requires an immutable eligible Qodana image")
 
 
@@ -230,7 +231,7 @@ def validate_jvm_qodana(config: dict, text: str) -> None:
     fields(config, {"version", "linter", "profile", "failureConditions", "exclude"}, "JVM Qodana config")
     if config["version"] != "1.0":
         raise AnalysisError("JVM Qodana version must be string 1.0")
-    parse_image(config["linter"], "jetbrains/qodana-jvm-community", "2026.2", JVM_DIGEST)
+    parse_image(config["linter"], "jetbrains/qodana-jvm-community")
     if config["profile"] != {"path": ".qodana/profiles/plugin.yaml"}:
         raise AnalysisError("JVM Qodana must use the local plugin profile")
     conditions = config["failureConditions"]

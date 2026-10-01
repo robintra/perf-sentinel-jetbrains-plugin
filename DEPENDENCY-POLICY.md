@@ -14,16 +14,13 @@ own, because GitHub starts this repository's crons hours late. Ordinary minor an
 may be grouped within their manager. Major updates remain separate. The Rider IDE and the Rider and
 ReSharper SDKs move together in one pull request, because the IDE and the SDK must match.
 
-GitHub Actions updates carry the same automerge eligibility as ordinary Gradle and NuGet updates, but
-most are adopted by a human in practice: their commit SHAs are mirrored exactly in `scripts/tests`,
-which `sync-supply-chain.py` deliberately never rewrites, so a bump fails `Workflow security` until a
-maintainer edits the named line — `CI / Gate` stays red until then, which blocks automerge. A handful
-are not mirrored — `JetBrains/qodana-action`, `actions/dependency-review-action` and
-`actions/github-script` — and do merge unattended once matured; they run in ordinary CI with the
-default `GITHUB_TOKEN`, which is the accepted design. `step-security/harden-runner` and
-`actions/create-github-app-token` are different again: they run inside the Renovate job itself,
+GitHub Actions updates carry the same automerge eligibility as ordinary Gradle and NuGet updates.
+The tests in `scripts/tests` check that each action is pinned to a full commit SHA, never which one:
+that is Renovate's to move and `check-supply-chain.py`'s to hold against the inventory, so a matured
+bump merges unattended once `CI / Gate` is green. `step-security/harden-runner` and
+`actions/create-github-app-token` are the exception: they run inside the Renovate job itself,
 holding or minting the App key, and `CI / Gate` never exercises that workflow, so a dedicated rule
-keeps them off automerge entirely, regardless of whether their SHA happens to be mirrored.
+keeps them off automerge entirely.
 
 Only stable releases are eligible, and stable releases are eligible immediately: Renovate opens their
 pull request at once, held by a `renovate/stability-days` pending check that Renovate itself posts —
@@ -52,14 +49,17 @@ module entries of products it did not resolve and can lock a prerelease IDE.
 Before pushing a branch, Renovate runs `python3 scripts/sync-supply-chain.py --online`, the only
 command its global configuration allows. The script rewrites the supply-chain inventory and, for a
 JetBrains product only the plugin verifier uses, the lock line and the verification metadata with
-the checksums JetBrains publishes. The pins mirrored in `scripts/tests` stay a deliberate second
-edit: a pull request that moves one fails `Workflow security` until a maintainer edits the named
-line. A product a test IDE resolves, such as Rider or RustRover, still needs a Gradle relock by hand.
+the checksums JetBrains publishes, and, for a workflow download whose URL moved, the SHA-256 GitHub
+publishes for the release asset. A product a test IDE resolves, such as Rider or RustRover, still
+needs a Gradle relock by hand, and so does a Gradle library whose bump changes the lock: relocking
+runs the Gradle wrapper, which the global configuration does not allow.
 
 Renovate's custom JetBrains manager reads the official JetBrains product release service for every
 IDE version embedded in the Gradle build. Its NuGet manager covers SDK-style project files and
 `packages.lock.json`; its Gradle managers cover `settings.gradle.kts`, `gradle/libs.versions.toml`,
-RDGen, plugins, `gradle/wrapper/gradle-wrapper.properties`, Gradle locks, and verification metadata.
+RDGen, plugins, and `gradle/wrapper/gradle-wrapper.properties`. Custom managers move the Qodana image
+in `qodana.yml` and every audited tool: the scanners and linters the workflows configure or
+download, and the tools only `config/supply-chain.json` records, whose entry is their declaration.
 
 The default branch ruleset requires signed commits, and Renovate's branches satisfy it only because
 `platformCommit` defaults to `auto` and promotes itself to signed for a GitHub App installation
@@ -93,9 +93,8 @@ checksums that no file in the working tree can prove, which is what the `--onlin
 A Gradle bump reaches further than the wrapper: the hosted `gradle-version` inputs in the
 workflows and the `gradle-<version>-src.zip` checksum in `gradle/verification-metadata.xml`, which
 Qodana downloads, both move with it. `sync-supply-chain` writes the inventory and a verifier-only
-JetBrains product's lock and verification entries, not these, so those two stay manual, and so do
-the pins mirrored in `scripts/tests`, which exist precisely so a pin cannot move without a second,
-conscious edit. The command lists them on every run that changes something.
+JetBrains product's lock and verification entries, not these, so those two stay manual. The command
+also lists any pin a test in `scripts/tests` still repeats, since Renovate cannot move that copy.
 
 A test IDE bump reaches just as far: the platform arrives without a runtime, so `com.jetbrains:jbr`
 moves with it, and `build.gradle.kts` keeps that coordinate out of dependency locking. Pin the new

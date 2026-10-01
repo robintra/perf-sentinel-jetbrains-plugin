@@ -179,21 +179,20 @@ class CiWorkflowTests(unittest.TestCase):
 
     def test_analysis_consumes_coverage_and_workflow_security_runs_real_tools(self):
         self.assertIn("name: jvm-analysis-inputs", self.text)
-        self.assertIn("actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a", self.text)
-        self.assertIn("actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c", self.text)
-        self.assertIn("zizmorcore/zizmor-action@cc914d7f3750a2d13d75c7f184a1060aa0e9d482", self.text)
-        self.assertIn("version: 1.30.1", self.text)
-        self.assertIn("actionlint_1.7.12_linux_amd64.tar.gz", self.text)
-        self.assertIn("8aca8db96f1b94770f1b0d72b6dddcb1ebb8123cb3712530b08cc387b349a3d8", self.text)
-        self.assertIn("ruff-x86_64-unknown-linux-gnu.tar.gz", self.text)
-        self.assertIn("c4a8c7c152532bcb7e7ede4bd6ccd440dcacddffcdcdd79b90090ac6021f41c2", self.text)
+        # Pinned by SHA and checksum; the values themselves are Renovate's and the sync hook's.
+        for action in ("actions/upload-artifact", "actions/download-artifact", "zizmorcore/zizmor-action", "gitleaks/gitleaks-action"):
+            self.assertRegex(self.text, rf"{action}@[0-9a-f]{{40}}\n")
+        self.assertRegex(self.text, r"zizmor-action@[0-9a-f]{40}\n\s+with:\n\s+version: \d+\.\d+\.\d+\n")
+        for archive in (r"actionlint_[0-9.]+_linux_amd64\.tar\.gz", r"ruff-x86_64-unknown-linux-gnu\.tar\.gz"):
+            self.assertRegex(
+                self.text, rf"curl -fsSLO https://github\.com/\S+/{archive}\n\s+echo '[0-9a-f]{{64}}  {archive}' \| sha256sum --check --strict\n"
+            )
         self.assertIn("./ruff-x86_64-unknown-linux-gnu/ruff check scripts tools", self.text)
-        self.assertIn("gitleaks/gitleaks-action@e0c47f4f8be36e29cdc102c57e68cb5cbf0e8d1e", self.text)
         workflow_security = self.text.split("  workflow-security:\n", 1)[1].split("\n  qodana-jvm:\n", 1)[0]
         self.assertIn("fetch-depth: 0", workflow_security)
         self.assertIn("permissions:\n      contents: read\n      pull-requests: read", workflow_security)
         self.assertNotIn("pull-requests: write", workflow_security)
-        self.assertIn("GITLEAKS_VERSION: 8.30.1", workflow_security)
+        self.assertRegex(workflow_security, r"GITLEAKS_VERSION: \d+\.\d+\.\d+\n")
 
     def test_pr_caches_sarif_permission_and_zip_path_are_bounded(self):
         setup_count = self.text.count("uses: gradle/actions/setup-gradle@")

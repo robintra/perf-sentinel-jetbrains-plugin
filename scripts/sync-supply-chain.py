@@ -425,12 +425,12 @@ def download_checksums(root, client, problems) -> list[str]:
 
 
 def mirrored_pins(root: Path, changes) -> list[str]:
-    """Test files repeating a pin, which stay a deliberate second edit.
+    """Test files repeating a pin, which Renovate cannot move and would leave red.
 
     A commit SHA is recognisable on sight, but a mirrored version is not, and
     reporting only the former left the version mirrors invisible. Every value
     this run just moved is therefore searched for as well: a test still
-    carrying the old one is a mirror waiting for its second edit.
+    carrying the old one is a mirror that blocks the update until edited.
     """
     moved = {
         old
