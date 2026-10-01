@@ -119,8 +119,8 @@ def audited_tool(files, patterns, name, extract="^v(?<version>.+)$"):
     entry's release and date, and re-pins any download checksum the move broke.
     """
     manager = {
-        "files": files + ["/^config/supply-chain\\.json$/"],
-        "patterns": patterns + [f'"name": "{name}",\\s*"kind": "audited-tool",\\s*"version": "(?<currentValue>[^"]+)"'],
+        "files": [*files, "/^config/supply-chain\\.json$/"],
+        "patterns": [*patterns, f'"name": "{name}",\\s*"kind": "audited-tool",\\s*"version": "(?<currentValue>[^"]+)"'],
         "datasource": "github-releases", "versioning": "semver-coerced",
     }
     return manager | ({"extract": extract} if extract else {})
