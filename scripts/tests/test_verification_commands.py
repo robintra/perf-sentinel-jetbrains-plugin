@@ -1,3 +1,5 @@
+import importlib.util
+import json
 import os
 import re
 import subprocess
@@ -43,23 +45,21 @@ class VerificationCommandTests(unittest.TestCase):
                         artifact_name,
                     )
                 )
-        expected = {
-            ("idea", "idea", "2025.3.6.1", "idea-2025.3.6.1.tar.gz"),
-            ("idea", "idea", "2025.3.6.1", "idea-2025.3.6.1-win.zip"),
-            ("idea", "idea", "2026.2.3", "idea-2026.2.3.tar.gz"),
-            ("python", "pycharm-professional", "2025.3.6.1", "pycharm-professional-2025.3.6.1.tar.gz"),
-            ("python", "pycharm-professional", "2026.2.3", "pycharm-professional-2026.2.3.tar.gz"),
-            ("webide", "PhpStorm", "2025.3.6.1", "PhpStorm-2025.3.6.1.tar.gz"),
-            ("webide", "PhpStorm", "2026.2.3", "PhpStorm-2026.2.3.tar.gz"),
-            ("rustrover", "RustRover", "2025.3.7", "RustRover-2025.3.7.tar.gz"),
-            ("rustrover", "RustRover", "2026.2.3", "RustRover-2026.2.3.tar.gz"),
-            ("ruby", "RubyMine", "2025.3.6.1", "RubyMine-2025.3.6.1.tar.gz"),
-            ("ruby", "RubyMine", "2026.2.3", "RubyMine-2026.2.3.tar.gz"),
-            ("webstorm", "WebStorm", "2025.3.6.1", "WebStorm-2025.3.6.1.tar.gz"),
-            ("webstorm", "WebStorm", "2026.2.3", "WebStorm-2026.2.3.tar.gz"),
-            ("go", "goland", "2025.3.5.1", "goland-2025.3.5.1.tar.gz"),
-            ("go", "goland", "2026.2.3", "goland-2026.2.3.tar.gz"),
-        }
+        # One installer per hosted product the inventory declares, named the way the sync hook
+        # rewrites them, plus the Windows archive of the platform the plugin compiles against.
+        spec = importlib.util.spec_from_file_location("sync_supply_chain", REPOSITORY / "scripts/sync-supply-chain.py")
+        sync = importlib.util.module_from_spec(spec)
+        spec.loader.exec_module(sync)
+        inventory = json.loads((REPOSITORY / "config/supply-chain.json").read_text(encoding="utf-8"))
+        expected = set()
+        for dependency in inventory["dependencies"]:
+            product = next((name for name in sync.INSTALLER_PINS if dependency["name"].startswith(name + " ")), None)
+            if dependency["kind"] == "jetbrains-product" and product:
+                group, name, _download, _maven = sync.INSTALLER_PINS[product]
+                expected.add((group, name, dependency["version"], f"{name}-{dependency['version']}.tar.gz"))
+        lock = (REPOSITORY / "gradle.lockfile").read_text(encoding="utf-8")
+        compile_platform = re.search(r"^idea:idea:([^=]+)=compileClasspath,", lock, re.M).group(1)
+        expected.add(("idea", "idea", compile_platform, f"idea-{compile_platform}-win.zip"))
         self.assertEqual(expected, actual)
 
     def test_verification_metadata_pins_a_runtime_for_every_test_ide(self):
@@ -317,13 +317,14 @@ class VerificationCommandTests(unittest.TestCase):
     def test_security_pins_the_patched_bcl_memory_version(self):
         props = (REPOSITORY / "src/dotnet/Directory.Build.props").read_text(encoding="utf-8")
         inventory = (REPOSITORY / "config/supply-chain.json").read_text(encoding="utf-8")
-        self.assertIn(
-            '<PackageReference Include="Microsoft.Bcl.Memory" Version="9.0.20" NoWarn="NU1608"',
-            props,
+        # 9.0.20 is the patched floor; Renovate may move past it, never below.
+        version = re.search(
+            r'<PackageReference Include="Microsoft\.Bcl\.Memory" Version="(9\.0\.(\d+))" NoWarn="NU1608"', props
         )
-        self.assertIn('"name": "Microsoft.Bcl.Memory"', inventory)
-        self.assertIn('"version": "9.0.20"', inventory)
-        self.assertIn('"release": "9.0"', inventory)
+        self.assertIsNotNone(version)
+        self.assertGreaterEqual(int(version.group(2)), 20)
+        entry = next(item for item in json.loads(inventory)["dependencies"] if item["name"] == "Microsoft.Bcl.Memory")
+        self.assertEqual((version.group(1), "9.0"), (entry["version"], entry["release"]))
         self.assertIn("<NoWarn>MSB3277;NU1603</NoWarn>", props)
 
     def test_release_check_rejects_missing_or_non_semver_version_before_gates(self):
