@@ -11,7 +11,10 @@ request, with a GitHub App token held by the `renovate` environment.
 
 Renovate checks once a day, whenever GitHub starts the workflow's cron; it has no time window of its
 own, because GitHub starts this repository's crons hours late. Ordinary minor and patch updates
-may be grouped within their manager. Major updates remain separate. The Rider IDE and the Rider and
+are grouped by what can finish them: NuGet and tool updates together, since they merge unattended,
+and Gradle updates apart, since their locks and verification metadata need a relock Renovate cannot
+run. Every JetBrains IDE gets its own pull request: a test IDE needs that relock too, a verifier-only
+one does not. Major updates remain separate. The Rider IDE and the Rider and
 ReSharper SDKs move together in one pull request, because the IDE and the SDK must match.
 
 GitHub Actions updates carry the same automerge eligibility as ordinary Gradle and NuGet updates.

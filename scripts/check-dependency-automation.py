@@ -29,7 +29,7 @@ RENOVATE_KEYS = {
     "$schema", "automergeStrategy", "customDatasources", "customManagers", "dependencyDashboard",
     "enabledManagers", "internalChecksFilter", "ignoreUnstable", "labels", "lockFileMaintenance",
     "packageRules", "osvVulnerabilityAlerts", "platformAutomerge", "postUpgradeTasks",
-    "prConcurrentLimit", "rebaseWhen", "rangeStrategy", "respectLatest", "vulnerabilityAlerts",
+    "prConcurrentLimit", "prHourlyLimit", "rebaseWhen", "rangeStrategy", "respectLatest", "vulnerabilityAlerts",
 }
 CUSTOM_MANAGER_KEYS = {"customType", "datasourceTemplate", "depNameTemplate", "managerFilePatterns", "matchStrings", "versioningTemplate"}
 EXPECTED_PACKAGE_RULES = [
@@ -44,10 +44,21 @@ EXPECTED_PACKAGE_RULES = [
         "enabled": False,
     },
     {
-        "description": "Group ordinary non-major Gradle and NuGet updates",
-        "matchManagers": ["gradle", "gradle-wrapper", "nuget", "custom.regex"],
+        "description": "Group ordinary non-major NuGet and tool updates, which merge unattended",
+        "matchManagers": ["nuget", "custom.regex"],
         "matchUpdateTypes": ["minor", "patch"],
         "groupName": "ordinary-build-dependencies",
+    },
+    {
+        "description": "Group ordinary non-major Gradle updates apart: their locks and verification metadata need a relock Renovate cannot run",
+        "matchManagers": ["gradle", "gradle-wrapper"],
+        "matchUpdateTypes": ["minor", "patch"],
+        "groupName": "gradle-dependencies",
+    },
+    {
+        "description": "Give every JetBrains IDE its own pull request: a test IDE needs a relock Renovate cannot run, a verifier-only one does not",
+        "matchDatasources": ["custom.jetbrains-products"],
+        "groupName": None,
     },
     {
         "description": "Group ordinary non-major GitHub Actions updates",
@@ -277,6 +288,9 @@ def validate(root: Path):
     limit = renovate.get("prConcurrentLimit")
     if not isinstance(limit, int) or isinstance(limit, bool) or not 1 <= limit <= 5:
         errors.append("Renovate pull requests must be bounded")
+    # Renovate runs once a day, so an hourly cap would only spread one day's updates over several.
+    if renovate.get("prHourlyLimit") != 0:
+        errors.append("Renovate pull requests are bounded by prConcurrentLimit alone")
     if renovate.get("labels") != ["dependencies"]:
         errors.append("Renovate labels are not canonical")
     # GitHub starts this repository's crons hours late; a Renovate window would silently skip every run.

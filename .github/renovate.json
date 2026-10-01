@@ -16,6 +16,7 @@
   },
   "rangeStrategy": "bump",
   "prConcurrentLimit": 5,
+  "prHourlyLimit": 0,
   "labels": [
     "dependencies"
   ],
@@ -38,10 +39,8 @@
       "enabled": false
     },
     {
-      "description": "Group ordinary non-major Gradle and NuGet updates",
+      "description": "Group ordinary non-major NuGet and tool updates, which merge unattended",
       "matchManagers": [
-        "gradle",
-        "gradle-wrapper",
         "nuget",
         "custom.regex"
       ],
@@ -50,6 +49,25 @@
         "patch"
       ],
       "groupName": "ordinary-build-dependencies"
+    },
+    {
+      "description": "Group ordinary non-major Gradle updates apart: their locks and verification metadata need a relock Renovate cannot run",
+      "matchManagers": [
+        "gradle",
+        "gradle-wrapper"
+      ],
+      "matchUpdateTypes": [
+        "minor",
+        "patch"
+      ],
+      "groupName": "gradle-dependencies"
+    },
+    {
+      "description": "Give every JetBrains IDE its own pull request: a test IDE needs a relock Renovate cannot run, a verifier-only one does not",
+      "matchDatasources": [
+        "custom.jetbrains-products"
+      ],
+      "groupName": null
     },
     {
       "description": "Group ordinary non-major GitHub Actions updates",
