@@ -311,7 +311,7 @@ if (releaseUnsignedZip.isPresent) {
         setDependsOn(listOf(signPluginTask))
     }
     tasks.named<PublishPluginTask>("publishPlugin") {
-        archiveFile.set(signPluginTask.flatMap { it.signedArchiveFile })
+        archiveFiles.setFrom(signPluginTask.flatMap { it.signedArchiveFile })
         token.set(providers.environmentVariable("PUBLISH_TOKEN"))
         setDependsOn(listOf(verifyPluginSignatureTask))
     }

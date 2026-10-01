@@ -57,6 +57,14 @@ vulnerability.ignore = true
 effectiveUntil = 2026-11-13
 reason = "Bundled in RustRover 2026.2, reachable only through the testRustRover262 configurations."
 
+[[PackageOverrides]]
+name = "io.undertow:undertow-core"
+version = "2.4.3.Final"
+ecosystem = "Maven"
+vulnerability.ignore = true
+effectiveUntil = 2026-11-13
+reason = "Pulled onto the build classpath by the IntelliJ Platform Gradle Plugin 2.19.0, never shipped; the advisory has no fixed release to move to."
+
 # The same three findings, spelled the way the SPDX scan reports them. The
 # source scan reads Gradle locks and sees full Maven coordinates, while the SBOM
 # scan reads syft's SPDX names, which carry no group: osv-scanner 2.5.1 began

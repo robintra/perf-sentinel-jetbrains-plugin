@@ -26,6 +26,17 @@ pluginManagement {
 
 include(":protocol", ":rider-frontend")
 
+// The IntelliJ Platform plugin brings Jackson and jsoup builds with published advisories onto the
+// classpath every build script shares. It never ships, but it still runs on patched versions.
+buildscript {
+    dependencies {
+        classpath(platform("com.fasterxml.jackson:jackson-bom:2.22.3"))
+        constraints {
+            classpath("org.jsoup:jsoup:1.23.1")
+        }
+    }
+}
+
 plugins {
     id("org.gradle.toolchains.foojay-resolver-convention") version "1.0.0"
     id("org.jetbrains.intellij.platform.settings") version "2.19.0"
