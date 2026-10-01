@@ -1,6 +1,6 @@
 {
   "schemaVersion": 1,
-  "auditedAt": "2026-10-01T19:10:25Z",
+  "auditedAt": "2026-10-01T19:13:26Z",
   "approvedNuGetSources": [
     "https://api.nuget.org/v3/index.json"
   ],
@@ -527,9 +527,9 @@
     {
       "name": "Renovate image",
       "kind": "container",
-      "version": "sha256:253ff2045cd2c8cdd2d07770a60bf8d3dd590ba8e82d85fd4ed381e43dccad9b",
-      "release": "44.111.2",
-      "releasedAt": "2026-09-23T16:22:35Z",
+      "version": "sha256:4441837d6dd87fcce600b2bc881305288d62f3acfde0598e77c1111f833d2679",
+      "release": "44.113.0",
+      "releasedAt": "2026-09-24T18:35:51Z",
       "source": "https://hub.docker.com/r/renovate/renovate",
       "declaration": ".github/workflows/renovate.yml#renovate-version"
     }
