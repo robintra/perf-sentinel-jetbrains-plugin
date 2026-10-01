@@ -1,6 +1,6 @@
 {
   "schemaVersion": 1,
-  "auditedAt": "2026-10-01T19:13:26Z",
+  "auditedAt": "2026-10-01T20:09:20Z",
   "approvedNuGetSources": [
     "https://api.nuget.org/v3/index.json"
   ],
@@ -252,10 +252,10 @@
     {
       "name": "Microsoft.Bcl.Memory",
       "kind": "nuget",
-      "version": "9.0.20",
+      "version": "10.0.12",
       "release": "9.0",
-      "releasedAt": "2026-09-08T19:17:04.657Z",
-      "source": "https://www.nuget.org/packages/Microsoft.Bcl.Memory/9.0.20",
+      "releasedAt": "2026-09-08T19:03:24.35Z",
+      "source": "https://www.nuget.org/packages/Microsoft.Bcl.Memory/10.0.12",
       "declaration": "src/dotnet/Directory.Build.props#Microsoft.Bcl.Memory"
     },
     {
