@@ -201,6 +201,53 @@ class SyncSupplyChainTest(unittest.TestCase):
         self.assertEqual({"releasedAt": "2026-09-09T23:48:34Z"}, metadata)
         self.assertEqual(["https://api.github.com/repos/renovatebot/renovate/releases/tags/44.74.1"], client.urls)
 
+    def test_an_audited_tool_release_follows_the_version_renovate_moved(self):
+        module = load_sync()
+        for name, release, version, tag in (
+            ("Ruff", "0.16.8", "0.16.9", "0.16.9"),
+            ("Gitleaks", "v8.30.1", "8.30.2", "v8.30.2"),
+        ):
+            client = FeedClient({"published_at": "2026-09-24T20:38:52Z"})
+            dependency = {"name": name, "kind": "audited-tool", "version": version, "release": release}
+
+            metadata = module.online_metadata(client, module.load_checker(), dependency)
+
+            self.assertEqual({"release": tag, "releasedAt": "2026-09-24T20:38:52Z"}, metadata)
+            self.assertTrue(client.urls[0].endswith(f"/releases/tags/{tag}"))
+
+    def write_download(self, sha):
+        workflow = self.root / ".github" / "workflows" / "ci.yml"
+        workflow.write_text(
+            "          curl -fsSLO https://github.com/astral-sh/ruff/releases/download/0.16.9/ruff.tar.gz\n"
+            f"          echo '{sha}  ruff.tar.gz' | sha256sum --check --strict\n",
+            encoding="utf-8",
+        )
+        return workflow
+
+    def test_a_moved_download_is_re_pinned_to_the_digest_github_publishes(self):
+        module = load_sync()
+        workflow = self.write_download("a" * 64)
+        client = FeedClient({"assets": [{"name": "ruff.tar.gz", "digest": "sha256:" + "d" * 64}]})
+        problems = []
+
+        written = module.download_checksums(self.root, client, problems)
+
+        self.assertEqual([], problems)
+        self.assertEqual(1, len(written))
+        self.assertIn(f"echo '{'d' * 64}  ruff.tar.gz'", workflow.read_text(encoding="utf-8"))
+        self.assertEqual(["https://api.github.com/repos/astral-sh/ruff/releases/tags/0.16.9"], client.urls)
+
+    def test_a_download_without_a_published_digest_is_reported_and_left_alone(self):
+        module = load_sync()
+        workflow = self.write_download("a" * 64)
+        before = workflow.read_text(encoding="utf-8")
+        problems = []
+
+        module.download_checksums(self.root, FeedClient({"assets": [{"name": "ruff.tar.gz", "digest": None}]}), problems)
+
+        self.assertEqual(before, workflow.read_text(encoding="utf-8"))
+        self.assertEqual(1, len(problems))
+
     def write_verifier_pin(self, version):
         """A verifier-only product, as the lock file and the metadata hold it."""
         (self.root / "gradle").mkdir(exist_ok=True)

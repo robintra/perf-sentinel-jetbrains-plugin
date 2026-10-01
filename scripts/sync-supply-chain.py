@@ -13,10 +13,8 @@ each `declaration`, and the commit SHA the workflows pin for each action.
 `--online` also refreshes the tag, release date, source URL and Gradle
 checksum from the endpoints the checker validates against.
 
-The SHAs mirrored in scripts/tests are deliberately left alone. Those tests
-exist so that a pin cannot move without a second, conscious edit, and a script
-rewriting both sides of the comparison would leave them asserting nothing.
-They are reported instead.
+Online it also re-pins the SHA-256 of a workflow download whose URL moved,
+from the digest GitHub publishes for the release asset.
 """
 
 from __future__ import annotations
@@ -33,6 +31,11 @@ USES = re.compile(
     r"^\s*(?:-\s*)?uses:\s*"
     r"(?P<repo>[A-Za-z0-9._-]+/[A-Za-z0-9._-]+)"
     r"(?:/[^@\s]+)?@(?P<sha>[0-9a-f]{40})"
+)
+# A workflow download: the URL Renovate moves, and the checksum it cannot compute.
+DOWNLOAD = re.compile(
+    r"curl -fsSLO https://github\.com/(?P<repo>[^/\s]+/[^/\s]+)/releases/download/"
+    r"(?P<tag>[^/\s]+)/(?P<asset>\S+)\n[ \t]*echo '(?P<sha>[0-9a-f]{64})  (?P=asset)'"
 )
 CREATED = re.compile(r"Created\s+(\d{1,2}\s+\w+\s+\d{4})\.")
 INSTANT = "%Y-%m-%dT%H:%M:%SZ"
@@ -211,6 +214,12 @@ def online_metadata(client, checker, dependency) -> dict[str, str]:
         )
         return {"releasedAt": instant(release["published_at"])}
     repo = name if kind == "github-action" else checker.GITHUB_REPOS.get(name)
+    if kind == "audited-tool" and repo:
+        # A tool's version is its own declaration, moved by Renovate; the tag keeps
+        # the prefix the project already uses for it.
+        tag = ("v" if dependency.get("release", "").startswith("v") else "") + dependency["version"]
+        release = client.json(f"https://api.github.com/repos/{repo}/releases/tags/{tag}")
+        return {"release": tag, "releasedAt": instant(release["published_at"])}
     if repo:
         tag, published = github_release(client, repo, dependency["version"])
         return {"release": tag, "releasedAt": published}
@@ -387,6 +396,34 @@ def rewrite_component(root, client, group, artifact, download, old, new) -> str:
     return f"gradle/verification-metadata.xml: {group}:{artifact} {old} -> {new}"
 
 
+def download_checksums(root, client, problems) -> list[str]:
+    """Re-pin every workflow download to the SHA-256 GitHub publishes for it."""
+    written: list[str] = []
+
+    def repin(match):
+        url = f"https://api.github.com/repos/{match['repo']}/releases/tags/{match['tag']}"
+        try:
+            assets = client.json(url)["assets"]
+            digest = next(asset["digest"] for asset in assets if asset["name"] == match["asset"])
+        except Exception as error:  # reported, never silent
+            problems.append(f"{match['asset']}: cannot read its published checksum: {error}")
+            return match.group(0)
+        if not isinstance(digest, str) or not re.fullmatch(r"sha256:[0-9a-f]{64}", digest):
+            problems.append(f"{match['asset']}: GitHub publishes no SHA-256 for it")
+            return match.group(0)
+        sha = digest.removeprefix("sha256:")
+        if sha != match["sha"]:
+            written.append(f"{match['asset']}: sha256 {match['sha']} -> {sha}")
+        return match.group(0).replace(match["sha"], sha)
+
+    for path in sorted((root / ".github" / "workflows").glob("*.yml")):
+        text = path.read_text(encoding="utf-8")
+        updated = DOWNLOAD.sub(repin, text)
+        if updated != text:
+            path.write_text(updated, encoding="utf-8")
+    return written
+
+
 def mirrored_pins(root: Path, changes) -> list[str]:
     """Test files repeating a pin, which stay a deliberate second edit.
 
@@ -438,6 +475,10 @@ def main() -> int:
         if changes and args.online and not args.check
         else []
     )
+
+    # Independent of the inventory: a moved download URL is all Renovate leaves behind.
+    if args.online and not args.check:
+        derived += download_checksums(root, checker.OnlineClient(), problems)
 
     for dependency, field, old, new in changes:
         print(f"{dependency['name']}: {field} {old} -> {new}")
