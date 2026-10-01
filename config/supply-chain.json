@@ -122,8 +122,8 @@
     {
       "name": "Rider 2026.2",
       "kind": "jetbrains-product",
-      "version": "2026.2.2",
-      "releasedAt": "2026-09-16",
+      "version": "2026.2.3.1",
+      "releasedAt": "2026-10-01",
       "source": "https://data.services.jetbrains.com/products/releases?code=RD&type=release",
       "declaration": "build.gradle.kts#Rider 2026.2"
     },
