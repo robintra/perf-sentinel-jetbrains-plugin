@@ -923,12 +923,11 @@ def same_release_date(recorded, actual):
     return instant.date() == expected.date() if len(recorded) == 10 else instant == expected
 
 
-# Renovate proposes updates in one window a week (Monday 06:00-07:00), and this
-# audit runs daily. Comparing against a release published minutes ago therefore
-# reports a gap nobody can close for up to six days, which is how the job came
-# to fail almost every day. A pin is behind only once the upstream release it
-# missed has had a week to be picked up.
-FRESHNESS_GRACE = timedelta(days=7)
+# Renovate merges a matured update on its own, a week after the release at most a
+# day later, and this audit runs daily. It is the backstop for when that fails: a
+# pin is behind only once the release it missed has outlived Renovate's window
+# twice over, so drift means the bot is stuck rather than merely not there yet.
+FRESHNESS_GRACE = timedelta(days=21)
 
 
 def latest_eligible(candidates: list[tuple[str, datetime]], now) -> tuple[str, datetime] | None:
@@ -1098,9 +1097,12 @@ def github_release_candidates(client, repo, now):
 def verify_container(client, dependency, now):
     repository = CONTAINER_REPOSITORIES[dependency["name"]]
     data = client.json(f"https://hub.docker.com/v2/repositories/{repository}/tags/{dependency['release']}")
-    # A tag re-pushed upstream (JetBrains rebuilds 2026.2 in place) is drift, not a broken audit.
+    # A tag re-pushed upstream (JetBrains rebuilds 2026.2 in place) is drift, not a broken audit,
+    # once the new push has had the same grace as a new release.
     if dependency["version"] != data.get("digest"):
-        raise ValueError(f"not latest eligible stable container digest ({data.get('digest')})")
+        if parse_instant(data["last_updated"]) <= now - FRESHNESS_GRACE:
+            raise ValueError(f"not latest eligible stable container digest ({data.get('digest')})")
+        return
     release_repository = CONTAINER_RELEASE_REPOS.get(dependency["name"])
     if release_repository:
         candidates = github_release_candidates(client, release_repository, now)

@@ -59,9 +59,9 @@ class ExitStatusTest(unittest.TestCase):
 
 
 class RenovateImageTest(unittest.TestCase):
-    """Renovate ships several releases a day, faster than one page of 100 covers seven days."""
+    """Renovate ships several releases a day, faster than one page of 100 covers the grace."""
 
-    NOW = datetime(2026, 9, 17, 12, 0, tzinfo=UTC)
+    NOW = datetime(2026, 10, 1, 12, 0, tzinfo=UTC)
     DIGEST = "sha256:" + "b" * 64
 
     def setUp(self):
@@ -71,7 +71,7 @@ class RenovateImageTest(unittest.TestCase):
     def release(tag, published):
         return {"tag_name": tag, "published_at": published, "draft": False, "prerelease": False}
 
-    def client(self):
+    def client(self, pushed="2026-09-09T23:48:34Z"):
         pages = [
             [self.release("44.80.0", "2026-09-16T10:00:00Z"), self.release("44.79.0", "2026-09-12T10:00:00Z")],
             [self.release("44.74.1", "2026-09-09T23:48:34Z"), self.release("44.70.0", "2026-09-05T08:00:00Z")],
@@ -85,7 +85,7 @@ class RenovateImageTest(unittest.TestCase):
             def json(self, url):
                 self.urls.append(url)
                 if url.startswith("https://hub.docker.com/"):
-                    return {"digest": digest}
+                    return {"digest": digest, "last_updated": pushed}
                 page = int(url.rsplit("page=", 1)[1])
                 return pages[page - 1] if page <= len(pages) else []
 
@@ -124,6 +124,10 @@ class RenovateImageTest(unittest.TestCase):
         with self.assertRaisesRegex(ValueError, "not latest eligible stable container digest") as raised:
             self.checker.verify_container(self.client(), image, self.NOW)
         self.assertEqual(2, self.checker.exit_status([f"online validation failed for Renovate image: {raised.exception}"]))
+
+    def test_a_tag_re_pushed_within_the_grace_is_not_drift_yet(self):
+        image = dict(self.image("44.74.1", "2026-09-09T23:48:34Z"), version="sha256:" + "0" * 64)
+        self.checker.verify_container(self.client(pushed="2026-09-30T16:16:56Z"), image, self.NOW)
 
     def test_the_shared_filter_excludes_non_stable_and_non_version_releases(self):
         releases = [

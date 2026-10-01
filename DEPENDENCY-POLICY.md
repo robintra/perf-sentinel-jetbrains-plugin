@@ -28,13 +28,13 @@ keeps them off automerge entirely, regardless of whether their SHA happens to be
 Only stable releases are eligible, and stable releases are eligible immediately: Renovate opens their
 pull request at once, held by a `renovate/stability-days` pending check that Renovate itself posts —
 the platform does not provide it — rather than a delayed pull request. Minor,
-patch and digest updates merge on their own once seven days old, the same window after which the
-freshness audit calls a pin behind, and only when `CI / Gate` is green: Renovate merges the pull
-request itself, on its next scheduled run after both conditions hold, at most a day later. GitHub's
-native auto-merge is deliberately unused for this — it merges as soon as required checks pass and
-cannot be made to wait on the seven-day stability check, so `platformAutomerge` stays `false`. The
-seven days are the freshness grace in `scripts/check-supply-chain.py`, read by the policy check
-rather than repeated. Major updates are always merged by a maintainer, as are the Rider group, the
+patch and digest updates merge on their own once seven days old, and only when `CI / Gate` is
+green: Renovate merges the pull request itself, on its next scheduled run after both conditions
+hold, at most a day later. GitHub's native auto-merge is deliberately unused for this — it merges as
+soon as required checks pass and cannot be made to wait on the seven-day stability check, so
+`platformAutomerge` stays `false`. The freshness audit is the backstop: its grace in
+`scripts/check-supply-chain.py` is 21 days, so it only reports a release Renovate failed to merge,
+or one a maintainer left waiting. Major updates are always merged by a maintainer, as are the Rider group, the
 Renovate image, and the actions that run inside the Renovate job itself — `renovatebot/github-action`,
 `step-security/harden-runner`, `actions/create-github-app-token` — the dependencies excluded from
 automerge above. Prereleases such as alpha, beta, RC, EAP, preview, nightly, and snapshot builds are

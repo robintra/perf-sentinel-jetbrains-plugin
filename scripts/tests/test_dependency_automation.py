@@ -328,7 +328,7 @@ class DependencyAutomationTests(unittest.TestCase):
             self.assertNotEqual(0, result.returncode)
             self.assertIn("official release service", result.stderr)
 
-    def test_matured_non_major_updates_merge_after_the_freshness_grace(self):
+    def test_matured_non_major_updates_merge_well_inside_the_freshness_grace(self):
         spec = importlib.util.spec_from_file_location("check_supply_chain", REPOSITORY / "scripts/check-supply-chain.py")
         supply = importlib.util.module_from_spec(spec)
         spec.loader.exec_module(supply)
@@ -336,7 +336,9 @@ class DependencyAutomationTests(unittest.TestCase):
         automerge = [rule for rule in rules if rule.get("automerge") is True]
         self.assertEqual(1, len(automerge))
         self.assertEqual(["minor", "patch", "digest"], automerge[0]["matchUpdateTypes"])
-        self.assertEqual(f"{supply.FRESHNESS_GRACE.days} days", automerge[0]["minimumReleaseAge"])
+        self.assertEqual("7 days", automerge[0]["minimumReleaseAge"])
+        # The release age plus a daily run, twice over: drift means Renovate is stuck.
+        self.assertGreaterEqual(supply.FRESHNESS_GRACE.days, 2 * (7 + 1))
 
     def test_checker_rejects_policy_switches_drifting(self):
         for key, value, message in (

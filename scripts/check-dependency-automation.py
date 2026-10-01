@@ -3,7 +3,6 @@
 
 from __future__ import annotations
 
-import importlib.util
 import json
 import re
 import sys
@@ -11,17 +10,9 @@ from collections import Counter
 from pathlib import Path
 
 
-def load_supply_chain_checker():
-    path = Path(__file__).resolve().parent / "check-supply-chain.py"
-    spec = importlib.util.spec_from_file_location("check_supply_chain", path)
-    module = importlib.util.module_from_spec(spec)
-    spec.loader.exec_module(module)
-    return module
-
-
-# The automerge rule waits exactly as long as the freshness check does before
-# calling a pin behind, so the two windows can never drift apart.
-RELEASE_AGE = f"{load_supply_chain_checker().FRESHNESS_GRACE.days} days"
+# The automerge rule's wait. It stays well inside the freshness grace, so the
+# freshness audit only reports an update Renovate failed to merge.
+RELEASE_AGE = "7 days"
 HOOK_COMMAND = "python3 scripts/sync-supply-chain.py --online"
 
 
