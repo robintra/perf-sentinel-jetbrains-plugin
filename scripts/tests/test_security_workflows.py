@@ -11,7 +11,7 @@ SETUP_JAVA = "actions/setup-java@de7274f081f381c8f8158605e0321c36c376e2e6"
 SETUP_DOTNET = "actions/setup-dotnet@a98b56852c35b8e3190ac28c8c2271da59106c68"
 SETUP_GRADLE = "gradle/actions/setup-gradle@9c971963bec38e04b3d30dcc455b5382be2fdbfb"
 CODEQL = "github/codeql-action"
-CODEQL_SHA = "1c5b675653bb5c22dbe9b12b556ec555138e09fd"
+CODEQL_SHA = "2892aa5e19bbd11bc0cff5427e3b750a04d9e3c2"
 
 
 class DailySecurityWorkflowTests(unittest.TestCase):
