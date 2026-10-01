@@ -133,9 +133,14 @@ class RenovateWorkflowTests(unittest.TestCase):
         self.assertIn("    environment: renovate\n", self.text)
         self.assertEqual({"RENOVATE_APP_ID", "RENOVATE_APP_PRIVATE_KEY"}, set(re.findall(r"secrets\.(\w+)", self.text)))
 
-    def test_the_token_is_read_only_until_the_dry_run_is_lifted(self):
+    def test_only_the_app_token_writes_and_only_what_renovate_needs(self):
         self.assertIn("permissions:\n  contents: read\n", self.text)
-        self.assertNotIn(": write", self.text)
+        self.assertEqual(
+            {"checks": "read", "contents": "write", "issues": "write", "metadata": "read",
+             "pull-requests": "write", "statuses": "write", "workflows": "write"},
+            dict(re.findall(r"^\s+permission-([a-z-]+): (\w+)$", self.text, re.M)),
+        )
+        self.assertEqual(5, len(re.findall(r": write$", self.text, re.M)))
 
     def test_runs_the_digest_pinned_image_behind_harden_runner(self):
         self.assertIn("renovate-image: renovate/renovate\n", self.text)
@@ -147,9 +152,9 @@ class RenovateWorkflowTests(unittest.TestCase):
         self.assertIn("""RENOVATE_CUSTOM_ENV_VARIABLES: '{"GITHUB_TOKEN": "${{ github.token }}"}'""", self.text)
         self.assertIn("token: ${{ steps.app-token.outputs.token }}", self.text)
 
-    def test_global_config_allows_only_the_sync_hook_and_starts_in_dry_run(self):
+    def test_global_config_allows_only_the_sync_hook(self):
         self.assertEqual(["^python3 scripts/sync-supply-chain\\.py --online$"], self.global_config["allowedCommands"])
-        self.assertEqual("full", self.global_config["dryRun"])
+        self.assertNotIn("dryRun", self.global_config)
 
 
 class CodeQLWorkflowTests(unittest.TestCase):

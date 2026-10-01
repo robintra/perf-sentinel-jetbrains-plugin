@@ -8,6 +8,5 @@
   "binarySource": "install",
   "allowedCommands": [
     "^python3 scripts/sync-supply-chain\\.py --online$"
-  ],
-  "dryRun": "full"
+  ]
 }

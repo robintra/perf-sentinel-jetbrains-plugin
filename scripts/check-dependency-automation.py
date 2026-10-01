@@ -179,7 +179,6 @@ EXPECTED_GLOBAL_CONFIG = {
     "requireConfig": "required",
     "binarySource": "install",
     "allowedCommands": ["^python3 scripts/sync-supply-chain\\.py --online$"],
-    "dryRun": "full",
 }
 
 
