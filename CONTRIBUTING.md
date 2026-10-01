@@ -5,7 +5,7 @@ request focused and explain the user-visible behavior it changes.
 
 ## Before opening a pull request
 
-Use Java 21, Gradle 9.7, Python 3, and .NET SDK 10.0.302. The dependency locks
+Use Java 21, Gradle 9.7, Python 3, and the .NET SDK `global.json` pins. The dependency locks
 and verification metadata are part of the source. Do not update them unless the
 pull request intentionally changes dependencies.
 

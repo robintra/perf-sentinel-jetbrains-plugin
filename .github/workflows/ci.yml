@@ -71,7 +71,7 @@ jobs:
           java-version-file: .java-version
       - uses: actions/setup-dotnet@a98b56852c35b8e3190ac28c8c2271da59106c68
         with:
-          dotnet-version: 10.0.302
+          global-json-file: global.json
       - run: scripts/free-hosted-runner-space.sh
       - name: Free the toolchains this job never calls
         shell: bash
@@ -125,7 +125,7 @@ jobs:
         with: {distribution: temurin, java-version-file: .java-version}
       - uses: actions/setup-dotnet@a98b56852c35b8e3190ac28c8c2271da59106c68
         with:
-          dotnet-version: 10.0.302
+          global-json-file: global.json
       - run: scripts/free-hosted-runner-space.sh
       - uses: gradle/actions/setup-gradle@9c971963bec38e04b3d30dcc455b5382be2fdbfb
         with:
@@ -148,7 +148,7 @@ jobs:
         with: {distribution: temurin, java-version-file: .java-version}
       - uses: actions/setup-dotnet@a98b56852c35b8e3190ac28c8c2271da59106c68
         with:
-          dotnet-version: 10.0.302
+          global-json-file: global.json
       - run: scripts/free-hosted-runner-space.sh
       - uses: gradle/actions/setup-gradle@9c971963bec38e04b3d30dcc455b5382be2fdbfb
         with:
@@ -171,7 +171,7 @@ jobs:
         with: {distribution: temurin, java-version-file: .java-version}
       - uses: actions/setup-dotnet@a98b56852c35b8e3190ac28c8c2271da59106c68
         with:
-          dotnet-version: 10.0.302
+          global-json-file: global.json
       - run: scripts/free-hosted-runner-space.sh
       - uses: gradle/actions/setup-gradle@9c971963bec38e04b3d30dcc455b5382be2fdbfb
         with:
@@ -194,7 +194,7 @@ jobs:
         with: {distribution: temurin, java-version-file: .java-version}
       - uses: actions/setup-dotnet@a98b56852c35b8e3190ac28c8c2271da59106c68
         with:
-          dotnet-version: 10.0.302
+          global-json-file: global.json
       - run: scripts/free-hosted-runner-space.sh
       - uses: gradle/actions/setup-gradle@9c971963bec38e04b3d30dcc455b5382be2fdbfb
         with:
@@ -217,7 +217,7 @@ jobs:
         with: {distribution: temurin, java-version-file: .java-version}
       - uses: actions/setup-dotnet@a98b56852c35b8e3190ac28c8c2271da59106c68
         with:
-          dotnet-version: 10.0.302
+          global-json-file: global.json
       - run: scripts/free-hosted-runner-space.sh
       - uses: gradle/actions/setup-gradle@9c971963bec38e04b3d30dcc455b5382be2fdbfb
         with:
@@ -240,7 +240,7 @@ jobs:
         with: {distribution: temurin, java-version-file: .java-version}
       - uses: actions/setup-dotnet@a98b56852c35b8e3190ac28c8c2271da59106c68
         with:
-          dotnet-version: 10.0.302
+          global-json-file: global.json
       - run: scripts/free-hosted-runner-space.sh
       - uses: gradle/actions/setup-gradle@9c971963bec38e04b3d30dcc455b5382be2fdbfb
         with:
@@ -303,7 +303,7 @@ jobs:
         with: {distribution: temurin, java-version-file: .java-version}
       - uses: actions/setup-dotnet@a98b56852c35b8e3190ac28c8c2271da59106c68
         with:
-          dotnet-version: 10.0.302
+          global-json-file: global.json
       - run: scripts/free-hosted-runner-space.sh
       - uses: gradle/actions/setup-gradle@9c971963bec38e04b3d30dcc455b5382be2fdbfb
         with:
@@ -326,7 +326,7 @@ jobs:
         with: {distribution: temurin, java-version-file: .java-version}
       - uses: actions/setup-dotnet@a98b56852c35b8e3190ac28c8c2271da59106c68
         with:
-          dotnet-version: 10.0.302
+          global-json-file: global.json
       - run: scripts/free-hosted-runner-space.sh
       - uses: gradle/actions/setup-gradle@9c971963bec38e04b3d30dcc455b5382be2fdbfb
         with:
@@ -507,7 +507,7 @@ jobs:
         with: {distribution: temurin, java-version-file: .java-version}
       - uses: actions/setup-dotnet@a98b56852c35b8e3190ac28c8c2271da59106c68
         with:
-          dotnet-version: 10.0.302
+          global-json-file: global.json
           cache: true
           cache-dependency-path: src/dotnet/**/packages.lock.json
       - uses: gradle/actions/setup-gradle@9c971963bec38e04b3d30dcc455b5382be2fdbfb
@@ -517,7 +517,7 @@ jobs:
       - name: Verify the .NET SDK
         shell: pwsh
         run: |
-          if ((dotnet --version) -ne "10.0.302") { throw "expected .NET SDK 10.0.302" }
+          if ((dotnet --version) -ne (Get-Content global.json | ConvertFrom-Json).sdk.version) { throw "expected the .NET SDK global.json pins" }
       - name: Build the unsigned plugin and Rider frontend
         shell: pwsh
         run: >-

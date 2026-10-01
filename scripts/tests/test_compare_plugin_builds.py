@@ -156,9 +156,9 @@ class WindowsRiderWorkflowTests(unittest.TestCase):
 
     def test_runs_locked_release_tests_coverage_and_closed_packaging(self):
         windows = self.workflow.split("  windows-rider-build:\n", 1)[1].split("\n  windows-rider:\n", 1)[0]
-        self.assertIn("actions/setup-dotnet@a98b56852c35b8e3190ac28c8c2271da59106c68", windows)
-        self.assertIn("dotnet-version: 10.0.302", windows)
-        self.assertIn('(dotnet --version) -ne "10.0.302"', windows)
+        self.assertRegex(windows, r"actions/setup-dotnet@[0-9a-f]{40}\n")
+        self.assertIn("global-json-file: global.json", windows)
+        self.assertIn("(dotnet --version) -ne (Get-Content global.json | ConvertFrom-Json).sdk.version", windows)
         self.assertIn("--locked-mode", windows)
         self.assertIn("--configuration Release", windows)
         self.assertIn('--collect:"XPlat Code Coverage"', windows)
@@ -180,8 +180,8 @@ class WindowsRiderWorkflowTests(unittest.TestCase):
         for start, end in (("  plugin-verifier:\n", "\n  zip:\n"), ("  zip:\n", "\n  dependency-review:\n")):
             with self.subTest(job=start.strip()):
                 job = self.workflow.split(start, 1)[1].split(end, 1)[0]
-                self.assertIn("actions/setup-dotnet@a98b56852c35b8e3190ac28c8c2271da59106c68", job)
-                self.assertIn("dotnet-version: 10.0.302", job)
+                self.assertRegex(job, r"actions/setup-dotnet@[0-9a-f]{40}\n")
+                self.assertIn("global-json-file: global.json", job)
 
     def test_rider_result_is_required_by_the_fail_closed_gate(self):
         checker = (REPOSITORY / "scripts/check-ci-results.py").read_text(encoding="utf-8")

@@ -11,9 +11,6 @@ concurrency:
   group: release-${{ github.ref }}
   cancel-in-progress: false
 
-env:
-  DOTNET_VERSION: "10.0.302"
-
 jobs:
   validate-tag:
     name: Validate signed release tag
@@ -63,13 +60,13 @@ jobs:
       - uses: actions/setup-java@de7274f081f381c8f8158605e0321c36c376e2e6
         with: {distribution: temurin, java-version-file: .java-version}
       - uses: actions/setup-dotnet@a98b56852c35b8e3190ac28c8c2271da59106c68
-        with: {dotnet-version: "10.0.302"}
+        with: {global-json-file: global.json}
       - uses: gradle/actions/setup-gradle@9c971963bec38e04b3d30dcc455b5382be2fdbfb
         with: {gradle-version: "9.8.0", cache-disabled: true}
       - name: Build and test the unsigned plugin
         shell: pwsh
         run: |
-          if ((dotnet --version) -ne "10.0.302") { throw "expected .NET SDK 10.0.302" }
+          if ((dotnet --version) -ne (Get-Content global.json | ConvertFrom-Json).sdk.version) { throw "expected the .NET SDK global.json pins" }
           $version = $env:TAG_NAME.Substring(1)
           python scripts/check-version.py "v$version"
           gradle --no-daemon --no-build-cache --dependency-verification strict clean :rider-frontend:test buildPlugin -PriderConfiguration=Release -Pversion=$version
