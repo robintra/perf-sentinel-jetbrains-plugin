@@ -107,6 +107,11 @@ EXPECTED_PACKAGE_RULES = [
         "allowedVersions": "<7.0.0",
     },
     {
+        "description": "Keep Microsoft.Bcl.Memory on the 9.0 line JetBrains 2025.3 pins, moving only to its patched builds",
+        "matchPackageNames": ["Microsoft.Bcl.Memory"],
+        "allowedVersions": "/^9\\.0\\./",
+    },
+    {
         "description": "Keep the JDK on the Java 21 line the plugin targets",
         "matchPackageNames": ["java-jdk"],
         "allowedVersions": "/^21\\./",
