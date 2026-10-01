@@ -107,6 +107,25 @@ EXPECTED_PACKAGE_RULES = [
         "automerge": False,
     },
 ]
+CI = "/^\\.github/workflows/ci\\.yml$/"
+AUDIT = "/^\\.github/workflows/security-audit\\.yml$/"
+RELEASE = "/^\\.github/workflows/release\\.yml$/"
+
+
+def audited_tool(files, patterns, name, extract="^v(?<version>.+)$"):
+    """A tool whose only declaration is its inventory entry, plus the workflows that use it.
+
+    Renovate moves every copy in one branch; the sync hook then refreshes the
+    entry's release and date, and re-pins any download checksum the move broke.
+    """
+    manager = {
+        "files": files + ["/^config/supply-chain\\.json$/"],
+        "patterns": patterns + [f'"name": "{name}",\\s*"kind": "audited-tool",\\s*"version": "(?<currentValue>[^"]+)"'],
+        "datasource": "github-releases", "versioning": "semver-coerced",
+    }
+    return manager | ({"extract": extract} if extract else {})
+
+
 EXPECTED_CUSTOM_MANAGERS = {
     "IIU": {
         "files": ["/^build\\.gradle\\.kts$/"],
@@ -131,6 +150,15 @@ EXPECTED_CUSTOM_MANAGERS = {
     "JetBrains.Rider.SDK": {"files": ["/^src/dotnet/Plugin\\.props$/"], "patterns": ["<SdkVersion>(?<currentValue>[0-9.]+)</SdkVersion>"], "datasource": "nuget", "versioning": "nuget"},
     "java-jdk": {"files": ["/^\\.java-version$/"], "patterns": ["(?<currentValue>[0-9]+\\.[0-9]+\\.[0-9]+\\+\\S+)"], "datasource": "java-version", "versioning": "loose"},
     "renovate/renovate": {"files": ["/^\\.github/workflows/renovate\\.yml$/"], "patterns": ["renovate-version:\\s*\"?(?<currentValue>[0-9.]+)@(?<currentDigest>sha256:[0-9a-f]{64})\"?"], "datasource": "docker", "versioning": "docker"},
+    "jetbrains/qodana-jvm-community": {"files": ["/^qodana\\.yml$/"], "patterns": ["linter:\\s*jetbrains/qodana-jvm-community:(?<currentValue>[0-9.]+)@(?<currentDigest>sha256:[0-9a-f]{64})"], "datasource": "docker", "versioning": "docker"},
+    "gitleaks/gitleaks": audited_tool([CI, AUDIT], ["GITLEAKS_VERSION:\\s*(?<currentValue>[0-9.]+)"], "Gitleaks"),
+    "zizmorcore/zizmor": audited_tool([CI, AUDIT], ["zizmorcore/zizmor-action@[0-9a-f]{40}\\s+with:\\s+version:\\s*(?<currentValue>[0-9.]+)"], "Zizmor"),
+    "anchore/syft": audited_tool([AUDIT, RELEASE], ["syft-version:\\s*v?(?<currentValue>[0-9.]+)"], "Syft"),
+    "astral-sh/ruff": audited_tool([CI], ["astral-sh/ruff/releases/download/(?<currentValue>[0-9.]+)/"], "Ruff", extract=None),
+    "rhysd/actionlint": audited_tool([CI], ["rhysd/actionlint/releases/download/v(?<currentValue>[0-9.]+)/actionlint_[0-9.]+_linux_amd64\\.tar\\.gz\\n.*\\n.*actionlint_[0-9.]+_linux_amd64\\.tar\\.gz"], "actionlint"),
+    "google/osv-scanner": audited_tool([], [], "OSV-Scanner"),
+    "trufflesecurity/trufflehog": audited_tool([], [], "TruffleHog"),
+    "JetBrains/qodana-cli": audited_tool([], [], "Qodana CLI"),
 }
 EXPECTED_DATASOURCE = {
     "defaultRegistryUrlTemplate": "https://data.services.jetbrains.com/products/releases?code={{{packageName}}}&type=release",
@@ -141,7 +169,7 @@ EXPECTED_DATASOURCE = {
 }
 EXPECTED_POST_UPGRADE_TASKS = {
     "commands": [HOOK_COMMAND],
-    "fileFilters": ["config/supply-chain.json", "gradle.lockfile", "gradle/verification-metadata.xml"],
+    "fileFilters": ["config/supply-chain.json", "gradle.lockfile", "gradle/verification-metadata.xml", ".github/workflows/ci.yml"],
     "executionMode": "branch",
 }
 EXPECTED_GLOBAL_CONFIG = {
@@ -267,7 +295,10 @@ def validate(root: Path):
     else:
         if len(custom) != len(EXPECTED_CUSTOM_MANAGERS):
             errors.append("Renovate custom manager contract is not exact")
-        if any(not isinstance(manager, dict) or set(manager) != CUSTOM_MANAGER_KEYS for manager in custom):
+        if any(
+            not isinstance(manager, dict) or set(manager) - {"extractVersionTemplate"} != CUSTOM_MANAGER_KEYS
+            for manager in custom
+        ):
             errors.append("Renovate custom manager schema is not closed")
         codes = {
             manager.get("depNameTemplate")
@@ -295,7 +326,7 @@ def validate(root: Path):
             actual_managers[manager["depNameTemplate"]] = {
                 "files": manager.get("managerFilePatterns"), "patterns": manager.get("matchStrings"),
                 "datasource": manager.get("datasourceTemplate"), "versioning": manager.get("versioningTemplate"),
-            }
+            } | ({"extract": manager["extractVersionTemplate"]} if "extractVersionTemplate" in manager else {})
         if actual_managers != EXPECTED_CUSTOM_MANAGERS:
             errors.append("Renovate custom manager contract is not exact")
 

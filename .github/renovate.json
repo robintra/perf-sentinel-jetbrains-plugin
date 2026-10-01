@@ -305,6 +305,134 @@
       "depNameTemplate": "renovate/renovate",
       "datasourceTemplate": "docker",
       "versioningTemplate": "docker"
+    },
+    {
+      "customType": "regex",
+      "managerFilePatterns": [
+        "/^qodana\\.yml$/"
+      ],
+      "matchStrings": [
+        "linter:\\s*jetbrains/qodana-jvm-community:(?<currentValue>[0-9.]+)@(?<currentDigest>sha256:[0-9a-f]{64})"
+      ],
+      "depNameTemplate": "jetbrains/qodana-jvm-community",
+      "datasourceTemplate": "docker",
+      "versioningTemplate": "docker"
+    },
+    {
+      "customType": "regex",
+      "managerFilePatterns": [
+        "/^\\.github/workflows/ci\\.yml$/",
+        "/^\\.github/workflows/security-audit\\.yml$/",
+        "/^config/supply-chain\\.json$/"
+      ],
+      "matchStrings": [
+        "GITLEAKS_VERSION:\\s*(?<currentValue>[0-9.]+)",
+        "\"name\": \"Gitleaks\",\\s*\"kind\": \"audited-tool\",\\s*\"version\": \"(?<currentValue>[^\"]+)\""
+      ],
+      "depNameTemplate": "gitleaks/gitleaks",
+      "datasourceTemplate": "github-releases",
+      "versioningTemplate": "semver-coerced",
+      "extractVersionTemplate": "^v(?<version>.+)$"
+    },
+    {
+      "customType": "regex",
+      "managerFilePatterns": [
+        "/^\\.github/workflows/ci\\.yml$/",
+        "/^\\.github/workflows/security-audit\\.yml$/",
+        "/^config/supply-chain\\.json$/"
+      ],
+      "matchStrings": [
+        "zizmorcore/zizmor-action@[0-9a-f]{40}\\s+with:\\s+version:\\s*(?<currentValue>[0-9.]+)",
+        "\"name\": \"Zizmor\",\\s*\"kind\": \"audited-tool\",\\s*\"version\": \"(?<currentValue>[^\"]+)\""
+      ],
+      "depNameTemplate": "zizmorcore/zizmor",
+      "datasourceTemplate": "github-releases",
+      "versioningTemplate": "semver-coerced",
+      "extractVersionTemplate": "^v(?<version>.+)$"
+    },
+    {
+      "customType": "regex",
+      "managerFilePatterns": [
+        "/^\\.github/workflows/security-audit\\.yml$/",
+        "/^\\.github/workflows/release\\.yml$/",
+        "/^config/supply-chain\\.json$/"
+      ],
+      "matchStrings": [
+        "syft-version:\\s*v?(?<currentValue>[0-9.]+)",
+        "\"name\": \"Syft\",\\s*\"kind\": \"audited-tool\",\\s*\"version\": \"(?<currentValue>[^\"]+)\""
+      ],
+      "depNameTemplate": "anchore/syft",
+      "datasourceTemplate": "github-releases",
+      "versioningTemplate": "semver-coerced",
+      "extractVersionTemplate": "^v(?<version>.+)$"
+    },
+    {
+      "customType": "regex",
+      "managerFilePatterns": [
+        "/^\\.github/workflows/ci\\.yml$/",
+        "/^config/supply-chain\\.json$/"
+      ],
+      "matchStrings": [
+        "astral-sh/ruff/releases/download/(?<currentValue>[0-9.]+)/",
+        "\"name\": \"Ruff\",\\s*\"kind\": \"audited-tool\",\\s*\"version\": \"(?<currentValue>[^\"]+)\""
+      ],
+      "depNameTemplate": "astral-sh/ruff",
+      "datasourceTemplate": "github-releases",
+      "versioningTemplate": "semver-coerced"
+    },
+    {
+      "customType": "regex",
+      "managerFilePatterns": [
+        "/^\\.github/workflows/ci\\.yml$/",
+        "/^config/supply-chain\\.json$/"
+      ],
+      "matchStrings": [
+        "rhysd/actionlint/releases/download/v(?<currentValue>[0-9.]+)/actionlint_[0-9.]+_linux_amd64\\.tar\\.gz\\n.*\\n.*actionlint_[0-9.]+_linux_amd64\\.tar\\.gz",
+        "\"name\": \"actionlint\",\\s*\"kind\": \"audited-tool\",\\s*\"version\": \"(?<currentValue>[^\"]+)\""
+      ],
+      "depNameTemplate": "rhysd/actionlint",
+      "datasourceTemplate": "github-releases",
+      "versioningTemplate": "semver-coerced",
+      "extractVersionTemplate": "^v(?<version>.+)$"
+    },
+    {
+      "customType": "regex",
+      "managerFilePatterns": [
+        "/^config/supply-chain\\.json$/"
+      ],
+      "matchStrings": [
+        "\"name\": \"OSV-Scanner\",\\s*\"kind\": \"audited-tool\",\\s*\"version\": \"(?<currentValue>[^\"]+)\""
+      ],
+      "depNameTemplate": "google/osv-scanner",
+      "datasourceTemplate": "github-releases",
+      "versioningTemplate": "semver-coerced",
+      "extractVersionTemplate": "^v(?<version>.+)$"
+    },
+    {
+      "customType": "regex",
+      "managerFilePatterns": [
+        "/^config/supply-chain\\.json$/"
+      ],
+      "matchStrings": [
+        "\"name\": \"TruffleHog\",\\s*\"kind\": \"audited-tool\",\\s*\"version\": \"(?<currentValue>[^\"]+)\""
+      ],
+      "depNameTemplate": "trufflesecurity/trufflehog",
+      "datasourceTemplate": "github-releases",
+      "versioningTemplate": "semver-coerced",
+      "extractVersionTemplate": "^v(?<version>.+)$"
+    },
+    {
+      "customType": "regex",
+      "managerFilePatterns": [
+        "/^config/supply-chain\\.json$/"
+      ],
+      "matchStrings": [
+        "\"name\": \"Qodana CLI\",\\s*\"kind\": \"audited-tool\",\\s*\"version\": \"(?<currentValue>[^\"]+)\""
+      ],
+      "depNameTemplate": "JetBrains/qodana-cli",
+      "datasourceTemplate": "github-releases",
+      "versioningTemplate": "semver-coerced",
+      "extractVersionTemplate": "^v(?<version>.+)$"
     }
   ],
   "platformAutomerge": false,
@@ -318,7 +446,8 @@
     "fileFilters": [
       "config/supply-chain.json",
       "gradle.lockfile",
-      "gradle/verification-metadata.xml"
+      "gradle/verification-metadata.xml",
+      ".github/workflows/ci.yml"
     ],
     "executionMode": "branch"
   }
