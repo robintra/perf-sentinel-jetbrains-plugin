@@ -32,7 +32,7 @@ jobs:
 
   dependencies:
     name: Dependencies and workflows
-    runs-on: ubuntu-24.04
+    runs-on: ubuntu-26.04
     timeout-minutes: 60
     permissions:
       contents: read
@@ -112,7 +112,7 @@ jobs:
 
   scorecard:
     name: OpenSSF Scorecard
-    runs-on: ubuntu-24.04
+    runs-on: ubuntu-26.04
     timeout-minutes: 20
     permissions:
       contents: read
@@ -142,7 +142,7 @@ jobs:
     # The model is uploaded before the audit steps, so their failures must not skip the scan.
     # A failure before the upload still fails the download below.
     if: ${{ !cancelled() }}
-    runs-on: ubuntu-24.04
+    runs-on: ubuntu-26.04
     timeout-minutes: 40
     permissions:
       contents: read
@@ -178,7 +178,7 @@ jobs:
     name: Reconcile scheduled audit alert
     needs: [osv, dependencies, scorecard, qodana-jvm]
     if: ${{ always() && github.event_name == 'schedule' }}
-    runs-on: ubuntu-24.04
+    runs-on: ubuntu-26.04
     timeout-minutes: 5
     permissions:
       contents: read

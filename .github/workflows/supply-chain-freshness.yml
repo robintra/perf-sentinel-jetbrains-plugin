@@ -23,7 +23,7 @@ concurrency:
 jobs:
   freshness:
     name: Compare every pin with its latest upstream stable
-    runs-on: ubuntu-24.04
+    runs-on: ubuntu-26.04
     timeout-minutes: 10
     outputs:
       drift: ${{ steps.audit.outputs.drift }}
@@ -55,7 +55,7 @@ jobs:
   notify:
     name: Reconcile supply-chain drift
     needs: freshness
-    runs-on: ubuntu-24.04
+    runs-on: ubuntu-26.04
     timeout-minutes: 5
     permissions:
       contents: read

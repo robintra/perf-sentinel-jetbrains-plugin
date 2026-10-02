@@ -1,0 +1,5 @@
+# actionlint 1.7.12, its newest release, predates GitHub's ubuntu-26.04 runners (GA 2026-09-17) and
+# rejects the label. Declare it here until a release knows it, then delete this file.
+self-hosted-runner:
+  labels:
+    - ubuntu-26.04
