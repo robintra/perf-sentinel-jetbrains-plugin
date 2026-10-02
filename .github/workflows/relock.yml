@@ -16,6 +16,11 @@ on:
         description: Modules whose lock may move, as group:name separated by commas
         required: true
         type: string
+      dry-run:
+        description: Build the patch without pushing it
+        required: false
+        type: boolean
+        default: false
 
 permissions:
   contents: read
@@ -71,53 +76,20 @@ jobs:
         with:
           gradle-version: "9.8.0"
           cache-disabled: true
-      - name: Relock and write the checksums
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
+        with:
+          path: tooling
+          sparse-checkout: scripts/ci
+          persist-credentials: false
+      - name: Relock and checksum, one group of configurations at a time
         env:
           MODULES: ${{ inputs.modules }}
-        # Every IDE the build declares, downloaded and unpacked at once, outgrows a hosted runner's
-        # disk. So configurations resolve one group at a time, the build's own ones and then each
-        # IDE task's (named _<task>, read from the locks), and the Gradle cache is emptied between
-        # groups; locks and checksums accumulate across the runs. The last run only computes the
-        # task graph of verifyPlugin, where the installers it checks against get resolved.
+        # Writing verification metadata through Gradle resolves every IDE of the build at once, more
+        # than this runner holds; relock.py explains the group-by-group alternative. It runs from
+        # main, the pull request's code only through Gradle.
         run: |
           set -euo pipefail
-          export GRADLE_USER_HOME="$RUNNER_TEMP/gradle-home"
-          init="$RUNNER_TEMP/relock.init.gradle"
-          cat > "$init" <<'GROOVY'
-          allprojects {
-              tasks.register("resolveRelockGroup") {
-                  def suffix = providers.gradleProperty("relockGroup").getOrElse("")
-                  def configurations = project.configurations
-                  def log = logger
-                  doLast {
-                      configurations.findAll { c ->
-                          c.canBeResolved && (suffix ? c.name.endsWith("_" + suffix) : !c.name.contains("_"))
-                      }.each { c ->
-                          def view = c.incoming.artifactView { lenient(true) }.artifacts
-                          view.artifacts.each { it.file }
-                          view.failures.each { log.warn("relock: ${c.name}: ${it.message}") }
-                      }
-                  }
-              }
-          }
-          GROOVY
-          relock() {
-            gradle --no-daemon --dependency-verification lenient --update-locks "$MODULES" \
-              --write-verification-metadata sha256 --init-script "$init" "$@"
-            rm -rf "$GRADLE_USER_HOME/caches/modules-2" "$GRADLE_USER_HOME"/caches/*/transforms
-            df -h / | tail -1
-          }
-          relock :resolveRelockGroup -PrelockGroup=
-          relock :protocol:resolveRelockGroup -PrelockGroup=
-          relock :rider-frontend:resolveRelockGroup -PrelockGroup=
-          for suffix in $(cut -s -d= -f2 gradle.lockfile | tr ',' '\n' | grep _ | sed 's/.*_//' | sort -u); do
-            relock :resolveRelockGroup -PrelockGroup="$suffix"
-          done
-          gradle --no-daemon --dependency-verification lenient \
-            --write-verification-metadata sha256 --dry-run verifyPlugin
-          if [ -f gradle/verification-metadata.dryrun.xml ]; then
-            mv gradle/verification-metadata.dryrun.xml gradle/verification-metadata.xml
-          fi
+          python3 tooling/scripts/ci/relock.py --modules "$MODULES" --gradle-home "$RUNNER_TEMP/gradle-home"
           git diff --binary -- gradle.lockfile '*/gradle.lockfile' gradle/verification-metadata.xml > relock.patch
           git diff --stat -- gradle.lockfile '*/gradle.lockfile' gradle/verification-metadata.xml
       - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a
@@ -130,6 +102,7 @@ jobs:
   push:
     name: Push the relock to the pull request
     needs: relock
+    if: ${{ !inputs.dry-run }}
     runs-on: ubuntu-24.04
     timeout-minutes: 10
     environment: renovate

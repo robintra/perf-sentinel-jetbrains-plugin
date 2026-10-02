@@ -173,7 +173,8 @@ class RelockWorkflowTests(unittest.TestCase):
         self.assertIn("permissions:\n  contents: read\n", self.text)
 
     def test_the_build_runs_without_secrets_or_the_renovate_environment(self):
-        self.assertIn("gradle --no-daemon", self.relock)
+        self.assertIn("python3 tooling/scripts/ci/relock.py", self.relock)
+        self.assertNotIn("--write-verification-metadata", self.relock)
         self.assertNotIn("secrets.", self.relock)
         self.assertNotIn("environment:", self.relock)
         self.assertNotIn(": write", self.relock)
