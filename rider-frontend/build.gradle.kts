@@ -1,4 +1,5 @@
 import org.jetbrains.intellij.platform.gradle.Constants
+import org.jetbrains.intellij.platform.gradle.IntelliJPlatformType
 import org.jetbrains.intellij.platform.gradle.TestFrameworkType
 import org.jetbrains.kotlin.gradle.dsl.JvmTarget
 
@@ -18,6 +19,16 @@ dependencies {
     intellijPlatform {
         rider("2025.3.5.2") { useInstaller = false }
         testFramework(TestFrameworkType.Platform)
+    }
+}
+
+// Only the root plugin is verified, but a module without its own list falls back to the recommended
+// Rider installers, which the platform plugin cannot use for Rider and which reach into EAP builds.
+intellijPlatform {
+    pluginVerification {
+        ides {
+            create(IntelliJPlatformType.Rider, "2025.3.5.2") { useInstaller = false }
+        }
     }
 }
 

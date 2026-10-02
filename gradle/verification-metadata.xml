@@ -12618,11 +12618,6 @@
             <sha256 value="e8e4fbe4dab44390d09f681e059a316e692cabd24b2e11ce98ff76c8120fa313" origin="Verified from JetBrains checksum"/>
          </artifact>
       </component>
-      <component group="rider" name="JetBrains.Rider" version="2026.2.2">
-         <artifact name="JetBrains.Rider-2026.2.2-aarch64.dmg">
-            <sha256 value="e991026d529e31c16e1633896b8f96937f28ef78732a22a1f9aafaddd48de615" origin="Verified from JetBrains checksum"/>
-         </artifact>
-      </component>
       <component group="ruby" name="RubyMine" version="2025.3.6.1">
          <artifact name="RubyMine-2025.3.6.1.tar.gz">
             <sha256 value="438cfd13945986c438a79d649c766faeb155fd5907abdbfae58a2f86b062cceb" origin="Verified from JetBrains checksum"/>
