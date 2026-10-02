@@ -32,7 +32,7 @@ concurrency:
 jobs:
   relock:
     name: Relock and checksum the pull request
-    runs-on: ubuntu-24.04
+    runs-on: ubuntu-26.04
     timeout-minutes: 330
     permissions:
       contents: read
@@ -103,7 +103,7 @@ jobs:
     name: Push the relock to the pull request
     needs: relock
     if: ${{ !inputs.dry-run }}
-    runs-on: ubuntu-24.04
+    runs-on: ubuntu-26.04
     timeout-minutes: 10
     environment: renovate
     steps:
