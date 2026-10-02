@@ -341,7 +341,7 @@ def inspect(path):
             name for name in names
             if name in {f"{PLUGIN_ROOT}/LICENSE", f"{PLUGIN_ROOT}/LICENSE.txt", f"{PLUGIN_ROOT}/NOTICE", f"{PLUGIN_ROOT}/NOTICE.txt"}
         )
-        expected_order = [
+        allowed = {
             f"{PLUGIN_ROOT}/",
             *licenses,
             f"{PLUGIN_ROOT}/dotnet/",
@@ -351,15 +351,21 @@ def inspect(path):
             main_jar,
             frontend_jar,
             searchable_jar,
-        ]
-        allowed = set(expected_order)
+        }
         unexpected = [name for name in names if name not in allowed]
         if unexpected:
             name = unexpected[0]
             if name.endswith(".jar"):
                 raise ValidationError(f"unexpected jar {name}")
             raise ValidationError(f"unexpected plugin entry {name}")
-        if names != expected_order:
+        # The packager picks the order and moves it between releases; the two-build comparison
+        # already proves it stable. What must hold is a directory before everything it contains.
+        position = {name: index for index, name in enumerate(names)}
+        if set(names) != allowed or any(
+            position.get(name.rstrip("/").rsplit("/", 1)[0] + "/", len(names)) > index
+            for index, name in enumerate(names)
+            if name != f"{PLUGIN_ROOT}/"
+        ):
             raise ValidationError("plugin ZIP: invalid entry order")
 
         entries = []
