@@ -140,11 +140,15 @@ def insert(metadata: Path, checksums: dict) -> int:
 
 def groups(root: Path) -> list[tuple[str, str]]:
     """(project path, configuration suffix) for each project's own group and each IDE task's."""
+    # The projects settings.gradle.kts includes, not every directory holding a lock: a checkout of
+    # this tooling next to the build carries one too.
+    settings = (root / "settings.gradle.kts").read_text(encoding="utf-8")
+    included = re.findall(r'"(:[^"]+)"', " ".join(re.findall(r"include\(([^)]*)\)", settings)))
     result = []
-    for lock in [root / "gradle.lockfile", *sorted(root.glob("*/gradle.lockfile"))]:
+    for project in ["", *included]:
+        lock = root / project.lstrip(":").replace(":", "/") / "gradle.lockfile"
         if not lock.is_file():
             continue
-        project = "" if lock.parent == root else f":{lock.parent.name}"
         configurations = {name for line in lock.read_text(encoding="utf-8").splitlines() if "=" in line
                           for name in line.split("=", 1)[1].split(",")}
         result.append((project, ""))

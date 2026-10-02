@@ -101,8 +101,10 @@ class RelockTest(unittest.TestCase):
             "a:b:1=compileClasspath,intellijPlatformTestClasspath_testGoLand253\nempty=runtimeClasspath_runRider\n",
             encoding="utf-8",
         )
-        (self.root / "frontend").mkdir()
-        (self.root / "frontend" / "gradle.lockfile").write_text("a:b:1=compileClasspath\n", encoding="utf-8")
+        (self.root / "settings.gradle.kts").write_text('include(":frontend")\n', encoding="utf-8")
+        for directory in ("frontend", "tooling"):
+            (self.root / directory).mkdir()
+            (self.root / directory / "gradle.lockfile").write_text("a:b:1=compileClasspath\n", encoding="utf-8")
         self.assertEqual(
             [("", ""), ("", "runRider"), ("", "testGoLand253"), (":frontend", "")],
             self.relock.groups(self.root),
