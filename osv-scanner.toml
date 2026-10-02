@@ -50,6 +50,14 @@ effectiveUntil = 2026-11-13
 reason = "Bundled in RustRover 2026.2, reachable only through the testRustRover262 configurations."
 
 [[PackageOverrides]]
+name = "io.opentelemetry:opentelemetry-api"
+version = "1.48.0"
+ecosystem = "Maven"
+vulnerability.ignore = true
+effectiveUntil = 2026-11-13
+reason = "Bundled in RustRover 2026.2, reachable only through the testRustRover262 configurations."
+
+[[PackageOverrides]]
 name = "tools.jackson.core:jackson-databind"
 version = "3.1.4"
 ecosystem = "Maven"
@@ -90,6 +98,14 @@ reason = "Shipped inside the IDE distributions the intellijPlatformTest configur
 [[PackageOverrides]]
 name = "jackson-core"
 version = "3.1.4"
+ecosystem = "Maven"
+vulnerability.ignore = true
+effectiveUntil = 2026-11-13
+reason = "Bundled in RustRover 2026.2, reachable only through the testRustRover262 configurations."
+
+[[PackageOverrides]]
+name = "opentelemetry-api"
+version = "1.48.0"
 ecosystem = "Maven"
 vulnerability.ignore = true
 effectiveUntil = 2026-11-13
