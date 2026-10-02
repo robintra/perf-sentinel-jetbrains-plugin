@@ -194,11 +194,18 @@ class PluginZipInspectorTest(unittest.TestCase):
         self.write_archive(self.entries(mode=0o100600))
         self.assert_rejected("mode")
 
-    def test_rejects_unsorted_outer_entries(self):
+    def test_rejects_a_file_before_its_directory(self):
         entries = self.entries()
-        entries[2], entries[3] = entries[3], entries[2]
+        entries[1], entries[2] = entries[2], entries[1]
         self.write_archive(entries)
         self.assert_rejected("entry order")
+
+    def test_accepts_the_packager_moving_files_between_directories(self):
+        # IntelliJ Platform Gradle Plugin 2.19.0 writes lib/ and the searchable options before dotnet/.
+        entries = self.entries()
+        self.write_archive([entries[0], entries[4], entries[7], *entries[1:4], entries[5], entries[6]])
+        result = self.run_checker()
+        self.assertEqual(0, result.returncode, result.stderr)
 
     def test_rejects_unsorted_nested_jar_entries(self):
         self.write_archive(self.entries(main=main_jar(unsorted=True)))

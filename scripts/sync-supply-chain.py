@@ -285,7 +285,7 @@ def refresh(root, checker, inventory, online, problems):
 # Rider, which the verifier takes from Maven with useInstaller = false.
 INSTALLER_PINS = {
     "IntelliJ IDEA": ("idea", "idea", "ideaIU", "com.jetbrains.intellij.idea"),
-    "PyCharm": ("python", "pycharm-professional", "pycharm-professional", "com.jetbrains.intellij.pycharm"),
+    "PyCharm": ("python", "pycharm", "pycharm", "com.jetbrains.intellij.pycharm"),
     "PhpStorm": ("webide", "PhpStorm", "PhpStorm", "com.jetbrains.intellij.phpstorm"),
     "RubyMine": ("ruby", "RubyMine", "RubyMine", "com.jetbrains.intellij.rubymine"),
     "WebStorm": ("webstorm", "WebStorm", "WebStorm", "com.jetbrains.intellij.webstorm"),

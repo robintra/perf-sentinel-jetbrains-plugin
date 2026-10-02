@@ -34,9 +34,9 @@
     {
       "name": "IntelliJ Platform Gradle plugin",
       "kind": "gradle-plugin",
-      "version": "2.18.1",
-      "releasedAt": "2026-07-10",
-      "source": "https://plugins.gradle.org/plugin/org.jetbrains.intellij.platform.module/2.18.1",
+      "version": "2.19.0",
+      "releasedAt": "2026-09-14",
+      "source": "https://plugins.gradle.org/plugin/org.jetbrains.intellij.platform.module/2.19.0",
       "declaration": "settings.gradle.kts#org.jetbrains.intellij.platform.module"
     },
     {
@@ -50,9 +50,9 @@
     {
       "name": "JetBrains Qodana Gradle plugin",
       "kind": "gradle-plugin",
-      "version": "2026.2.1",
-      "releasedAt": "2026-09-02",
-      "source": "https://plugins.gradle.org/plugin/org.jetbrains.qodana/2026.2.1",
+      "version": "2026.2.2",
+      "releasedAt": "2026-09-29",
+      "source": "https://plugins.gradle.org/plugin/org.jetbrains.qodana/2026.2.2",
       "declaration": "settings.gradle.kts#org.jetbrains.qodana"
     },
     {
