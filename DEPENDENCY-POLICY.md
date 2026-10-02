@@ -56,8 +56,11 @@ command its global configuration allows. The script rewrites the supply-chain in
 JetBrains product only the plugin verifier uses, the lock line and the verification metadata with
 the checksums JetBrains publishes, and, for a workflow download whose URL moved, the SHA-256 GitHub
 publishes for the release asset. A product a test IDE resolves, such as Rider or RustRover, still
-needs a Gradle relock by hand, and so does a Gradle library whose bump changes the lock: relocking
-runs the Gradle wrapper, which the global configuration does not allow.
+needs a Gradle relock, and so does a Gradle library whose bump changes the lock: relocking runs the
+Gradle wrapper, which the global configuration does not allow. The `Relock` workflow does it on
+demand, given the pull request number and the modules whose lock may move. It resolves on a hosted
+runner with a read-only token, then a second job, the only one holding the App key and running no
+build, pushes the result onto the branch if the patch edits nothing but locks and checksums.
 
 Renovate's custom JetBrains manager reads the official JetBrains product release service for every
 IDE version embedded in the Gradle build. Its NuGet manager covers SDK-style project files and

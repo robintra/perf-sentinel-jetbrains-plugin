@@ -1,0 +1,161 @@
+name: Relock
+
+# Renovate may not run the Gradle wrapper, so an update that moves a lock or a verification
+# checksum stops at its pull request. This finishes it on a hosted runner, in two jobs: the one
+# that runs the updated build holds a read-only token, and the one that holds the App key runs no
+# repository code, it only checks that the patch touches locks and checksums and pushes it.
+
+on:
+  workflow_dispatch:
+    inputs:
+      pr:
+        description: Renovate pull request to relock
+        required: true
+        type: number
+      modules:
+        description: Modules whose lock may move, as group:name separated by commas
+        required: true
+        type: string
+
+permissions:
+  contents: read
+
+concurrency:
+  group: relock-${{ inputs.pr }}
+  cancel-in-progress: false
+
+jobs:
+  relock:
+    name: Relock and checksum the pull request
+    runs-on: ubuntu-24.04
+    timeout-minutes: 150
+    permissions:
+      contents: read
+      pull-requests: read
+    outputs:
+      branch: ${{ steps.pr.outputs.branch }}
+      sha: ${{ steps.pr.outputs.sha }}
+    steps:
+      - uses: step-security/harden-runner@e14015d583714f6e62063499dc959a02595150a1
+        with: {egress-policy: audit}
+      - id: pr
+        name: Resolve the Renovate branch
+        env:
+          GH_TOKEN: ${{ github.token }}
+          PR: ${{ inputs.pr }}
+          MODULES: ${{ inputs.modules }}
+        run: |
+          set -euo pipefail
+          module='[A-Za-z0-9._-]+:[A-Za-z0-9._-]+'
+          if [[ ! "$MODULES" =~ ^${module}(,${module})*$ ]]; then
+            echo "::error::modules must be group:name pairs separated by commas"
+            exit 1
+          fi
+          read -r branch sha cross state < <(gh pr view "$PR" --repo "$GITHUB_REPOSITORY" \
+            --json headRefName,headRefOid,isCrossRepository,state \
+            --jq '"\(.headRefName) \(.headRefOid) \(.isCrossRepository) \(.state)"')
+          if [[ "$state" != OPEN || "$cross" != false || ! "$branch" =~ ^renovate/[A-Za-z0-9._/-]+$ ]]; then
+            echo "::error::#$PR is not an open Renovate pull request of this repository"
+            exit 1
+          fi
+          echo "branch=$branch" >> "$GITHUB_OUTPUT"
+          echo "sha=$sha" >> "$GITHUB_OUTPUT"
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
+        with:
+          ref: ${{ steps.pr.outputs.sha }}
+          persist-credentials: false
+      - uses: actions/setup-java@de7274f081f381c8f8158605e0321c36c376e2e6
+        with: {distribution: temurin, java-version-file: .java-version}
+      - run: scripts/free-hosted-runner-space.sh
+      - uses: gradle/actions/setup-gradle@9c971963bec38e04b3d30dcc455b5382be2fdbfb
+        with:
+          gradle-version: "9.8.0"
+          cache-disabled: true
+      - name: Relock and write the checksums
+        env:
+          MODULES: ${{ inputs.modules }}
+        # Every IDE the build declares gets downloaded and unpacked, more than the root disk holds,
+        # so Gradle works on the runner's scratch disk. The second run only computes the task graph
+        # of verifyPlugin, which is where the installers it checks against get resolved.
+        run: |
+          set -euo pipefail
+          sudo install -d -o "$USER" /mnt/gradle-home
+          export GRADLE_USER_HOME=/mnt/gradle-home
+          gradle --no-daemon --dependency-verification lenient --update-locks "$MODULES" \
+            --write-verification-metadata sha256 dependencies
+          gradle --no-daemon --dependency-verification lenient \
+            --write-verification-metadata sha256 --dry-run verifyPlugin
+          mv gradle/verification-metadata.dryrun.xml gradle/verification-metadata.xml
+          git diff --binary -- gradle.lockfile '*/gradle.lockfile' gradle/verification-metadata.xml > relock.patch
+          git diff --stat -- gradle.lockfile '*/gradle.lockfile' gradle/verification-metadata.xml
+          df -h / /mnt
+      - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a
+        with:
+          name: relock-patch
+          path: relock.patch
+          if-no-files-found: error
+          retention-days: 7
+
+  push:
+    name: Push the relock to the pull request
+    needs: relock
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    environment: renovate
+    steps:
+      - uses: step-security/harden-runner@e14015d583714f6e62063499dc959a02595150a1
+        with: {egress-policy: audit}
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
+        with:
+          ref: ${{ needs.relock.outputs.sha }}
+          persist-credentials: false
+      - uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c
+        with:
+          name: relock-patch
+          path: ${{ runner.temp }}/relock
+      - id: apply
+        name: Apply a patch that only moves locks and checksums
+        env:
+          PATCH: ${{ runner.temp }}/relock/relock.patch
+        run: |
+          set -euo pipefail
+          if [ ! -s "$PATCH" ]; then
+            echo "changed=false" >> "$GITHUB_OUTPUT"
+            exit 0
+          fi
+          # The patch comes out of a job that ran the updated build, so it is not trusted: it may
+          # only edit existing lock and checksum files, never create, delete, rename or re-mode one.
+          if git apply --summary "$PATCH" | grep -q .; then
+            echo "::error::the relock patch creates, deletes, renames or re-modes a file"
+            exit 1
+          fi
+          git apply --numstat "$PATCH" | cut -f3 | while read -r path; do
+            case "$path" in
+              gradle.lockfile|protocol/gradle.lockfile|rider-frontend/gradle.lockfile|gradle/verification-metadata.xml) ;;
+              *) echo "::error::the relock patch touches $path"; exit 1 ;;
+            esac
+          done
+          git apply "$PATCH"
+          echo "changed=true" >> "$GITHUB_OUTPUT"
+      - id: app-token
+        if: steps.apply.outputs.changed == 'true'
+        uses: actions/create-github-app-token@bcd2ba49218906704ab6c1aa796996da409d3eb1
+        with:
+          app-id: ${{ secrets.RENOVATE_APP_ID }}
+          private-key: ${{ secrets.RENOVATE_APP_PRIVATE_KEY }}
+          # Only the branch push; the lock files are not workflows.
+          permission-contents: write
+      - if: steps.apply.outputs.changed == 'true'
+        name: Commit and push onto the pull request branch
+        env:
+          TOKEN: ${{ steps.app-token.outputs.token }}
+          SLUG: ${{ steps.app-token.outputs.app-slug }}
+          BRANCH: ${{ needs.relock.outputs.branch }}
+          MODULES: ${{ inputs.modules }}
+        # A plain push, never forced: if the branch moved since the relock, it is rejected.
+        run: |
+          set -euo pipefail
+          git config user.name "${SLUG}[bot]"
+          git config user.email "${SLUG}[bot]@users.noreply.github.com"
+          git commit -qam "build(deps): relock $MODULES"
+          git push "https://x-access-token:${TOKEN}@github.com/${GITHUB_REPOSITORY}.git" "HEAD:refs/heads/${BRANCH}"

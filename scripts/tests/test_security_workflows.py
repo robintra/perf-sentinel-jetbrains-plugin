@@ -157,6 +157,36 @@ class RenovateWorkflowTests(unittest.TestCase):
         self.assertNotIn("dryRun", self.global_config)
 
 
+class RelockWorkflowTests(unittest.TestCase):
+    """The job that runs the updated build never holds the App key, and the one that does runs no build."""
+
+    @classmethod
+    def setUpClass(cls):
+        cls.text = (WORKFLOWS / "relock.yml").read_text(encoding="utf-8")
+        cls.relock = cls.text.split("\n  relock:\n", 1)[1].split("\n  push:\n", 1)[0]
+        cls.push = cls.text.split("\n  push:\n", 1)[1]
+
+    def test_runs_only_on_demand(self):
+        triggers = self.text.split("\non:\n", 1)[1].split("\npermissions:", 1)[0]
+        self.assertIn("workflow_dispatch:", triggers)
+        self.assertNotIn("pull_request", triggers)
+        self.assertIn("permissions:\n  contents: read\n", self.text)
+
+    def test_the_build_runs_without_secrets_or_the_renovate_environment(self):
+        self.assertIn("gradle --no-daemon", self.relock)
+        self.assertNotIn("secrets.", self.relock)
+        self.assertNotIn("environment:", self.relock)
+        self.assertNotIn(": write", self.relock)
+
+    def test_the_key_holder_runs_no_build_and_only_moves_locks(self):
+        self.assertIn("    environment: renovate\n", self.push)
+        self.assertNotIn("gradle ", self.push)
+        self.assertIn("git apply --summary", self.push)
+        self.assertIn("gradle.lockfile|protocol/gradle.lockfile|rider-frontend/gradle.lockfile|gradle/verification-metadata.xml) ;;", self.push)
+        self.assertEqual(["contents"], re.findall(r"permission-([a-z-]+): write", self.push))
+        self.assertNotIn("--force", self.push)
+
+
 class CodeQLWorkflowTests(unittest.TestCase):
     @classmethod
     def setUpClass(cls):
