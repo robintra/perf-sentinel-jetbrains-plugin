@@ -1,6 +1,6 @@
 {
   "schemaVersion": 1,
-  "auditedAt": "2026-10-02T11:07:21Z",
+  "auditedAt": "2026-10-03T10:25:26Z",
   "approvedNuGetSources": [
     "https://api.nuget.org/v3/index.json"
   ],
@@ -326,10 +326,10 @@
     {
       "name": "Syft",
       "kind": "audited-tool",
-      "version": "1.52.0",
-      "releasedAt": "2026-09-17T14:38:17Z",
-      "source": "https://github.com/anchore/syft/releases/tag/v1.52.0",
-      "release": "v1.52.0"
+      "version": "1.54.0",
+      "releasedAt": "2026-10-01T20:54:29Z",
+      "source": "https://github.com/anchore/syft/releases/tag/v1.54.0",
+      "release": "v1.54.0"
     },
     {
       "name": "Ruff",
