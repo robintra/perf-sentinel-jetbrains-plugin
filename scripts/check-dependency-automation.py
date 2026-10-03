@@ -112,6 +112,12 @@ EXPECTED_PACKAGE_RULES = [
         "allowedVersions": "/^9\\.0\\./",
     },
     {
+        "description": "Leave the jsoup floor on the build classpath to the security audit: it only has to stay above the advisories, and every bump needs checksums Renovate cannot write",
+        "matchPackageNames": ["org.jsoup:jsoup"],
+        "matchFileNames": ["settings.gradle.kts"],
+        "enabled": False,
+    },
+    {
         "description": "Keep the JDK on the Java 21 line the plugin targets",
         "matchPackageNames": ["java-jdk"],
         "allowedVersions": "/^21\\./",

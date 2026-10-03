@@ -44,7 +44,9 @@ JetBrains IDE and SDK updates stay within the declared 2025.3 or 2026.2 compatib
 Rider test collector stays below Coverlet 7 because the project still uses JetBrains' `net472` test
 host; newer stable collectors target modern .NET only and cannot run there. `Microsoft.Bcl.Memory`
 stays on the 9.0 line: JetBrains 2025.3 pins the vulnerable 9.0.0 exactly, and the override only
-moves it to a patched 9.0 build rather than away from the line the IDE loads.
+moves it to a patched 9.0 build rather than away from the line the IDE loads. The jsoup constraint in
+`settings.gradle.kts` is a floor the build classpath keeps above known advisories; Renovate leaves
+it alone, and only a new advisory from the security audit moves it.
 
 Lock file maintenance is disabled. It regenerates every Gradle lock at once, which drops the bundled
 module entries of products it did not resolve and can lock a prerelease IDE.
