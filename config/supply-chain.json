@@ -1,6 +1,6 @@
 {
   "schemaVersion": 1,
-  "auditedAt": "2026-10-02T11:07:21Z",
+  "auditedAt": "2026-10-03T10:24:56Z",
   "approvedNuGetSources": [
     "https://api.nuget.org/v3/index.json"
   ],
@@ -90,7 +90,7 @@
     {
       "name": "RDGen",
       "kind": "maven",
-      "version": "2026.3.0",
+      "version": "2026.3.1",
       "releasedAt": "2026-09-01",
       "source": "https://repo.maven.apache.org/maven2/com/jetbrains/rd/rd-gen/maven-metadata.xml",
       "declaration": "gradle/libs.versions.toml#rdGen"

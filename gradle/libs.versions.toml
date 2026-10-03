@@ -3,7 +3,7 @@ gson = "2.14.0"
 jackson = "2.22.3"
 junit = "4.13.2"
 kover = "0.9.11"
-rdGen = "2026.3.0"
+rdGen = "2026.3.1"
 
 [libraries]
 gson = { module = "com.google.code.gson:gson", version.ref = "gson" }
