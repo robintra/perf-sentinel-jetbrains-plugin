@@ -1,6 +1,6 @@
 {
   "schemaVersion": 1,
-  "auditedAt": "2026-10-02T11:07:21Z",
+  "auditedAt": "2026-10-09T11:54:20Z",
   "approvedNuGetSources": [
     "https://api.nuget.org/v3/index.json"
   ],
@@ -8,19 +8,19 @@
     {
       "name": "Gradle",
       "kind": "build-tool",
-      "version": "9.8.0",
-      "releasedAt": "2026-09-24T13:40:00Z",
+      "version": "9.8.1",
+      "releasedAt": "2026-10-07T16:57:46Z",
       "source": "https://services.gradle.org/versions/current",
-      "sha256": "bafd5ce9cfaea0fbccfdc8439a1ac42fbd4cd9c89dc9a988228d8a2639a58e6c",
+      "sha256": "dce76f55f8e251a3a1f130eb120f30b3d271de2b76c9b0729d316b5a1b6dc01f",
       "declaration": "gradle/wrapper/gradle-wrapper.properties#distributionUrl"
     },
     {
       "name": "Gradle wrapper JAR",
       "kind": "build-tool",
-      "version": "9.8.0",
-      "releasedAt": "2026-09-24T13:40:00Z",
+      "version": "9.8.1",
+      "releasedAt": "2026-10-07T16:57:46Z",
       "source": "https://services.gradle.org/versions/current",
-      "sha256": "238e777fcddd7e34f9708186085def2abd6e08e658505b38718d79d74c21abd5",
+      "sha256": "3b8a25775a69158b5ad2b1d17a80a88dc7b40a352a73eb27d06c612a7ce68e98",
       "declaration": "gradle/wrapper/gradle-wrapper.jar#sha256"
     },
     {
