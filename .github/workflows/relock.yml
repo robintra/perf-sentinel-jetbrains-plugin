@@ -74,7 +74,7 @@ jobs:
       - run: scripts/free-hosted-runner-space.sh
       - uses: gradle/actions/setup-gradle@9c971963bec38e04b3d30dcc455b5382be2fdbfb
         with:
-          gradle-version: "9.8.0"
+          gradle-version: "9.8.1"
           cache-disabled: true
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
         with:
