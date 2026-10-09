@@ -28,9 +28,9 @@ def policy() -> dict[str, Any]:
         "visibility": "public",
         "default_branch": "main",
         "repository_settings": {
-            "allow_squash_merge": True,
-            "allow_rebase_merge": True,
-            "allow_merge_commit": False,
+            "allow_squash_merge": False,
+            "allow_rebase_merge": False,
+            "allow_merge_commit": True,
             "allow_auto_merge": True,
             "delete_branch_on_merge": True,
         },
@@ -49,9 +49,9 @@ def policy() -> dict[str, Any]:
             "require_last_push_approval": False,
             "strict_required_status_checks_policy": True,
             "do_not_enforce_on_create": False,
-            "allowed_merge_methods": ["rebase", "squash"],
+            "allowed_merge_methods": ["merge"],
             "required_status_checks": [{"context": "CI / Gate"}],
-            "require_linear_history": True,
+            "require_linear_history": False,
             "require_signed_commits": True,
             "allow_force_pushes": False,
             "allow_deletions": False,
@@ -83,7 +83,7 @@ def pull_request_rule():
     return {
         "type": "pull_request",
         "parameters": {
-            "allowed_merge_methods": ["squash", "rebase"],
+            "allowed_merge_methods": ["merge"],
             "dismiss_stale_reviews_on_push": True,
             "require_code_owner_review": False,
             "require_last_push_approval": False,
@@ -102,9 +102,9 @@ def public_api_fixture() -> dict[str, Any]:
                 "visibility": "public",
                 "private": False,
                 "default_branch": "main",
-                "allow_squash_merge": True,
-                "allow_rebase_merge": True,
-                "allow_merge_commit": False,
+                "allow_squash_merge": False,
+                "allow_rebase_merge": False,
+                "allow_merge_commit": True,
                 "allow_auto_merge": True,
                 "delete_branch_on_merge": True,
                 "security_and_analysis": {
@@ -131,7 +131,6 @@ def public_api_fixture() -> dict[str, Any]:
                 ],
                 "conditions": {"ref_name": {"include": ["~DEFAULT_BRANCH"], "exclude": []}},
                 "rules": [
-                    {"type": "required_linear_history"},
                     {"type": "required_signatures"},
                     {"type": "non_fast_forward"},
                     {"type": "deletion"},
@@ -285,10 +284,9 @@ class RepositoryPolicyTests(unittest.TestCase):
                 api["ruleset:101"]["body"]["rules"][-1]["parameters"]["required_status_checks"] = checks
                 self.assert_drift(api, "status checks")
 
-    def test_requires_signed_linear_pr_history_and_only_the_admin_bypass(self):
+    def test_requires_signed_pr_history_and_only_the_admin_bypass(self):
         for mutation, message in (
             ("required_signatures", "required_signatures"),
-            ("required_linear_history", "required_linear_history"),
             ("non_fast_forward", "non_fast_forward"),
             ("deletion", "deletion"),
             ("pull_request", "pull_request"),
@@ -298,6 +296,9 @@ class RepositoryPolicyTests(unittest.TestCase):
                 rules = api["ruleset:101"]["body"]["rules"]
                 rules[:] = [rule for rule in rules if rule["type"] != mutation]
                 self.assert_drift(api, message)
+        api = public_api_fixture()
+        api["ruleset:101"]["body"]["rules"].insert(0, {"type": "required_linear_history"})
+        self.assert_drift(api, "required_linear_history")
         api = public_api_fixture()
         api["ruleset:101"]["body"]["bypass_actors"].append(
             {"actor_id": 99, "actor_type": "Team", "bypass_mode": "always"}
@@ -315,7 +316,7 @@ class RepositoryPolicyTests(unittest.TestCase):
         ):
             with self.subTest(field=field):
                 api = public_api_fixture()
-                parameters = api["ruleset:101"]["body"]["rules"][4]["parameters"]
+                parameters = api["ruleset:101"]["body"]["rules"][3]["parameters"]
                 parameters[field] = not fields[field]
                 self.assert_drift(api, field)
 
@@ -404,7 +405,7 @@ class RepositoryPolicyTests(unittest.TestCase):
         api["rulesets:1"]["body"][0]["id"] = True
         self.assert_drift(api, "normalized API schema")
         api = public_api_fixture()
-        api["ruleset:101"]["body"]["rules"][4]["parameters"]["required_approving_review_count"] = False
+        api["ruleset:101"]["body"]["rules"][3]["parameters"]["required_approving_review_count"] = False
         self.assert_drift(api, "normalized API schema")
         api = public_api_fixture()
         api["ruleset:101"]["body"]["rules"][-1]["parameters"]["required_status_checks"][0]["unexpected"] = True

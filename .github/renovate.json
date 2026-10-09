@@ -471,7 +471,7 @@
     }
   ],
   "platformAutomerge": false,
-  "automergeStrategy": "squash",
+  "automergeStrategy": "merge-commit",
   "internalChecksFilter": "none",
   "rebaseWhen": "behind-base-branch",
   "postUpgradeTasks": {

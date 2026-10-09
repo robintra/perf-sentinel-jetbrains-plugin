@@ -19,9 +19,10 @@ SECRET_REFERENCE = re.compile(r"\$\{\{\s*secrets\s*\.\s*([A-Z][A-Z0-9_]*)\s*}}")
 SECRET_TOKEN = re.compile(r"(?<![A-Za-z0-9_])secrets(?![A-Za-z0-9_])", re.IGNORECASE)
 
 SETTINGS = {
-    "allow_squash_merge": True,
-    "allow_rebase_merge": True,
-    "allow_merge_commit": False,
+    "allow_squash_merge": False,
+    "allow_rebase_merge": False,
+    # A merge commit keeps every commit of the pull request with its signature.
+    "allow_merge_commit": True,
     # Renovate merges matured non-major updates itself, on its next run once CI / Gate is green
     # (platformAutomerge is false). This setting is not part of that path; it stays on only so a
     # maintainer can use `gh pr merge --auto` or the UI button, which the ruleset still gates.
@@ -186,9 +187,9 @@ def validate_policy(value):
         and branch["require_last_push_approval"] is False
         and branch["strict_required_status_checks_policy"] is True
         and branch["do_not_enforce_on_create"] is False
-        and sorted(branch["allowed_merge_methods"]) == ["rebase", "squash"]
+        and branch["allowed_merge_methods"] == ["merge"]
         and branch["required_status_checks"] == [{"context": "CI / Gate"}]
-        and branch["require_linear_history"] is True
+        and branch["require_linear_history"] is False
         and branch["require_signed_commits"] is True
         and branch["allow_force_pushes"] is False
         and branch["allow_deletions"] is False
@@ -499,11 +500,11 @@ def validate(repository, root, policy, api):
     detailed = [api.ruleset(item["id"]) for item in summaries]
     branch = active_ruleset(detailed, "branch", "~DEFAULT_BRANCH")
     rules = rule_map(branch)
-    expected_types = {"required_linear_history", "required_signatures", "non_fast_forward", "deletion",
+    expected_types = {"required_signatures", "non_fast_forward", "deletion",
                       "pull_request", "required_status_checks"}
     if set(rules) != expected_types:
-        missing = sorted(expected_types - set(rules))
-        errors.append(f"default branch rules differ: {', '.join(missing)}")
+        differing = sorted(expected_types ^ set(rules))
+        errors.append(f"default branch rules differ: {', '.join(differing)}")
     if branch["bypass_actors"] != ADMIN_BYPASS:
         errors.append("default branch bypass beyond the admin role is forbidden")
     expected_pr = {name: policy["branch_ruleset"][name] for name in PR_SCHEMA}

@@ -48,8 +48,8 @@ a separate reporting workflow.
 - Keep generated IDEs, caches, coverage, SARIF, binaries, credentials, and
   local paths out of Git.
 - Resolve review conversations before merge.
-- Use squash or rebase merge. Force pushes and branch deletion are disabled on
-  protected `main`.
+- Merge with a merge commit, which keeps every commit and its signature. Force
+  pushes and branch deletion are disabled on protected `main`.
 
 Releases are maintainer-only. The signed-tag and protected-environment process
 is documented in [RELEASING.md](RELEASING.md).
