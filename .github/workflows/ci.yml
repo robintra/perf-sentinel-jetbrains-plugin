@@ -378,8 +378,8 @@ jobs:
         shell: bash
         run: |
           set -euo pipefail
-          curl -fsSLO https://github.com/astral-sh/ruff/releases/download/0.16.10/ruff-x86_64-unknown-linux-gnu.tar.gz
-          echo '9567ff1201e2fb3da31ff04c35587d768c66d6cb42dfa84de474e2bfe360b608  ruff-x86_64-unknown-linux-gnu.tar.gz' | sha256sum --check --strict
+          curl -fsSLO https://github.com/astral-sh/ruff/releases/download/0.17.0/ruff-x86_64-unknown-linux-gnu.tar.gz
+          echo 'c94fc1dc71f054d06d9f1149442dcb471516aa2b7d4b7e8124e05d082d4c91d3  ruff-x86_64-unknown-linux-gnu.tar.gz' | sha256sum --check --strict
           tar -xzf ruff-x86_64-unknown-linux-gnu.tar.gz
           ./ruff-x86_64-unknown-linux-gnu/ruff check scripts tools
       - name: Actionlint
