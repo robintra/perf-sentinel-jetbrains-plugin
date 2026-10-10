@@ -1,6 +1,6 @@
 {
   "schemaVersion": 1,
-  "auditedAt": "2026-10-02T11:07:21Z",
+  "auditedAt": "2026-10-10T11:11:52Z",
   "approvedNuGetSources": [
     "https://api.nuget.org/v3/index.json"
   ],
@@ -8,19 +8,19 @@
     {
       "name": "Gradle",
       "kind": "build-tool",
-      "version": "9.8.0",
-      "releasedAt": "2026-09-24T13:40:00Z",
+      "version": "9.8.1",
+      "releasedAt": "2026-10-07T16:57:46Z",
       "source": "https://services.gradle.org/versions/current",
-      "sha256": "bafd5ce9cfaea0fbccfdc8439a1ac42fbd4cd9c89dc9a988228d8a2639a58e6c",
+      "sha256": "dce76f55f8e251a3a1f130eb120f30b3d271de2b76c9b0729d316b5a1b6dc01f",
       "declaration": "gradle/wrapper/gradle-wrapper.properties#distributionUrl"
     },
     {
       "name": "Gradle wrapper JAR",
       "kind": "build-tool",
-      "version": "9.8.0",
-      "releasedAt": "2026-09-24T13:40:00Z",
+      "version": "9.8.1",
+      "releasedAt": "2026-10-07T16:57:46Z",
       "source": "https://services.gradle.org/versions/current",
-      "sha256": "238e777fcddd7e34f9708186085def2abd6e08e658505b38718d79d74c21abd5",
+      "sha256": "3b8a25775a69158b5ad2b1d17a80a88dc7b40a352a73eb27d06c612a7ce68e98",
       "declaration": "gradle/wrapper/gradle-wrapper.jar#sha256"
     },
     {
@@ -269,9 +269,9 @@
     {
       "name": "NUnit3TestAdapter",
       "kind": "nuget",
-      "version": "6.3.0",
-      "releasedAt": "2026-08-24",
-      "source": "https://www.nuget.org/packages/NUnit3TestAdapter/6.3.0",
+      "version": "6.3.1",
+      "releasedAt": "2026-10-09T20:22:50.37Z",
+      "source": "https://www.nuget.org/packages/NUnit3TestAdapter/6.3.1",
       "declaration": "src/dotnet/PerfSentinel.Rider.Tests/PerfSentinel.Rider.Tests.csproj#NUnit3TestAdapter"
     },
     {
@@ -310,10 +310,10 @@
     {
       "name": "TruffleHog",
       "kind": "audited-tool",
-      "version": "3.97.9",
-      "releasedAt": "2026-09-24T09:11:59Z",
-      "source": "https://github.com/trufflesecurity/trufflehog/releases/tag/v3.97.9",
-      "release": "v3.97.9"
+      "version": "3.99.2",
+      "releasedAt": "2026-10-08T13:54:04Z",
+      "source": "https://github.com/trufflesecurity/trufflehog/releases/tag/v3.99.2",
+      "release": "v3.99.2"
     },
     {
       "name": "Zizmor",
@@ -326,18 +326,18 @@
     {
       "name": "Syft",
       "kind": "audited-tool",
-      "version": "1.52.0",
-      "releasedAt": "2026-09-17T14:38:17Z",
-      "source": "https://github.com/anchore/syft/releases/tag/v1.52.0",
-      "release": "v1.52.0"
+      "version": "1.54.1",
+      "releasedAt": "2026-10-06T15:35:10Z",
+      "source": "https://github.com/anchore/syft/releases/tag/v1.54.1",
+      "release": "v1.54.1"
     },
     {
       "name": "Ruff",
       "kind": "audited-tool",
-      "version": "0.16.10",
-      "releasedAt": "2026-10-01T18:04:27Z",
-      "source": "https://github.com/astral-sh/ruff/releases/tag/0.16.10",
-      "release": "0.16.10"
+      "version": "0.17.0",
+      "releasedAt": "2026-10-09T19:48:30Z",
+      "source": "https://github.com/astral-sh/ruff/releases/tag/0.17.0",
+      "release": "0.17.0"
     },
     {
       "name": "actionlint",
