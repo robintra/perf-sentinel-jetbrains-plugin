@@ -2,6 +2,7 @@ package io.github.robintra.perfsentinel.core
 
 import com.intellij.util.io.HttpRequests
 import com.intellij.util.concurrency.AppExecutorUtil
+import io.github.robintra.perfsentinel.PerfSentinelBundle
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.suspendCancellableCoroutine
 import kotlinx.coroutines.withTimeoutOrNull
@@ -9,24 +10,42 @@ import java.io.IOException
 import java.net.HttpURLConnection
 import java.nio.charset.StandardCharsets
 import java.util.concurrent.atomic.AtomicReference
+import java.util.logging.Level
+import java.util.logging.Logger
 import kotlin.time.Duration.Companion.milliseconds
 
 const val MAX_RESPONSE_BYTES = 5 * 1024 * 1024
 
-class DaemonRequestException(statusCode: Int) : IOException("Perf Sentinel daemon returned HTTP $statusCode")
+class DaemonRequestException(statusCode: Int, endpoint: String) : IOException(
+    when (statusCode) {
+        401 -> PerfSentinelBundle.message("error.credential.unauthorized", endpoint)
+        403 -> PerfSentinelBundle.message("error.credential.forbidden")
+        else -> "Perf Sentinel daemon returned HTTP $statusCode"
+    },
+)
 class ResponseTooLargeException : IOException("Perf Sentinel daemon response exceeds 5 MiB")
 class DaemonTimeoutException(timeoutMillis: Long) : IOException("Perf Sentinel daemon request exceeded $timeoutMillis ms")
+class CredentialRefusedException(message: String) : IOException(message)
 
 class DaemonClient(private val timeoutMillis: Long = 5_000) {
     init {
         require(timeoutMillis > 0)
     }
 
-    suspend fun fetch(endpoint: String, service: String): List<FindingResponse> =
-        withTimeoutOrNull(timeoutMillis.milliseconds) { execute(endpoint, service) }
+    /** [secret], when given, goes out as `Authorization: Bearer`, which both the Hub and the daemon read. */
+    suspend fun fetch(endpoint: String, service: String, secret: String? = null): List<FindingResponse> {
+        if (secret != null) {
+            credentialRefusal(endpoint, secret)?.let { throw CredentialRefusedException(it) }
+            // At FINE, HttpURLConnection logs every request header, Authorization included, and nothing can mask one.
+            if (Logger.getLogger("sun.net.www.protocol.http.HttpURLConnection").isLoggable(Level.FINE)) {
+                throw CredentialRefusedException(PerfSentinelBundle.message("error.credential.debuglog"))
+            }
+        }
+        return withTimeoutOrNull(timeoutMillis.milliseconds) { execute(endpoint, service, secret) }
             ?: throw DaemonTimeoutException(timeoutMillis)
+    }
 
-    private suspend fun execute(endpoint: String, service: String): List<FindingResponse> =
+    private suspend fun execute(endpoint: String, service: String, secret: String?): List<FindingResponse> =
         suspendCancellableCoroutine { continuation ->
             val connection = AtomicReference<HttpURLConnection>()
             val task = AppExecutorUtil.getAppExecutorService().submit {
@@ -35,6 +54,9 @@ class DaemonClient(private val timeoutMillis: Long = 5_000) {
                     val findings = HttpRequests.request(findingsUri(endpoint, service).toString())
                         .connectTimeout(socketTimeout)
                         .readTimeout(socketTimeout)
+                        // HttpRequests re-tunes every redirect hop, so following one would hand the secret to its target.
+                        .followRedirects(secret == null)
+                        .tuner { if (secret != null) it.setRequestProperty("Authorization", "Bearer $secret") }
                         .throwStatusCodeException(false)
                         .connect { request ->
                             val http = request.connection as HttpURLConnection
@@ -45,7 +67,7 @@ class DaemonClient(private val timeoutMillis: Long = 5_000) {
                             }
 
                             val status = http.responseCode
-                            if (status !in 200..299) throw DaemonRequestException(status)
+                            if (status !in 200..299) throw DaemonRequestException(status, endpoint)
 
                             val bytes = request.inputStream.readNBytes(MAX_RESPONSE_BYTES + 1)
                             if (bytes.size > MAX_RESPONSE_BYTES) throw ResponseTooLargeException()

@@ -1,5 +1,6 @@
 package io.github.robintra.perfsentinel.core
 
+import io.github.robintra.perfsentinel.PerfSentinelBundle
 import java.net.URI
 import java.net.URISyntaxException
 
@@ -36,3 +37,19 @@ fun normalizeEndpoints(values: List<String>): List<String> = values
         val explicitPort = port?.takeIf { !(it == 80 && scheme == "http" || it == 443 && scheme == "https") }
         "$scheme://$host${explicitPort?.let { ":$it" }.orEmpty()}${uri.normalize().rawPath.orEmpty()}".trimEnd('/')
     }.distinct()
+
+private val LOOPBACK_HOSTS = setOf("localhost", "127.0.0.1", "[::1]")
+
+// A port forward lands on loopback; any other plain-http host can sit behind a network that reads the header.
+fun credentialAllowed(endpoint: String): Boolean {
+    val uri = URI(endpoint)
+    return uri.scheme.equals("https", ignoreCase = true) || uri.host?.lowercase() in LOOPBACK_HOSTS
+}
+
+/** Why [secret] must not go to [endpoint], or null when it may. */
+fun credentialRefusal(endpoint: String, secret: String): String? = when {
+    !credentialAllowed(endpoint) -> PerfSentinelBundle.message("error.credential.transport")
+    // The JDK quotes the whole header value when it refuses one, which would put the secret in a message.
+    secret.any(Char::isISOControl) -> PerfSentinelBundle.message("error.credential.control")
+    else -> null
+}
