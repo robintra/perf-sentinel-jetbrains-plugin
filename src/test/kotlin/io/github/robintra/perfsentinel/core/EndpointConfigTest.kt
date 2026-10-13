@@ -1,7 +1,9 @@
 package io.github.robintra.perfsentinel.core
 
 import org.junit.Assert.assertEquals
+import org.junit.Assert.assertFalse
 import org.junit.Assert.assertThrows
+import org.junit.Assert.assertTrue
 import org.junit.Test
 
 class EndpointConfigTest {
@@ -61,5 +63,23 @@ class EndpointConfigTest {
         assertThrows(IllegalArgumentException::class.java) {
             normalizeEndpoints(listOf("http://bad host:4318"))
         }
+    }
+
+    @Test
+    fun `allows a credential only over https or to a loopback name`() {
+        listOf(
+            "https://hub.example.test",
+            "https://hub.example.test:8443/base",
+            "http://localhost:4318",
+            "http://127.0.0.1:4318",
+            "http://[::1]:4318",
+        ).forEach { assertTrue(it, credentialAllowed(it)) }
+        listOf(
+            "http://hub.example.test",
+            "http://perf_sentinel:4318",
+            "http://127.0.0.2:4318",
+            "http://localhost.example.test:4318",
+            "http://[::ffff:127.0.0.1]:4318",
+        ).forEach { assertFalse(it, credentialAllowed(it)) }
     }
 }

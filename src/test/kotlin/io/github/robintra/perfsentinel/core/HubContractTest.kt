@@ -3,6 +3,7 @@ package io.github.robintra.perfsentinel.core
 import com.sun.net.httpserver.HttpServer
 import kotlinx.coroutines.runBlocking
 import org.junit.Assert.assertEquals
+import org.junit.Assert.assertThrows
 import org.junit.Assert.assertTrue
 import org.junit.Test
 import java.net.InetSocketAddress
@@ -62,14 +63,36 @@ class HubContractTest {
         }
     }
 
+    @Test
+    fun `reads a Hub with access control on through a machine token`() {
+        val body = fixture()
+        val token = "psh_machine_9fT2kQ"
+
+        // A Hub with access on reads the bearer on /api/findings and answers 401 to anything else.
+        withServer(body, requiredBearer = token) { endpoint ->
+            val findings = runBlocking { DaemonClient().fetch(endpoint, "order-service", token) }
+            assertEquals(Regex("\"signature\"").findAll(body).count(), findings.size)
+
+            val refused = assertThrows(DaemonRequestException::class.java) {
+                runBlocking { DaemonClient().fetch(endpoint, "order-service") }
+            }
+            assertEquals("Credential missing, expired or revoked for $endpoint", refused.message)
+        }
+    }
+
     private fun fixture(): String =
         checkNotNull(javaClass.getResourceAsStream("/hub-contract/lab-order-service.json")) {
             "capture the fixture first: run the simulation lab's hub-plugin-contract scenario"
         }.bufferedReader().readText()
 
-    private fun withServer(body: String, test: (String) -> Unit) {
+    private fun withServer(body: String, requiredBearer: String? = null, test: (String) -> Unit) {
         val server = HttpServer.create(InetSocketAddress("127.0.0.1", 0), 0)
         server.createContext("/api/findings") { exchange ->
+            if (requiredBearer != null && exchange.requestHeaders.getFirst("Authorization") != "Bearer $requiredBearer") {
+                exchange.sendResponseHeaders(401, -1)
+                exchange.close()
+                return@createContext
+            }
             val bytes = body.toByteArray()
             exchange.sendResponseHeaders(200, bytes.size.toLong())
             exchange.responseBody.use { it.write(bytes) }

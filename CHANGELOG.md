@@ -4,6 +4,10 @@
 
 ## [Unreleased]
 
+### Added
+
+- Optional credential per endpoint, a Hub machine token or a daemon read key, set in **Settings | Tools | Perf Sentinel**. It is kept in the IDE password safe, never in the workspace file, and sent as `Authorization: Bearer` only over HTTPS or to `localhost`, `127.0.0.1` or `[::1]`; elsewhere the plugin sends nothing. With a credential set, a redirect is not followed, and nothing is sent while `sun.net.www.protocol.http.HttpURLConnection` debug logging would write the header to `idea.log`. Apply refuses a credential the plugin would not send. A credential is shared by every project that lists the endpoint. A `401` or `403` now names the credential problem. Needed for a PerfSentinelHub with access control turned on (a release after Hub 0.3.8) and for a perf-sentinel daemon with `[daemon] require_read_key = true` (a release after perf-sentinel 0.26.2). An endpoint without a credential is read as before.
+
 ## [0.1.0] - 2026-08-12
 
 ### Added

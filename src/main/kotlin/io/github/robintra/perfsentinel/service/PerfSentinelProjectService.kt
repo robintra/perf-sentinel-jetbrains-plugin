@@ -12,6 +12,7 @@ import io.github.robintra.perfsentinel.core.RefreshState
 import io.github.robintra.perfsentinel.core.forService
 import io.github.robintra.perfsentinel.core.resolveServiceName
 import io.github.robintra.perfsentinel.core.updated
+import io.github.robintra.perfsentinel.settings.EndpointCredentials
 import io.github.robintra.perfsentinel.settings.PerfSentinelSettings
 import io.github.robintra.perfsentinel.navigation.AnchorNavigator
 import kotlinx.coroutines.CancellationException
@@ -61,7 +62,11 @@ class PerfSentinelProjectService(
             // timeout, so three unreachable daemons freeze the tool window for three timeouts.
             val results = withContext(Dispatchers.IO) {
                 settings.endpoints
-                    .map { endpoint -> async { endpoint to runCatching { client.fetch(endpoint, service) } } }
+                    .map { endpoint ->
+                        async {
+                            endpoint to runCatching { client.fetch(endpoint, service, EndpointCredentials.get(endpoint)) }
+                        }
+                    }
                     .awaitAll()
             }
             val now = System.currentTimeMillis()

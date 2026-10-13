@@ -25,7 +25,7 @@ JetBrains assigns the real numeric listing ID.
 
 ## Overview
 
-Perf Sentinel displays performance findings from a running `perf-sentinel` daemon directly in JetBrains IDEs. It provides a read-only findings tool window, project-local daemon settings, generic `filepath:lineno` navigation and highlighting, and optional semantic symbol resolution for Java, Kotlin, Python, PHP, Rust, Ruby, JavaScript, TypeScript, Node.js, Go, and C# in Rider.
+Perf Sentinel displays performance findings from a running `perf-sentinel` daemon directly in JetBrains IDEs. It provides a read-only findings tool window, project-local daemon settings with an optional IDE-wide credential per endpoint, generic `filepath:lineno` navigation and highlighting, and optional semantic symbol resolution for Java, Kotlin, Python, PHP, Rust, Ruby, JavaScript, TypeScript, Node.js, Go, and C# in Rider.
 
 For SQL findings that are not attributable to another language, navigation can use the primary SQL table to find a unique project entity with an explicit JPA `@Table` annotation. A reported path decides: it must end in `.java`. With no path, a reported namespace must resolve to a Java class in project sources, and a finding reporting neither stays eligible. An entity that declares no JPA schema still matches schema-qualified SQL, since the schema often comes from configuration; two such entities read as ambiguous and refuse navigation. If the matched entity belongs to a dependency, the plugin can instead navigate to a unique project Spring Data repository bound to it.
 
@@ -36,6 +36,20 @@ GET http://127.0.0.1:4318/api/findings?service=<project>&limit=1000&include_acke
 ```
 
 Open **Settings | Tools | Perf Sentinel** to configure more daemon endpoints or override the service name. Findings are fetched once when a project opens and whenever **Refresh** is selected. There is no background polling.
+
+### Credentials
+
+A PerfSentinelHub with access control turned on, or a perf-sentinel daemon with `[daemon] require_read_key = true`, refuses an anonymous read. The same settings page holds one optional credential per endpoint: a Hub machine token, or the daemon's `read_api_key`. A newly added endpoint gets its field once the endpoint list is applied, and emptying a field clears its credential. Apply refuses a credential typed for an endpoint the same change removes, and one the plugin would refuse to send.
+
+- A credential belongs to the IDE, not the project. It is kept in the IDE password safe, keyed by the normalized endpoint, and never in the project's workspace file. Every project that lists the same endpoint uses it, and emptying the field in one project clears it for all of them.
+- Removing an endpoint keeps its credential, since another project may still use it. To delete it as well, empty its field in the same Apply that removes the endpoint. **Settings | Appearance & Behavior | System Settings | Passwords** only chooses where the IDE stores secrets; it cannot list or delete one.
+- It is sent as `Authorization: Bearer <secret>`, which both the Hub and the daemon read, so the plugin does not need to know which one an endpoint is.
+- It is sent only to an `https` endpoint or to `localhost`, `127.0.0.1` or `[::1]`, which covers a port forward. For any other plain-HTTP endpoint the plugin sends nothing and reports "A credential is sent only over HTTPS or to this machine."
+- With a credential set, a redirect is not followed, so the secret never reaches another address.
+- Debug logging for `sun.net.www.protocol.http.HttpURLConnection` (**Help | Diagnostic Tools | Debug Log Settings**) makes the JDK write every request header to `idea.log`. While it is on, the plugin does not send the credential and says why.
+- A `401` reads "Credential missing, expired or revoked for <endpoint>", and a `403` reads "No grant on this Hub reaches this credential".
+
+An endpoint without a credential is read exactly as before.
 
 Perf Sentinel defines no default keyboard shortcut; open it from the tool window bar or **Find Action** and assign a shortcut only if desired.
 
