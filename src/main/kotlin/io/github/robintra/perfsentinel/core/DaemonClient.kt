@@ -16,9 +16,9 @@ import kotlin.time.Duration.Companion.milliseconds
 
 const val MAX_RESPONSE_BYTES = 5 * 1024 * 1024
 
-class DaemonRequestException(statusCode: Int, endpoint: String) : IOException(
+class DaemonRequestException(statusCode: Int, endpoint: String, loginHint: Boolean = false) : IOException(
     when (statusCode) {
-        401 -> PerfSentinelBundle.message("error.credential.unauthorized", endpoint)
+        401 -> PerfSentinelBundle.message(if (loginHint) "error.credential.login" else "error.credential.unauthorized", endpoint)
         403 -> PerfSentinelBundle.message("error.credential.forbidden")
         else -> "Perf Sentinel daemon returned HTTP $statusCode"
     },
@@ -35,8 +35,16 @@ class DaemonClient(private val timeoutMillis: Long = 5_000) {
         require(timeoutMillis > 0)
     }
 
-    /** [secret], when given, goes out as `Authorization: Bearer`, which both the Hub and the daemon read. */
-    suspend fun fetch(endpoint: String, service: String, secret: String? = null): List<FindingResponse> {
+    /**
+     * [secret], when given, goes out as `Authorization: Bearer`, which both the Hub and the daemon read.
+     * [loginHint] makes a 401 point at `perf-sentinel login`: true unless [secret] is the endpoint's own credential.
+     */
+    suspend fun fetch(
+        endpoint: String,
+        service: String,
+        secret: String? = null,
+        loginHint: Boolean = secret == null,
+    ): List<FindingResponse> {
         if (secret != null) {
             credentialRefusal(endpoint, secret)?.let { throw CredentialRefusedException(it) }
             // At FINE, HttpURLConnection logs every request header, Authorization included, and nothing can mask one.
@@ -44,11 +52,11 @@ class DaemonClient(private val timeoutMillis: Long = 5_000) {
                 throw CredentialRefusedException(PerfSentinelBundle.message("error.credential.debuglog"))
             }
         }
-        return withTimeoutOrNull(timeoutMillis.milliseconds) { execute(endpoint, service, secret) }
+        return withTimeoutOrNull(timeoutMillis.milliseconds) { execute(endpoint, service, secret, loginHint) }
             ?: throw DaemonTimeoutException(timeoutMillis)
     }
 
-    private suspend fun execute(endpoint: String, service: String, secret: String?): List<FindingResponse> =
+    private suspend fun execute(endpoint: String, service: String, secret: String?, loginHint: Boolean): List<FindingResponse> =
         suspendCancellableCoroutine { continuation ->
             val connection = AtomicReference<HttpURLConnection>()
             val task = AppExecutorUtil.getAppExecutorService().submit {
@@ -70,7 +78,7 @@ class DaemonClient(private val timeoutMillis: Long = 5_000) {
                             }
 
                             val status = http.responseCode
-                            if (status !in 200..299) throw DaemonRequestException(status, endpoint)
+                            if (status !in 200..299) throw DaemonRequestException(status, endpoint, loginHint)
 
                             val bytes = request.inputStream.readNBytes(MAX_RESPONSE_BYTES + 1)
                             if (bytes.size > MAX_RESPONSE_BYTES) throw ResponseTooLargeException()

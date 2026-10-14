@@ -3,13 +3,21 @@ package io.github.robintra.perfsentinel.service
 import com.intellij.openapi.application.EDT
 import com.intellij.openapi.components.Service
 import com.intellij.openapi.components.service
+import com.intellij.openapi.diagnostic.logger
 import com.intellij.openapi.project.Project
+import com.intellij.openapi.util.SystemInfo
+import com.intellij.util.EnvironmentUtil
 import com.intellij.util.messages.Topic
 import io.github.robintra.perfsentinel.core.*
 import io.github.robintra.perfsentinel.navigation.AnchorNavigator
 import io.github.robintra.perfsentinel.settings.EndpointCredentials
 import io.github.robintra.perfsentinel.settings.PerfSentinelSettings
 import kotlinx.coroutines.*
+import org.jetbrains.annotations.VisibleForTesting
+import java.io.IOException
+import java.nio.file.Path
+
+private val LOG = logger<PerfSentinelProjectService>()
 
 fun interface FindingsListener {
     fun stateChanged(state: RefreshState)
@@ -27,6 +35,13 @@ class PerfSentinelProjectService(
         private set
 
     private val client = DaemonClient()
+
+    // Where `perf-sentinel login` writes its token; a test points it elsewhere. EnvironmentUtil gives the
+    // login-shell environment on macOS, so an XDG_CONFIG_HOME set in a shell rc file is seen from a Dock launch.
+    // It can wait for that environment to load, hence resolved at refresh, off the EDT.
+    @VisibleForTesting
+    internal var cliTokenPath: () -> Path? = { CliTokenFile.locate(EnvironmentUtil::getValue, SystemInfo.isWindows) }
+
     private var refreshJob: Job? = null
 
     fun refresh() {
@@ -48,15 +63,17 @@ class PerfSentinelProjectService(
             // Concurrently: sequential fetches make refresh latency the sum of every endpoint's
             // timeout, so three unreachable daemons freeze the tool window for three timeouts.
             val results = withContext(Dispatchers.IO) {
+                // Read at every refresh, so a new `perf-sentinel login` applies without restarting the IDE.
+                val cliToken = readCliToken()
+                val startedAt = System.currentTimeMillis()
                 settings.endpoints
                     .map { endpoint ->
                         async {
                             endpoint to runCatching {
-                                client.fetch(
-                                    endpoint,
-                                    service,
-                                    EndpointCredentials.get(endpoint)
-                                )
+                                // The endpoint's own credential wins: it was set for this endpoint on purpose.
+                                val secret = EndpointCredentials.get(endpoint)
+                                val login = if (secret == null) cliToken?.forEndpoint(endpoint, startedAt) else null
+                                client.fetch(endpoint, service, secret ?: login, loginHint = secret == null)
                             }
                         }
                     }
@@ -87,6 +104,16 @@ class PerfSentinelProjectService(
             withContext(Dispatchers.EDT) {
                 if (target.canNavigate()) target.navigate(true)
             }
+        }
+    }
+
+    // A file no endpoint can be matched against, a link or one that does not parse, is logged and skipped.
+    private fun readCliToken(): CliToken? = runCatching(cliTokenPath).getOrNull()?.let { path ->
+        try {
+            CliTokenFile.read(path)
+        } catch (error: IOException) {
+            LOG.warn(error.message)
+            null
         }
     }
 

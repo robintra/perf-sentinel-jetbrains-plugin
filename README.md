@@ -47,9 +47,25 @@ A PerfSentinelHub with access control turned on, or a perf-sentinel daemon with 
 - It is sent only to an `https` endpoint or to `localhost`, `127.0.0.1` or `[::1]`, which covers a port forward. For any other plain-HTTP endpoint the plugin sends nothing and reports "A credential is sent only over HTTPS or to this machine."
 - With a credential set, a redirect is not followed, so the secret never reaches another address.
 - Debug logging for `sun.net.www.protocol.http.HttpURLConnection` (**Help | Diagnostic Tools | Debug Log Settings**) makes the JDK write every request header to `idea.log`. While it is on, the plugin does not send the credential and says why.
-- A `401` reads "Credential missing, expired or revoked for <endpoint>", and a `403` reads "No grant on this Hub reaches this credential".
+- With a credential set, a `401` reads "Credential missing, expired or revoked for <endpoint>". A `403` reads "No grant on this Hub reaches this credential".
 
-An endpoint without a credential is read exactly as before.
+### Signing in with perf-sentinel login
+
+A machine token is meant for CI and dashboards. A developer reading a Hub with access control turned on signs in once with the perf-sentinel CLI instead, and the IDE then reads with that developer's own grants:
+
+```shell
+perf-sentinel login --hub https://hub.example.com
+```
+
+- The plugin reads the token file the CLI writes: `$XDG_CONFIG_HOME/perf-sentinel/hub-token.json` when `XDG_CONFIG_HOME` is an absolute path, else `~/.config/perf-sentinel/hub-token.json`, or `%APPDATA%\perf-sentinel\hub-token.json` on Windows. The variables are read from the environment the IDE loads, which on macOS is the login shell's, so an `XDG_CONFIG_HOME` exported in a shell profile also applies to an IDE started from the Dock.
+- The file holds one Hub at a time: a `perf-sentinel login` to another Hub replaces it. An endpoint for a second Hub needs a credential of its own on the settings page, otherwise signing in to one Hub signs the IDE out of the other.
+- The token goes only to the endpoint equal to the file's `hub_url`, compared as the settings normalize an endpoint, and only when that endpoint has no credential of its own. A credential set on the settings page always wins: it was chosen for that endpoint on purpose.
+- The file is read with the CLI's checks: a symbolic link or anything but a regular file is refused, on Unix a file other users can read or write (`mode & 0o077 != 0`) is refused, and an expired token is refused before any request. A refused or expired token shows on its endpoint with the command that fixes it, and nothing is sent. A link or a file that does not parse names no Hub, so it is only logged, path and reason, and every endpoint is read without it. The token never appears in a log, a notification or a message.
+- The file is read again at every refresh, so after a new `perf-sentinel login` the next **Refresh** uses it; there is no need to restart the IDE.
+- The same transport rule applies: the token goes only over HTTPS or to this machine, and a redirect is not followed.
+- For an endpoint without a credential of its own, a `401` reads "Not signed in to <endpoint>, or the sign-in expired or was revoked: run `perf-sentinel login --hub <endpoint>`, or set a credential for this endpoint."
+
+Without a token file, or with one issued by another Hub, an endpoint without a credential is read exactly as before.
 
 Perf Sentinel defines no default keyboard shortcut; open it from the tool window bar or **Find Action** and assign a shortcut only if desired.
 
