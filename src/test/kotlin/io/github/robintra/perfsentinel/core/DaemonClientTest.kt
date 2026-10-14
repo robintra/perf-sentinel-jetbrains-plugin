@@ -86,6 +86,24 @@ class DaemonClientTest {
     }
 
     @Test
+    fun `a 401 without an endpoint credential points at perf-sentinel login`() {
+        withServer(401, "") { endpoint ->
+            val hint = "Not signed in to $endpoint, or the sign-in expired or was revoked: run " +
+                "`perf-sentinel login --hub $endpoint`, or set a credential for this endpoint."
+
+            val anonymous = assertThrows(DaemonRequestException::class.java) {
+                runBlocking { DaemonClient().fetch(endpoint, "order-service") }
+            }
+            val signedIn = assertThrows(DaemonRequestException::class.java) {
+                runBlocking { DaemonClient().fetch(endpoint, "order-service", SECRET, loginHint = true) }
+            }
+
+            assertEquals(hint, anonymous.message)
+            assertEquals(hint, signedIn.message)
+        }
+    }
+
+    @Test
     fun `a 403 reads as a credential no grant reaches`() {
         withServer(403, "") { endpoint ->
             val error = assertThrows(DaemonRequestException::class.java) {

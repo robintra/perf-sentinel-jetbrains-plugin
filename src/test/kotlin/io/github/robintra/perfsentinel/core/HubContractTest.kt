@@ -74,7 +74,11 @@ class HubContractTest {
             val refused = assertThrows(DaemonRequestException::class.java) {
                 runBlocking { DaemonClient().fetch(endpoint, "order-service") }
             }
-            assertEquals("Credential missing, expired or revoked for $endpoint", refused.message)
+            assertEquals(
+                "Not signed in to $endpoint, or the sign-in expired or was revoked: run " +
+                    "`perf-sentinel login --hub $endpoint`, or set a credential for this endpoint.",
+                refused.message,
+            )
         }
     }
 
