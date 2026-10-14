@@ -14,19 +14,11 @@ import com.intellij.openapi.fileEditor.TextEditor
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.vfs.LocalFileSystem
 import com.intellij.openapi.vfs.VirtualFile
-import io.github.robintra.perfsentinel.core.FindingResponse
-import io.github.robintra.perfsentinel.core.HighlightLevel
-import io.github.robintra.perfsentinel.core.highlightLevel
-import io.github.robintra.perfsentinel.core.resolveProjectFile
-import io.github.robintra.perfsentinel.core.zeroBasedLine
+import io.github.robintra.perfsentinel.core.*
 import io.github.robintra.perfsentinel.service.FINDINGS_TOPIC
 import io.github.robintra.perfsentinel.service.FindingsListener
+import kotlinx.coroutines.*
 import java.nio.file.Paths
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.Job
-import kotlinx.coroutines.launch
-import kotlinx.coroutines.withContext
 
 @Service(Service.Level.PROJECT)
 class FindingHighlighter(

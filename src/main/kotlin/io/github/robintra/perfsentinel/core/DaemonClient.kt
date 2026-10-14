@@ -1,7 +1,7 @@
 package io.github.robintra.perfsentinel.core
 
-import com.intellij.util.io.HttpRequests
 import com.intellij.util.concurrency.AppExecutorUtil
+import com.intellij.util.io.HttpRequests
 import io.github.robintra.perfsentinel.PerfSentinelBundle
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.suspendCancellableCoroutine
@@ -23,8 +23,11 @@ class DaemonRequestException(statusCode: Int, endpoint: String) : IOException(
         else -> "Perf Sentinel daemon returned HTTP $statusCode"
     },
 )
+
 class ResponseTooLargeException : IOException("Perf Sentinel daemon response exceeds 5 MiB")
-class DaemonTimeoutException(timeoutMillis: Long) : IOException("Perf Sentinel daemon request exceeded $timeoutMillis ms")
+class DaemonTimeoutException(timeoutMillis: Long) :
+    IOException("Perf Sentinel daemon request exceeded $timeoutMillis ms")
+
 class CredentialRefusedException(message: String) : IOException(message)
 
 class DaemonClient(private val timeoutMillis: Long = 5_000) {

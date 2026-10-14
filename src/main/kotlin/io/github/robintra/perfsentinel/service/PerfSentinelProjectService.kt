@@ -5,24 +5,11 @@ import com.intellij.openapi.components.Service
 import com.intellij.openapi.components.service
 import com.intellij.openapi.project.Project
 import com.intellij.util.messages.Topic
-import io.github.robintra.perfsentinel.core.DaemonClient
-import io.github.robintra.perfsentinel.core.EndpointSnapshot
-import io.github.robintra.perfsentinel.core.Finding
-import io.github.robintra.perfsentinel.core.RefreshState
-import io.github.robintra.perfsentinel.core.forService
-import io.github.robintra.perfsentinel.core.resolveServiceName
-import io.github.robintra.perfsentinel.core.updated
+import io.github.robintra.perfsentinel.core.*
+import io.github.robintra.perfsentinel.navigation.AnchorNavigator
 import io.github.robintra.perfsentinel.settings.EndpointCredentials
 import io.github.robintra.perfsentinel.settings.PerfSentinelSettings
-import io.github.robintra.perfsentinel.navigation.AnchorNavigator
-import kotlinx.coroutines.CancellationException
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.Job
-import kotlinx.coroutines.async
-import kotlinx.coroutines.awaitAll
-import kotlinx.coroutines.launch
-import kotlinx.coroutines.withContext
+import kotlinx.coroutines.*
 
 fun interface FindingsListener {
     fun stateChanged(state: RefreshState)
@@ -64,7 +51,13 @@ class PerfSentinelProjectService(
                 settings.endpoints
                     .map { endpoint ->
                         async {
-                            endpoint to runCatching { client.fetch(endpoint, service, EndpointCredentials.get(endpoint)) }
+                            endpoint to runCatching {
+                                client.fetch(
+                                    endpoint,
+                                    service,
+                                    EndpointCredentials.get(endpoint)
+                                )
+                            }
                         }
                     }
                     .awaitAll()

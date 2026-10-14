@@ -11,12 +11,12 @@ import io.github.robintra.perfsentinel.core.CodeLocation
 import io.github.robintra.perfsentinel.core.Finding
 import io.github.robintra.perfsentinel.core.FindingPattern
 import io.github.robintra.perfsentinel.navigation.AnchorNavigator
+import kotlinx.coroutines.runBlocking
 import java.io.File
 import java.nio.file.Files
 import java.nio.file.Path
 import java.util.jar.JarEntry
 import java.util.jar.JarOutputStream
-import kotlinx.coroutines.runBlocking
 
 class JavaAnchorResolverTest : LightJavaCodeInsightFixtureTestCase() {
     // UsefulTestCase runs test bodies on the EDT; runBlocking would park it while it holds
@@ -320,7 +320,7 @@ class JavaAnchorResolverTest : LightJavaCodeInsightFixtureTestCase() {
     fun testRejectsAmbiguousExternalEntitiesEvenWithOneRepository() {
         addExternalJpaLibrary(
             "external/OtherOrder.java" to
-                "package external; @jakarta.persistence.Table(name=\"orders\") public class OtherOrder {}",
+                    "package external; @jakarta.persistence.Table(name=\"orders\") public class OtherOrder {}",
         )
         addJava(
             "com/example/OrderRepository.java",
@@ -382,13 +382,13 @@ class JavaAnchorResolverTest : LightJavaCodeInsightFixtureTestCase() {
         val classes = Files.createDirectories(root.resolve("classes"))
         val sources = (mapOf(
             "jakarta/persistence/Table.java" to
-                "package jakarta.persistence; public @interface Table { String name(); String schema() default \"\"; }",
+                    "package jakarta.persistence; public @interface Table { String name(); String schema() default \"\"; }",
             "external/ExternalOrder.java" to
-                "package external; @jakarta.persistence.Table(name=\"orders\") public class ExternalOrder {}",
+                    "package external; @jakarta.persistence.Table(name=\"orders\") public class ExternalOrder {}",
             "org/springframework/data/repository/Repository.java" to
-                "package org.springframework.data.repository; public interface Repository<T, ID> {}",
+                    "package org.springframework.data.repository; public interface Repository<T, ID> {}",
             "org/springframework/data/jpa/repository/JpaRepository.java" to
-                "package org.springframework.data.jpa.repository; public interface JpaRepository<T, ID> extends org.springframework.data.repository.Repository<T, ID> {}",
+                    "package org.springframework.data.jpa.repository; public interface JpaRepository<T, ID> extends org.springframework.data.repository.Repository<T, ID> {}",
         ) + extraSources).map { (relative, content) ->
             sourceRoot.resolve(relative).also { file ->
                 Files.createDirectories(file.parent)

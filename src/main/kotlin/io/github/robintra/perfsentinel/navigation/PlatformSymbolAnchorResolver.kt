@@ -60,7 +60,7 @@ object PlatformSymbolAnchorResolver {
     private fun PsiElement.matchesLanguage(languageIds: Set<String>): Boolean =
         languageIds.any { languageId ->
             language.id.equals(languageId, ignoreCase = true) ||
-                containingFile?.language?.id.equals(languageId, ignoreCase = true)
+                    containingFile?.language?.id.equals(languageId, ignoreCase = true)
         }
 
     private fun normalizeQualifiedName(value: String): String = value

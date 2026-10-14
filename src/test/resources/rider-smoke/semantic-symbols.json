@@ -7,7 +7,12 @@
       "service": "rider-smoke",
       "grouping": [],
       "source_endpoint": "POST /method",
-      "pattern": { "template": "SlowPath", "occurrences": 1, "window_ms": 1000, "distinct_params": 1 },
+      "pattern": {
+        "template": "SlowPath",
+        "occurrences": 1,
+        "window_ms": 1000,
+        "distinct_params": 1
+      },
       "suggestion": "Open the method",
       "first_timestamp": "2026-08-10T10:00:00Z",
       "last_timestamp": "2026-08-10T10:00:01Z",
@@ -33,7 +38,12 @@
       "service": "rider-smoke",
       "grouping": [],
       "source_endpoint": "POST /constructor",
-      "pattern": { "template": ".ctor", "occurrences": 1, "window_ms": 1000, "distinct_params": 1 },
+      "pattern": {
+        "template": ".ctor",
+        "occurrences": 1,
+        "window_ms": 1000,
+        "distinct_params": 1
+      },
       "suggestion": "Open the constructor",
       "first_timestamp": "2026-08-10T10:00:00Z",
       "last_timestamp": "2026-08-10T10:00:01Z",
@@ -59,7 +69,12 @@
       "service": "rider-smoke",
       "grouping": [],
       "source_endpoint": "POST /getter",
-      "pattern": { "template": "get_SampleValue", "occurrences": 1, "window_ms": 1000, "distinct_params": 1 },
+      "pattern": {
+        "template": "get_SampleValue",
+        "occurrences": 1,
+        "window_ms": 1000,
+        "distinct_params": 1
+      },
       "suggestion": "Open the getter",
       "first_timestamp": "2026-08-10T10:00:00Z",
       "last_timestamp": "2026-08-10T10:00:01Z",
@@ -85,7 +100,12 @@
       "service": "rider-smoke",
       "grouping": [],
       "source_endpoint": "POST /setter",
-      "pattern": { "template": "set_SampleValue", "occurrences": 1, "window_ms": 1000, "distinct_params": 1 },
+      "pattern": {
+        "template": "set_SampleValue",
+        "occurrences": 1,
+        "window_ms": 1000,
+        "distinct_params": 1
+      },
       "suggestion": "Open the setter",
       "first_timestamp": "2026-08-10T10:00:00Z",
       "last_timestamp": "2026-08-10T10:00:01Z",
@@ -111,7 +131,12 @@
       "service": "rider-smoke",
       "grouping": [],
       "source_endpoint": "POST /local-function",
-      "pattern": { "template": "LocalWork", "occurrences": 1, "window_ms": 1000, "distinct_params": 1 },
+      "pattern": {
+        "template": "LocalWork",
+        "occurrences": 1,
+        "window_ms": 1000,
+        "distinct_params": 1
+      },
       "suggestion": "Open the local function",
       "first_timestamp": "2026-08-10T10:00:00Z",
       "last_timestamp": "2026-08-10T10:00:01Z",
@@ -137,7 +162,12 @@
       "service": "rider-smoke",
       "grouping": [],
       "source_endpoint": "POST /ambiguous",
-      "pattern": { "template": "Ambiguous", "occurrences": 1, "window_ms": 1000, "distinct_params": 1 },
+      "pattern": {
+        "template": "Ambiguous",
+        "occurrences": 1,
+        "window_ms": 1000,
+        "distinct_params": 1
+      },
       "suggestion": "Keep the unresolved finding visible",
       "first_timestamp": "2026-08-10T10:00:00Z",
       "last_timestamp": "2026-08-10T10:00:01Z",

@@ -1,8 +1,8 @@
 package io.github.robintra.perfsentinel.rider
 
-import com.intellij.openapi.fileEditor.OpenFileDescriptor
 import com.intellij.openapi.editor.LazyRangeMarkerFactory
 import com.intellij.openapi.editor.RangeMarker
+import com.intellij.openapi.fileEditor.OpenFileDescriptor
 import com.intellij.openapi.project.Project
 import com.intellij.testFramework.LightVirtualFile
 import io.github.robintra.perfsentinel.core.CodeLocation

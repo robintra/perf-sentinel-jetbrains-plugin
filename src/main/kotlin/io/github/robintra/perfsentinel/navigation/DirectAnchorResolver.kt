@@ -9,10 +9,10 @@ import com.intellij.pom.Navigatable
 import io.github.robintra.perfsentinel.core.Finding
 import io.github.robintra.perfsentinel.core.resolveProjectFile
 import io.github.robintra.perfsentinel.core.zeroBasedLine
-import java.nio.file.Paths
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
+import java.nio.file.Paths
 
 object DirectAnchorResolver {
     suspend fun resolve(project: Project, finding: Finding): Navigatable? {

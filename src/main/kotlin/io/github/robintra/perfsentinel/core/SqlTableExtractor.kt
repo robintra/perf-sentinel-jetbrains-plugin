@@ -1,6 +1,6 @@
 package io.github.robintra.perfsentinel.core
 
-import java.util.Locale
+import java.util.*
 
 internal data class SqlIdentifier(val value: String, val quoted: Boolean)
 
@@ -69,7 +69,18 @@ private data class SqlStatement(val tokens: List<SqlToken>, val cteNames: Set<St
         // SET ends the table list of an UPDATE; without it every `SET a = 1, b = 2` would read as a
         // second table and refuse a perfectly unambiguous single-table statement.
         val boundaries = setOf(
-            "SET", "WHERE", "GROUP", "HAVING", "ORDER", "LIMIT", "OFFSET", "FETCH", "FOR", "UNION", "EXCEPT", "INTERSECT",
+            "SET",
+            "WHERE",
+            "GROUP",
+            "HAVING",
+            "ORDER",
+            "LIMIT",
+            "OFFSET",
+            "FETCH",
+            "FOR",
+            "UNION",
+            "EXCEPT",
+            "INTERSECT",
         )
         return tokens.drop(from).takeWhile { it.keyword() !in boundaries }.any { it.kind == SqlTokenKind.COMMA }
     }
@@ -87,7 +98,9 @@ private fun skipCTEs(tokens: List<SqlToken>): SqlStatement? {
         names += name.folded()
         index++
         if (tokens.getOrNull(index)?.kind == SqlTokenKind.GROUP) index++
-        if (tokens.getOrNull(index)?.keyword() != "AS" || tokens.getOrNull(index + 1)?.kind != SqlTokenKind.GROUP) return null
+        if (tokens.getOrNull(index)
+                ?.keyword() != "AS" || tokens.getOrNull(index + 1)?.kind != SqlTokenKind.GROUP
+        ) return null
         index += 2
         if (tokens.getOrNull(index)?.kind != SqlTokenKind.COMMA) break
         index++
@@ -114,6 +127,7 @@ private fun lex(sql: String): List<SqlToken>? {
             sql.startsWith("--", index) -> {
                 index = sql.indexOf('\n', index + 2).takeIf { it >= 0 } ?: sql.length
             }
+
             sql.startsWith("/*", index) -> index = skipBlockComment(sql, index) ?: return null
             sql[index] == '\'' -> index = skipQuoted(sql, index, '\'', '\'', backslashEscapes = true) ?: return null
             sql[index] == '"' -> {
@@ -121,34 +135,41 @@ private fun lex(sql: String): List<SqlToken>? {
                 tokens += SqlToken(quoted.first, SqlTokenKind.QUOTED_IDENTIFIER)
                 index = quoted.second
             }
+
             sql[index] == '`' -> {
                 val quoted = readQuoted(sql, index, '`', '`') ?: return null
                 tokens += SqlToken(quoted.first, SqlTokenKind.FOLDED_IDENTIFIER)
                 index = quoted.second
             }
+
             sql[index] == '[' -> {
                 val quoted = readQuoted(sql, index, ']', ']') ?: return null
                 tokens += SqlToken(quoted.first, SqlTokenKind.FOLDED_IDENTIFIER)
                 index = quoted.second
             }
+
             sql[index] == '(' -> {
                 index = skipGroup(sql, index) ?: return null
                 tokens += SqlToken("", SqlTokenKind.GROUP)
             }
+
             sql[index] == ')' -> return null
             sql[index] == '.' -> {
                 tokens += SqlToken(".", SqlTokenKind.DOT)
                 index++
             }
+
             sql[index] == ',' -> {
                 tokens += SqlToken(",", SqlTokenKind.COMMA)
                 index++
             }
+
             sql[index].isLetter() || sql[index] == '_' -> {
                 val start = index++
                 while (index < sql.length && (sql[index].isLetterOrDigit() || sql[index] == '_' || sql[index] == '$')) index++
                 tokens += SqlToken(sql.substring(start, index), SqlTokenKind.WORD)
             }
+
             else -> {
                 tokens += SqlToken(sql[index].toString(), SqlTokenKind.OTHER)
                 index++
@@ -169,11 +190,13 @@ private fun skipBlockComment(sql: String, start: Int): Int? {
                 depth++
                 index += 2
             }
+
             sql.startsWith("*/", index) -> {
                 depth--
                 index += 2
                 if (depth == 0) return index
             }
+
             else -> index++
         }
     }
@@ -233,11 +256,13 @@ private fun skipGroup(sql: String, start: Int): Int? {
                 depth++
                 index++
             }
+
             sql[index] == ')' -> {
                 depth--
                 index++
                 if (depth == 0) return index
             }
+
             else -> index++
         }
     }
