@@ -1,17 +1,29 @@
+import importlib.util
 import subprocess
 import sys
 import tempfile
 import unittest
 from pathlib import Path
 
-from scripts.tests.test_inspect_plugin_zip import (
-    MAIN_JAR,
-    PLUGIN_ROOT,
-    archive_bytes,
-    frontend_jar,
-    main_jar,
-    searchable_options_jar,
-)
+
+def load_sibling(name):
+    """Load a sibling test module by path, so this file also runs on its own from any directory."""
+    path = Path(__file__).with_name(f"{name}.py")
+    spec = importlib.util.spec_from_file_location(name, path)
+    if spec is None or spec.loader is None:
+        raise RuntimeError(f"cannot load {path}")
+    module = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(module)
+    return module
+
+
+INSPECTOR_TESTS = load_sibling("test_inspect_plugin_zip")
+MAIN_JAR = INSPECTOR_TESTS.MAIN_JAR
+PLUGIN_ROOT = INSPECTOR_TESTS.PLUGIN_ROOT
+archive_bytes = INSPECTOR_TESTS.archive_bytes
+frontend_jar = INSPECTOR_TESTS.frontend_jar
+main_jar = INSPECTOR_TESTS.main_jar
+searchable_options_jar = INSPECTOR_TESTS.searchable_options_jar
 
 
 REPOSITORY = Path(__file__).resolve().parents[2]

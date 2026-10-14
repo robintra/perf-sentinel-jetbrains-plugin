@@ -1,4 +1,5 @@
 import hashlib
+import importlib.util
 import json
 import ssl
 import subprocess
@@ -7,7 +8,22 @@ import tempfile
 import unittest
 from pathlib import Path
 
-from scripts.tests.test_plugin_signature import sign_zip, signer_jar, write_zip
+
+def load_sibling(name):
+    """Load a sibling test module by path, so this file also runs on its own from any directory."""
+    path = Path(__file__).with_name(f"{name}.py")
+    spec = importlib.util.spec_from_file_location(name, path)
+    if spec is None or spec.loader is None:
+        raise RuntimeError(f"cannot load {path}")
+    module = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(module)
+    return module
+
+
+SIGNATURE = load_sibling("test_plugin_signature")
+sign_zip = SIGNATURE.sign_zip
+signer_jar = SIGNATURE.signer_jar
+write_zip = SIGNATURE.write_zip
 
 
 REPOSITORY = Path(__file__).resolve().parents[2]

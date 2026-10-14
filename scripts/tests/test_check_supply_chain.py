@@ -16,6 +16,8 @@ CHECKER = Path(__file__).parents[1] / "check-supply-chain.py"
 
 def load_checker():
     spec = importlib.util.spec_from_file_location("check_supply_chain", CHECKER)
+    if spec is None or spec.loader is None:
+        raise RuntimeError(f"cannot load {CHECKER}")
     module = importlib.util.module_from_spec(spec)
     spec.loader.exec_module(module)
     return module
@@ -49,7 +51,8 @@ class ExitStatusTest(unittest.TestCase):
 
     def test_a_newer_gradle_release_is_drift(self):
         class Client:
-            def json(self, _url):
+            @staticmethod
+            def json(_url):
                 return {"version": "9.8.0", "buildTime": "20260924134000+0000"}
 
         dependency = {"name": "Gradle", "version": "9.7.1", "releasedAt": "2026-08-19T14:16:09Z"}
@@ -163,13 +166,15 @@ class CoverletTest(unittest.TestCase):
             return archive.getvalue()
 
         class Client:
-            def json(self, _url):
+            @staticmethod
+            def json(_url):
                 return {"items": [{"items": [
                     {"catalogEntry": {"version": version, "published": published}, "packageContent": version}
                     for version, (published, _) in releases.items()
                 ]}]}
 
-            def get(self, content):
+            @staticmethod
+            def get(content):
                 return package(releases[content][1]), {}
 
         return Client()

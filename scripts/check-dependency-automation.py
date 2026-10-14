@@ -134,7 +134,7 @@ AUDIT = "/^\\.github/workflows/security-audit\\.yml$/"
 RELEASE = "/^\\.github/workflows/release\\.yml$/"
 
 
-def audited_tool(files, patterns, name, extract="^v(?<version>.+)$"):
+def audited_tool(files, patterns, name, extract: str | None = "^v(?<version>.+)$"):
     """A tool whose only declaration is its inventory entry, plus the workflows that use it.
 
     Renovate moves every copy in one branch; the sync hook then refreshes the

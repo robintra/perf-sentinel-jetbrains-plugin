@@ -8,6 +8,8 @@ RELOCK = Path(__file__).parents[1] / "ci" / "relock.py"
 
 def load_relock():
     spec = importlib.util.spec_from_file_location("relock", RELOCK)
+    if spec is None or spec.loader is None:
+        raise RuntimeError(f"cannot load {RELOCK}")
     module = importlib.util.module_from_spec(spec)
     spec.loader.exec_module(module)
     return module

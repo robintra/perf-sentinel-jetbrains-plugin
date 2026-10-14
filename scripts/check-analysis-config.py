@@ -11,7 +11,6 @@ import sys
 import unicodedata
 import xml.etree.ElementTree as ElementTree
 from pathlib import Path
-from typing import cast
 
 
 MAX_CONFIG_BYTES = 256 * 1024
@@ -464,10 +463,9 @@ def validate_rider_contract(root: Path) -> None:
 
 
 def validate_supply_bindings(inventory, jvm_linter: str) -> None:
-    raw_dependencies = inventory.get("dependencies") if type(inventory) is dict else None
-    if type(raw_dependencies) is not list:
+    dependencies = inventory.get("dependencies") if type(inventory) is dict else None
+    if type(dependencies) is not list:
         raise AnalysisError("supply-chain dependencies must be an array")
-    dependencies = cast(list, raw_dependencies)
     by_name: dict[str, dict] = {}
     for dependency in dependencies:
         if type(dependency) is dict and type(dependency.get("name")) is str:

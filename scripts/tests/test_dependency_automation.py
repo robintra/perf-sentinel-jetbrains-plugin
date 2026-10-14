@@ -291,11 +291,12 @@ class DependencyAutomationTests(unittest.TestCase):
     def test_rdgen_plugin_marker_lookup_is_disabled_without_disturbing_automerge(self):
         config = json.loads(RENOVATE.read_text(encoding="utf-8"))
         rules = config["packageRules"]
-        marker_rule = next(
+        marker_rule: dict | None = next(
             (rule for rule in rules if rule.get("matchDepNames") == ["com.jetbrains.rdgen"]),
             None,
         )
-        self.assertIsNotNone(marker_rule, "expected a packageRule disabling the rdgen plugin marker")
+        if marker_rule is None:
+            self.fail("expected a packageRule disabling the rdgen plugin marker")
         self.assertIs(False, marker_rule.get("enabled"))
         self.assertNotIn("automerge", marker_rule)
         self.assertIn("com.jetbrains.rd:rd-gen", marker_rule["description"])
@@ -330,6 +331,8 @@ class DependencyAutomationTests(unittest.TestCase):
 
     def test_matured_non_major_updates_merge_well_inside_the_freshness_grace(self):
         spec = importlib.util.spec_from_file_location("check_supply_chain", REPOSITORY / "scripts/check-supply-chain.py")
+        if spec is None or spec.loader is None:
+            raise RuntimeError("cannot load scripts/check-supply-chain.py")
         supply = importlib.util.module_from_spec(spec)
         spec.loader.exec_module(supply)
         rules = json.loads(RENOVATE.read_text(encoding="utf-8"))["packageRules"]

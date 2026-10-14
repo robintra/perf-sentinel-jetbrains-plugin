@@ -23,6 +23,14 @@ TEST_IDE_RUNTIMES = {
 }
 
 
+def first_group(pattern: str, text: str, flags: int = 0) -> str:
+    """The first capture of a pattern the test expects to find."""
+    match = re.search(pattern, text, flags)
+    if match is None:
+        raise AssertionError(f"{pattern!r} not found")
+    return match.group(1)
+
+
 class VerificationCommandTests(unittest.TestCase):
     def test_verification_metadata_covers_every_hosted_ide_installer(self):
         namespace = {"v": "https://schema.gradle.org/dependency-verification"}
@@ -48,6 +56,8 @@ class VerificationCommandTests(unittest.TestCase):
         # One installer per hosted product the inventory declares, named the way the sync hook
         # rewrites them, plus the Windows archive of the platform the plugin compiles against.
         spec = importlib.util.spec_from_file_location("sync_supply_chain", REPOSITORY / "scripts/sync-supply-chain.py")
+        if spec is None or spec.loader is None:
+            raise RuntimeError("cannot load scripts/sync-supply-chain.py")
         sync = importlib.util.module_from_spec(spec)
         spec.loader.exec_module(sync)
         inventory = json.loads((REPOSITORY / "config/supply-chain.json").read_text(encoding="utf-8"))
@@ -58,14 +68,14 @@ class VerificationCommandTests(unittest.TestCase):
                 group, name, _download, _maven = sync.INSTALLER_PINS[product]
                 expected.add((group, name, dependency["version"], f"{name}-{dependency['version']}.tar.gz"))
         lock = (REPOSITORY / "gradle.lockfile").read_text(encoding="utf-8")
-        compile_platform = re.search(r"^idea:idea:([^=]+)=compileClasspath,", lock, re.M).group(1)
+        compile_platform = first_group(r"^idea:idea:([^=]+)=compileClasspath,", lock, re.M)
         expected.add(("idea", "idea", compile_platform, f"idea-{compile_platform}-win.zip"))
         self.assertEqual(expected, actual)
 
     def test_verification_metadata_pins_a_runtime_for_every_test_ide(self):
         build = (REPOSITORY / "build.gradle.kts").read_text(encoding="utf-8")
         registered = {
-            re.search(r'version = "([^"]+)"', block).group(1)
+            first_group(r'version = "([^"]+)"', block)
             for block in build.split("intellijPlatformTesting.testIde.register(")[1:]
         }
         self.assertEqual(
@@ -321,7 +331,8 @@ class VerificationCommandTests(unittest.TestCase):
         version = re.search(
             r'<PackageReference Include="Microsoft\.Bcl\.Memory" Version="(9\.0\.(\d+))" NoWarn="NU1608"', props
         )
-        self.assertIsNotNone(version)
+        if version is None:
+            self.fail("Directory.Build.props does not pin Microsoft.Bcl.Memory")
         self.assertGreaterEqual(int(version.group(2)), 20)
         entry = next(item for item in json.loads(inventory)["dependencies"] if item["name"] == "Microsoft.Bcl.Memory")
         self.assertEqual((version.group(1), "9.0"), (entry["version"], entry["release"]))
