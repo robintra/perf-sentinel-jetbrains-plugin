@@ -5,11 +5,7 @@ import com.intellij.openapi.options.Configurable
 import com.intellij.openapi.options.ConfigurationException
 import com.intellij.openapi.project.Project
 import com.intellij.platform.ide.progress.runWithModalProgressBlocking
-import com.intellij.ui.components.JBLabel
-import com.intellij.ui.components.JBPasswordField
-import com.intellij.ui.components.JBScrollPane
-import com.intellij.ui.components.JBTextArea
-import com.intellij.ui.components.JBTextField
+import com.intellij.ui.components.*
 import com.intellij.util.ui.FormBuilder
 import io.github.robintra.perfsentinel.PerfSentinelBundle
 import io.github.robintra.perfsentinel.core.credentialRefusal
@@ -63,7 +59,7 @@ class PerfSentinelConfigurable(private val project: Project) : Configurable {
         // Unparseable text counts as modified — apply() is where the user gets the error.
         val edited = runCatching { normalizeEndpoints(endpointLines()) }.getOrNull()
         return edited != current.endpoints || serviceField?.text.orEmpty().trim() != current.serviceOverride ||
-            editedSecrets().isNotEmpty()
+                editedSecrets().isNotEmpty()
     }
 
     override fun apply() {
@@ -81,7 +77,13 @@ class PerfSentinelConfigurable(private val project: Project) : Configurable {
                 PerfSentinelBundle.message("settings.credentials.unlisted")
             }
             if (problem != null) {
-                throw ConfigurationException(PerfSentinelBundle.message("settings.credentials.refused", endpoint, problem))
+                throw ConfigurationException(
+                    PerfSentinelBundle.message(
+                        "settings.credentials.refused",
+                        endpoint,
+                        problem
+                    )
+                )
             }
         }
         project.service<PerfSentinelSettings>().update(endpoints, serviceField?.text.orEmpty())

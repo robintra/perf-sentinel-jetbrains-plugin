@@ -6,9 +6,9 @@ import com.intellij.testFramework.fixtures.BasePlatformTestCase
 import io.github.robintra.perfsentinel.core.CodeLocation
 import io.github.robintra.perfsentinel.core.Finding
 import io.github.robintra.perfsentinel.core.FindingPattern
+import kotlinx.coroutines.runBlocking
 import java.nio.file.Files
 import java.nio.file.Paths
-import kotlinx.coroutines.runBlocking
 
 class DirectAnchorResolverTest : BasePlatformTestCase() {
     // BasePlatformTestCase runs test bodies on the EDT; runBlocking would park it while it holds

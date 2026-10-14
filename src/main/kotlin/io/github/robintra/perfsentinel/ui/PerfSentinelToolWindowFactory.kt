@@ -29,13 +29,7 @@ import java.time.Duration
 import java.time.Instant
 import java.time.ZoneId
 import java.time.format.DateTimeFormatter
-import javax.swing.AbstractAction
-import javax.swing.JButton
-import javax.swing.JComponent
-import javax.swing.JPanel
-import javax.swing.JSplitPane
-import javax.swing.KeyStroke
-import javax.swing.ListSelectionModel
+import javax.swing.*
 import javax.swing.table.AbstractTableModel
 
 class PerfSentinelToolWindowFactory : ToolWindowFactory {
@@ -157,7 +151,9 @@ private class PerfSentinelPanel(private val project: Project) : JPanel(BorderLay
     private fun detailsText(response: FindingResponse): String {
         val finding = response.finding
         val acknowledgement = response.acknowledgedBy?.let {
-            "${PerfSentinelBundle.message("details.acknowledged")}: ${it.by ?: it.source}${it.reason?.let { reason -> " — $reason" }.orEmpty()}\n"
+            "${PerfSentinelBundle.message("details.acknowledged")}: ${it.by ?: it.source}${
+                it.reason?.let { reason -> " — $reason" }.orEmpty()
+            }\n"
         }.orEmpty()
         return buildString {
             appendLine("${PerfSentinelBundle.message("details.suggestion")}: ${finding.suggestion}")

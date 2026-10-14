@@ -5,10 +5,7 @@ import com.intellij.testFramework.LoggedErrorProcessor
 import com.intellij.testFramework.TestLoggerFactory
 import com.sun.net.httpserver.HttpServer
 import kotlinx.coroutines.runBlocking
-import org.junit.Assert.assertEquals
-import org.junit.Assert.assertFalse
-import org.junit.Assert.assertThrows
-import org.junit.Assert.assertTrue
+import org.junit.Assert.*
 import org.junit.BeforeClass
 import org.junit.Test
 import java.net.InetSocketAddress
@@ -167,7 +164,15 @@ class DaemonClientTest {
     fun `sends no secret while HttpURLConnection debug logging would write its headers`() {
         withServer(200, MINIMAL_FINDING) { endpoint ->
             val (error, logged) = capturingLogs(mapOf(HTTP_URL_CONNECTION to Level.FINE)) {
-                runCatching { runBlocking { DaemonClient().fetch(endpoint, "order-service", SECRET) } }.exceptionOrNull()
+                runCatching {
+                    runBlocking {
+                        DaemonClient().fetch(
+                            endpoint,
+                            "order-service",
+                            SECRET
+                        )
+                    }
+                }.exceptionOrNull()
             }
 
             logged.forEach { assertFalse(it, it.contains(SECRET)) }

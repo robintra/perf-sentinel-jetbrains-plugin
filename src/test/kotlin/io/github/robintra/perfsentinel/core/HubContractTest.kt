@@ -2,9 +2,7 @@ package io.github.robintra.perfsentinel.core
 
 import com.sun.net.httpserver.HttpServer
 import kotlinx.coroutines.runBlocking
-import org.junit.Assert.assertEquals
-import org.junit.Assert.assertThrows
-import org.junit.Assert.assertTrue
+import org.junit.Assert.*
 import org.junit.Test
 import java.net.InetSocketAddress
 
