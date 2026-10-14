@@ -9,7 +9,6 @@ import re
 import subprocess
 import sys
 from pathlib import Path
-from typing import cast
 from urllib.parse import quote
 
 
@@ -349,10 +348,9 @@ class GitHubApi:
         key = self.fixture_key(endpoint, page)
         if self.fixture is not None:
             wrapper = PolicyError(f"normalized API schema {key}: invalid response wrapper")
-            raw_response = self.fixture.get(key)
-            if type(raw_response) is not dict:
+            response = self.fixture.get(key)
+            if type(response) is not dict:
                 raise wrapper
-            response = cast(dict, raw_response)
             if set(response) != {"status", "body"} or type(response["status"]) is not int:
                 raise wrapper
             if response["status"] != status:
@@ -432,10 +430,9 @@ def workflow_secrets(root):
 
 def inventory_secrets(root):
     value = load_json(root / "config" / "secret-inventory.json")
-    raw_entries = value.get("secrets") if type(value) is dict else None
-    if type(raw_entries) is not list:
+    entries = value.get("secrets") if type(value) is dict else None
+    if type(entries) is not list:
         raise PolicyError("secret inventory is invalid")
-    entries = cast(list, raw_entries)
     names = [entry.get("name") for entry in entries if type(entry) is dict]
     if any(type(name) is not str for name in names) or len(names) != len(entries) or len(names) != len(set(names)):
         raise PolicyError("secret inventory is ambiguous")

@@ -35,7 +35,7 @@ USES = re.compile(
 # A workflow download: the URL Renovate moves, and the checksum it cannot compute.
 DOWNLOAD = re.compile(
     r"curl -fsSLO https://github\.com/(?P<repo>[^/\s]+/[^/\s]+)/releases/download/"
-    r"(?P<tag>[^/\s]+)/(?P<asset>\S+)\n[ \t]*echo '(?P<sha>[0-9a-f]{64})  (?P=asset)'"
+    r"(?P<tag>[^/\s]+)/(?P<asset>\S+)\n[ \t]*echo '(?P<sha>[0-9a-f]{64}) {2}(?P=asset)'"
 )
 CREATED = re.compile(r"Created\s+(\d{1,2}\s+\w+\s+\d{4})\.")
 INSTANT = "%Y-%m-%dT%H:%M:%SZ"
@@ -123,7 +123,7 @@ def action_changes(root, dependencies, problems):
 def github_release(client, repo: str, sha: str) -> tuple[str, str]:
     """Tag pointing at `sha`, and when that release was published."""
     tags = client.json(f"https://api.github.com/repos/{repo}/tags?per_page=100")
-    tag = next((item["name"] for item in tags if item["commit"]["sha"] == sha), None)
+    tag: str | None = next((item["name"] for item in tags if item["commit"]["sha"] == sha), None)
     if tag is None:
         raise ValueError(f"no tag in the first 100 points at {sha}")
     release = client.json(f"https://api.github.com/repos/{repo}/releases/tags/{tag}")
@@ -372,8 +372,8 @@ def rewrite_component(root, client, group, artifact, download, old, new) -> str:
     path = root / "gradle" / "verification-metadata.xml"
     text = path.read_text(encoding="utf-8")
     pattern = re.compile(
-        rf'      <component group="{re.escape(group)}" name="{re.escape(artifact)}" '
-        rf'version="{re.escape(old)}">\n.*?      </component>\n',
+        rf' {{6}}<component group="{re.escape(group)}" name="{re.escape(artifact)}" '
+        rf'version="{re.escape(old)}">\n.*? {{6}}</component>\n',
         re.S,
     )
     match = pattern.search(text)
@@ -396,7 +396,7 @@ def rewrite_component(root, client, group, artifact, download, old, new) -> str:
     return f"gradle/verification-metadata.xml: {group}:{artifact} {old} -> {new}"
 
 
-def download_checksums(root, client, problems) -> list[str]:
+def download_checksums(root: Path, client, problems) -> list[str]:
     """Re-pin every workflow download to the SHA-256 GitHub publishes for it."""
     written: list[str] = []
 

@@ -29,9 +29,11 @@ FAILED = re.compile(
     re.M,
 )
 RESOLVED = re.compile(r"^relock-artifact ([^:\s]+):([^:\s]+):(\S+) (.+)$", re.M)
-COMPONENT = re.compile(r'      <component group="[^"]+" name="[^"]+" version="[^"]+">\n.*?      </component>\n', re.S)
-COMPONENT_KEY = re.compile(r'      <component group="([^"]+)" name="([^"]+)" version="([^"]+)">')
-ARTIFACT = re.compile(r'         <artifact name="([^"]+)">\n.*?         </artifact>\n', re.S)
+COMPONENT = re.compile(r' {6}<component group="[^"]+" name="[^"]+" version="[^"]+">\n.*? {6}</component>\n', re.S)
+COMPONENT_KEY = re.compile(r' {6}<component group="([^"]+)" name="([^"]+)" version="([^"]+)">')
+ARTIFACT = re.compile(r' {9}<artifact name="([^"]+)">\n.*? {9}</artifact>\n', re.S)
+# (group, name, version) -> {artifact file: sha256}
+Checksums = dict[tuple[str, str, str], dict[str, str]]
 
 INIT_SCRIPT = """\
 allprojects {
@@ -82,7 +84,7 @@ def locate(home: Path, output: str, group: str, name: str, version: str, file: s
     return None
 
 
-def collect(home: Path, output: str, checksums: dict) -> None:
+def collect(home: Path, output: str, checksums: Checksums) -> None:
     for group, name, version, file in missing_artifacts(output):
         path = locate(home, output, group, name, version, file)
         if path is None or not path.is_file():
@@ -95,7 +97,7 @@ def version_key(version: str):
     return [(0, int(part)) if part.isdigit() else (1, part) for part in re.split(r"[.\-]", version)]
 
 
-def insert(metadata: Path, checksums: dict) -> int:
+def insert(metadata: Path, checksums: Checksums) -> int:
     """Add the new checksums in place, keeping every existing entry and its order."""
     text = metadata.read_text(encoding="utf-8")
     head, rest = text.split("   <components>\n", 1)
@@ -104,10 +106,12 @@ def insert(metadata: Path, checksums: dict) -> int:
     if "".join(blocks) != body:
         raise SystemExit("relock: verification metadata is not in the expected layout")
     def key(block: str) -> tuple[str, str, str]:
-        return COMPONENT_KEY.match(block).groups()
+        match = COMPONENT_KEY.match(block)
+        assert match is not None  # every block matched COMPONENT, which opens with this line
+        return match[1], match[2], match[3]
 
-    def order(gnv: tuple[str, str, str]):
-        return gnv[0], gnv[1], version_key(gnv[2])
+    def order(coordinates: tuple[str, str, str]):
+        return coordinates[0], coordinates[1], version_key(coordinates[2])
 
     def artifact(file: str, digest: str) -> str:
         return (f'         <artifact name="{file}">\n'
@@ -172,7 +176,7 @@ def main() -> int:
     init.write_text(INIT_SCRIPT, encoding="utf-8")
     env = {"GRADLE_USER_HOME": str(home)}
 
-    checksums: dict = {}
+    checksums: Checksums = {}
 
     def run(*task_args: str) -> None:
         command = [args.gradle, "--no-daemon", "--console=plain", "--dependency-verification", "lenient", *task_args]

@@ -485,7 +485,7 @@ class CoverageCheckerTests(unittest.TestCase):
 
     def test_establishing_rider_on_windows_requires_jvm_and_preserves_it(self):
         self.write(self.current, cobertura(lines=((1, 1), (2, 1), (3, 0))))
-        with mock.patch.object(COVERAGE_CHECKER.sys, "platform", "win32"):
+        with mock.patch.object(sys, "platform", "win32"):  # the same module object the checker reads
             with self.assertRaisesRegex(COVERAGE_CHECKER.CoverageError, "establish the JVM baseline first"):
                 COVERAGE_CHECKER.establish("rider", self.current, self.baseline)
             self.write(self.baseline, numeric_baseline(jvm=50, rider="pending_windows"))

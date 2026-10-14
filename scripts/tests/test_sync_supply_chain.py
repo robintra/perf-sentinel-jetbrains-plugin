@@ -13,6 +13,8 @@ SYNC = Path(__file__).parents[1] / "sync-supply-chain.py"
 def load_sync():
     """The script is not importable by name, so load it the way it loads the checker."""
     spec = importlib.util.spec_from_file_location("sync_supply_chain", SYNC)
+    if spec is None or spec.loader is None:
+        raise RuntimeError(f"cannot load {SYNC}")
     module = importlib.util.module_from_spec(spec)
     spec.loader.exec_module(module)
     return module
@@ -271,7 +273,8 @@ class SyncSupplyChainTest(unittest.TestCase):
             encoding="utf-8",
         )
 
-    def phpstorm_move(self):
+    @staticmethod
+    def phpstorm_move():
         dependency = {
             "name": "PhpStorm 2026.2",
             "kind": "jetbrains-product",

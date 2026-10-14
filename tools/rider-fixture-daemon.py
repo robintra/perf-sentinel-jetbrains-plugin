@@ -33,9 +33,11 @@ def main() -> None:
             self.end_headers()
             self.wfile.write(payload)
 
-        def log_message(self, _format: str, *_args: object) -> None:
+        def log_message(self, *_args: object, **_kwargs: object) -> None:
             return
 
+    # PyCharm rejects even BaseHTTPRequestHandler here: it cannot match the stdlib stub's Self-typed RequestHandlerClass.
+    # noinspection PyTypeChecker
     server = ThreadingHTTPServer(("127.0.0.1", options.port), Handler)
     print(f"Serving {options.fixture} at http://127.0.0.1:{options.port}/api/findings")
     try:
