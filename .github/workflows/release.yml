@@ -62,7 +62,7 @@ jobs:
       - uses: actions/setup-dotnet@a98b56852c35b8e3190ac28c8c2271da59106c68
         with: {global-json-file: global.json}
       - uses: gradle/actions/setup-gradle@9c971963bec38e04b3d30dcc455b5382be2fdbfb
-        with: {gradle-version: "9.8.0", cache-disabled: true}
+        with: {gradle-version: "9.8.1", cache-disabled: true}
       - name: Build and test the unsigned plugin
         shell: pwsh
         run: |
@@ -136,7 +136,7 @@ jobs:
       - uses: actions/setup-java@de7274f081f381c8f8158605e0321c36c376e2e6
         with: {distribution: temurin, java-version-file: .java-version}
       - uses: gradle/actions/setup-gradle@9c971963bec38e04b3d30dcc455b5382be2fdbfb
-        with: {gradle-version: "9.8.0", cache-disabled: true}
+        with: {gradle-version: "9.8.1", cache-disabled: true}
       - name: Recheck the remote signed tag before any publication
         env:
           EXPECTED_SHA: ${{ github.sha }}
