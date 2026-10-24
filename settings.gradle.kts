@@ -17,7 +17,7 @@ pluginManagement {
         }
     }
     plugins {
-        id("org.jetbrains.kotlin.jvm") version "2.4.20"
+        id("org.jetbrains.kotlin.jvm") version "2.4.21"
         id("org.jetbrains.intellij.platform.module") version "2.19.0"
         id("org.jetbrains.changelog") version "2.5.0"
         id("org.jetbrains.qodana") version "2026.2.2"
@@ -30,7 +30,7 @@ include(":protocol", ":rider-frontend")
 // classpath every build script shares. It never ships, but it still runs on patched versions.
 buildscript {
     dependencies {
-        classpath(platform("com.fasterxml.jackson:jackson-bom:2.22.3"))
+        classpath(platform("com.fasterxml.jackson:jackson-bom:2.22.4"))
         constraints {
             classpath("org.jsoup:jsoup:1.23.2")
         }
