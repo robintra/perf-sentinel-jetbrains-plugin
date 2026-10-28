@@ -67,6 +67,17 @@ EXPECTED_PACKAGE_RULES = [
         "groupName": "ordinary-github-actions",
     },
     {
+        "description": "Move the Gradle version the workflows pass to setup-gradle with the wrapper: the checks require both to match, so in separate pull requests each blocks the other",
+        "matchManagers": ["github-actions"],
+        "matchDepNames": ["gradle"],
+        "groupName": "gradle-dependencies",
+    },
+    {
+        "description": "Move zizmor in one pull request whichever manager finds it; the pinned zizmorcore/zizmor-action must already know that version, and it moves by hand",
+        "matchPackageNames": ["ghcr.io/zizmorcore/zizmor", "zizmorcore/zizmor"],
+        "groupName": "zizmor",
+    },
+    {
         "description": "Merge non-major updates on their own once they have matured",
         "matchUpdateTypes": ["minor", "patch", "digest"],
         "minimumReleaseAge": RELEASE_AGE,

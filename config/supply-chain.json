@@ -1,6 +1,6 @@
 {
   "schemaVersion": 1,
-  "auditedAt": "2026-10-28T13:46:30Z",
+  "auditedAt": "2026-10-28T14:48:36Z",
   "approvedNuGetSources": [
     "https://api.nuget.org/v3/index.json"
   ],
@@ -486,10 +486,10 @@
     {
       "name": "zizmorcore/zizmor-action",
       "kind": "github-action",
-      "version": "cc914d7f3750a2d13d75c7f184a1060aa0e9d482",
-      "release": "v0.6.4",
-      "releasedAt": "2026-09-09T05:40:54Z",
-      "source": "https://github.com/zizmorcore/zizmor-action/releases/tag/v0.6.4"
+      "version": "85b2b9fb8e3325e7a23d7d0a9d7ba5ae0f999e3e",
+      "release": "v0.7.1",
+      "releasedAt": "2026-10-15T23:23:14Z",
+      "source": "https://github.com/zizmorcore/zizmor-action/releases/tag/v0.7.1"
     },
     {
       "name": "gradle/actions",
@@ -527,9 +527,9 @@
     {
       "name": "Renovate image",
       "kind": "container",
-      "version": "sha256:0191afbc3937e5316263426fc0ce1450f5c143d42e3f91da8c6f771e317fae51",
-      "release": "44.132.2",
-      "releasedAt": "2026-10-02T08:25:12Z",
+      "version": "sha256:a1fa316d623c6a48a366ad84a8513777706ba5b471f27b531a547bffa13e424b",
+      "release": "44.190.2",
+      "releasedAt": "2026-10-28T09:07:42Z",
       "source": "https://hub.docker.com/r/renovate/renovate",
       "declaration": ".github/workflows/renovate.yml#renovate-version"
     }
