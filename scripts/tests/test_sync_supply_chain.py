@@ -182,6 +182,22 @@ class SyncSupplyChainTest(unittest.TestCase):
         self.assertEqual({"releasedAt": "2026-09-03"}, metadata)
         self.assertEqual([dependency["source"]], client.urls)
 
+    def test_gradle_metadata_follows_the_declared_release_not_the_current_one(self):
+        module = load_sync()
+        client = FeedClient([
+            {"version": "9.8.2", "buildTime": "20261019162926+0000", "checksum": "2" * 64, "wrapperChecksum": "3" * 64},
+            {"version": "9.8.0", "buildTime": "20260924134000+0000", "checksum": "0" * 64, "wrapperChecksum": "1" * 64},
+        ])
+        checker = module.load_checker()
+
+        gradle = module.online_metadata(client, checker, {"name": "Gradle", "kind": "build-tool"}, "9.8.0")
+        jar = module.online_metadata(client, checker, {"name": "Gradle wrapper JAR", "kind": "build-tool"}, "9.8.0")
+
+        self.assertEqual({"version": "9.8.0", "releasedAt": "2026-09-24T13:40:00Z", "sha256": "0" * 64}, gradle)
+        self.assertEqual("1" * 64, jar["sha256"])
+        with self.assertRaises(ValueError):
+            module.online_metadata(client, checker, {"name": "Gradle", "kind": "build-tool"}, "9.7.0")
+
     def test_an_image_declaration_splits_into_release_and_digest(self):
         module = load_sync()
         digest = "sha256:" + "c" * 64

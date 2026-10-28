@@ -135,13 +135,22 @@ def instant(value: str) -> str:
     return value.replace("+00:00", "Z")
 
 
-def gradle_metadata(client, dependency) -> dict[str, str]:
-    data = client.json("https://services.gradle.org/versions/current")
+def gradle_metadata(client, dependency, version) -> dict[str, str]:
+    # The declared release, not the current one: a newer Gradle upstream must not
+    # move the inventory ahead of a wrapper that still declares the older one.
+    # The wrapper JAR entry has no version declaration, so it follows Gradle's.
+    data = next(
+        (
+            item
+            for item in client.json("https://services.gradle.org/versions/all")
+            if item["version"] == version
+        ),
+        None,
+    )
+    if data is None:
+        raise ValueError(f"version {version} is not on services.gradle.org")
     built = datetime.strptime(data["buildTime"], "%Y%m%d%H%M%S%z").astimezone(UTC)
     checksum = "wrapperChecksum" if dependency["name"].endswith("wrapper JAR") else "checksum"
-    # The wrapper JAR entry is compared on its checksum alone, so its version
-    # has no declaration to follow. check-supply-chain requires Gradle to be the
-    # current release, which makes services.gradle.org authoritative for both.
     return {
         "version": data["version"],
         "releasedAt": instant(built.isoformat()),
@@ -194,11 +203,11 @@ def jetbrains_published(client, checker, dependency) -> dict[str, str]:
     raise ValueError(f"version {dependency['version']} is not in the product feed")
 
 
-def online_metadata(client, checker, dependency) -> dict[str, str]:
+def online_metadata(client, checker, dependency, gradle_version=None) -> dict[str, str]:
     """Everything about an entry that the working tree cannot prove."""
     kind, name = dependency["kind"], dependency["name"]
     if kind == "build-tool":
-        return gradle_metadata(client, dependency)
+        return gradle_metadata(client, dependency, gradle_version)
     if name in checker.PLUGIN_IDS:
         return plugin_published(client, checker, dependency)
     if kind == "nuget" and name in checker.NUGET_PACKAGES:
@@ -243,9 +252,10 @@ def refresh(root, checker, inventory, online, problems):
         # idempotent, and it is the only way to reach a field no declaration
         # covers, such as the version on the Gradle wrapper JAR entry.
         client = checker.OnlineClient()
+        gradle = next((item.get("version") for item in dependencies if item.get("name") == "Gradle"), None)
         for dependency in dependencies:
             try:
-                metadata = online_metadata(client, checker, dependency)
+                metadata = online_metadata(client, checker, dependency, gradle)
             except Exception as error:  # reported, never silent
                 if id(dependency) in touched:
                     problems.append(
