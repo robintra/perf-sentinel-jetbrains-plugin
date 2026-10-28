@@ -99,13 +99,19 @@ class VerificationCommandTests(unittest.TestCase):
         self.assertEqual(set(), required - pinned)
 
     def test_hosted_workflows_use_the_action_managed_gradle_distribution(self):
+        # The wrapper's version, not a literal: Renovate moves both, never this test.
+        wrapper = (REPOSITORY / "gradle" / "wrapper" / "gradle-wrapper.properties").read_text(encoding="utf-8")
+        match = re.search(r"gradle-([0-9][^-]*)-bin\.zip", wrapper)
+        if match is None:
+            self.fail("gradle-wrapper.properties names no Gradle distribution")
+        version = match.group(1)
         for workflow in sorted((REPOSITORY / ".github" / "workflows").glob("*.yml")):
             text = workflow.read_text(encoding="utf-8")
             setup_count = text.count("uses: gradle/actions/setup-gradle@")
             if setup_count == 0:
                 continue
             with self.subTest(workflow=workflow.name):
-                self.assertEqual(setup_count, text.count('gradle-version: "9.8.0"'))
+                self.assertEqual(setup_count, text.count(f'gradle-version: "{version}"'))
                 self.assertNotIn("./gradlew", text)
                 self.assertNotIn("gradlew.bat", text)
 
