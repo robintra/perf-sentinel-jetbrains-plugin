@@ -19,7 +19,7 @@ TEST_IDE_RUNTIMES = {
     "2025.3.5.1": "jbr_jcef-21.0.11-{platform}-b1163.116",
     "2025.3.6.1": "jbr_jcef-21.0.11-{platform}-b1163.116",
     "2025.3.7": "jbr_jcef-21.0.11-{platform}-b1163.116",
-    "2026.2.3": "jbr_jcef-25.0.4-{platform}-b508.27",
+    "2026.2.4": "jbr_jcef-25.0.4-{platform}-b508.27",
 }
 
 

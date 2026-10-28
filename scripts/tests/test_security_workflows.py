@@ -187,6 +187,14 @@ class RelockWorkflowTests(unittest.TestCase):
         self.assertEqual(["contents"], re.findall(r"permission-([a-z-]+): write", self.push))
         self.assertNotIn("--force", self.push)
 
+    def test_the_relock_commit_is_signed_and_never_forced(self):
+        # main requires signed commits: a git push from the runner lands unsigned, an API commit does not.
+        self.assertIn("createCommitOnBranch", self.push)
+        self.assertIn('"expectedHeadOid": os.environ["SHA"]', self.push)
+        self.assertIn("SHA: ${{ needs.relock.outputs.sha }}", self.push)
+        self.assertNotIn("git push", self.push)
+        self.assertNotIn("git commit", self.push)
+
 
 class CodeQLWorkflowTests(unittest.TestCase):
     @classmethod
