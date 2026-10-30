@@ -1,6 +1,6 @@
 {
   "schemaVersion": 1,
-  "auditedAt": "2026-10-28T17:26:16Z",
+  "auditedAt": "2026-10-30T11:25:20Z",
   "approvedNuGetSources": [
     "https://api.nuget.org/v3/index.json"
   ],
@@ -252,26 +252,26 @@
     {
       "name": "Microsoft.Bcl.Memory",
       "kind": "nuget",
-      "version": "9.0.20",
+      "version": "9.0.22",
       "release": "9.0",
-      "releasedAt": "2026-09-08T19:17:04.657Z",
-      "source": "https://www.nuget.org/packages/Microsoft.Bcl.Memory/9.0.20",
+      "releasedAt": "2026-10-25T17:08:46.743Z",
+      "source": "https://www.nuget.org/packages/Microsoft.Bcl.Memory/9.0.22",
       "declaration": "src/dotnet/Directory.Build.props#Microsoft.Bcl.Memory"
     },
     {
       "name": "Microsoft.NET.Test.Sdk",
       "kind": "nuget",
-      "version": "18.10.1",
-      "releasedAt": "2026-09-15T12:36:29.327Z",
-      "source": "https://www.nuget.org/packages/Microsoft.NET.Test.Sdk/18.10.1",
+      "version": "18.11.0",
+      "releasedAt": "2026-10-13T13:47:48.83Z",
+      "source": "https://www.nuget.org/packages/Microsoft.NET.Test.Sdk/18.11.0",
       "declaration": "src/dotnet/PerfSentinel.Rider.Tests/PerfSentinel.Rider.Tests.csproj#Microsoft.NET.Test.Sdk"
     },
     {
       "name": "NUnit3TestAdapter",
       "kind": "nuget",
-      "version": "6.3.0",
-      "releasedAt": "2026-08-24",
-      "source": "https://www.nuget.org/packages/NUnit3TestAdapter/6.3.0",
+      "version": "6.3.1",
+      "releasedAt": "2026-10-09T20:22:50.37Z",
+      "source": "https://www.nuget.org/packages/NUnit3TestAdapter/6.3.1",
       "declaration": "src/dotnet/PerfSentinel.Rider.Tests/PerfSentinel.Rider.Tests.csproj#NUnit3TestAdapter"
     },
     {
@@ -294,10 +294,10 @@
     {
       "name": "OSV-Scanner",
       "kind": "audited-tool",
-      "version": "2.6.0",
-      "releasedAt": "2026-09-14T02:55:16Z",
-      "source": "https://github.com/google/osv-scanner/releases/tag/v2.6.0",
-      "release": "v2.6.0"
+      "version": "2.7.0",
+      "releasedAt": "2026-10-12T01:32:07Z",
+      "source": "https://github.com/google/osv-scanner/releases/tag/v2.7.0",
+      "release": "v2.7.0"
     },
     {
       "name": "Gitleaks",
@@ -310,10 +310,10 @@
     {
       "name": "TruffleHog",
       "kind": "audited-tool",
-      "version": "3.97.9",
-      "releasedAt": "2026-09-24T09:11:59Z",
-      "source": "https://github.com/trufflesecurity/trufflehog/releases/tag/v3.97.9",
-      "release": "v3.97.9"
+      "version": "3.99.7",
+      "releasedAt": "2026-10-24T06:04:25Z",
+      "source": "https://github.com/trufflesecurity/trufflehog/releases/tag/v3.99.7",
+      "release": "v3.99.7"
     },
     {
       "name": "Zizmor",
@@ -326,18 +326,18 @@
     {
       "name": "Syft",
       "kind": "audited-tool",
-      "version": "1.52.0",
-      "releasedAt": "2026-09-17T14:38:17Z",
-      "source": "https://github.com/anchore/syft/releases/tag/v1.52.0",
-      "release": "v1.52.0"
+      "version": "1.55.0",
+      "releasedAt": "2026-10-19T19:01:26Z",
+      "source": "https://github.com/anchore/syft/releases/tag/v1.55.0",
+      "release": "v1.55.0"
     },
     {
       "name": "Ruff",
       "kind": "audited-tool",
-      "version": "0.16.10",
-      "releasedAt": "2026-10-01T18:04:27Z",
-      "source": "https://github.com/astral-sh/ruff/releases/tag/0.16.10",
-      "release": "0.16.10"
+      "version": "0.17.3",
+      "releasedAt": "2026-10-27T00:35:07Z",
+      "source": "https://github.com/astral-sh/ruff/releases/tag/0.17.3",
+      "release": "0.17.3"
     },
     {
       "name": "actionlint",
@@ -358,10 +358,10 @@
     {
       "name": "Qodana CLI",
       "kind": "audited-tool",
-      "version": "2026.2.2",
-      "releasedAt": "2026-09-24T09:01:50Z",
-      "source": "https://github.com/JetBrains/qodana-cli/releases/tag/v2026.2.2",
-      "release": "v2026.2.2"
+      "version": "2026.2.3",
+      "releasedAt": "2026-10-29T16:36:22Z",
+      "source": "https://github.com/JetBrains/qodana-cli/releases/tag/v2026.2.3",
+      "release": "v2026.2.3"
     },
     {
       "name": "actions/checkout",
