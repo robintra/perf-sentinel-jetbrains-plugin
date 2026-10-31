@@ -1,6 +1,6 @@
 {
   "schemaVersion": 1,
-  "auditedAt": "2026-10-30T11:25:20Z",
+  "auditedAt": "2026-10-31T09:00:06Z",
   "approvedNuGetSources": [
     "https://api.nuget.org/v3/index.json"
   ],
@@ -374,10 +374,10 @@
     {
       "name": "actions/setup-java",
       "kind": "github-action",
-      "version": "de7274f081f381c8f8158605e0321c36c376e2e6",
-      "release": "v6.0.1",
-      "releasedAt": "2026-09-09T12:10:42Z",
-      "source": "https://github.com/actions/setup-java/releases/tag/v6.0.1"
+      "version": "b843ebf9b913146b38da2eaa7aeddf76074ae1ad",
+      "release": "v6.1.0",
+      "releasedAt": "2026-10-14T20:17:01Z",
+      "source": "https://github.com/actions/setup-java/releases/tag/v6.1.0"
     },
     {
       "name": "actions/setup-dotnet",
@@ -398,10 +398,10 @@
     {
       "name": "actions/upload-artifact",
       "kind": "github-action",
-      "version": "043fb46d1a93c77aae656e7c1c64a875d1fc6a0a",
-      "release": "v7.0.1",
-      "releasedAt": "2026-04-10T17:31:14Z",
-      "source": "https://github.com/actions/upload-artifact/releases/tag/v7.0.1"
+      "version": "cf430e030ddbb5b0abf93d22962f4752f3646cd9",
+      "release": "v7.0.2",
+      "releasedAt": "2026-10-07T10:08:14Z",
+      "source": "https://github.com/actions/upload-artifact/releases/tag/v7.0.2"
     },
     {
       "name": "actions/github-script",
@@ -414,10 +414,10 @@
     {
       "name": "actions/download-artifact",
       "kind": "github-action",
-      "version": "3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c",
-      "release": "v8.0.1",
-      "releasedAt": "2026-03-11T15:44:25Z",
-      "source": "https://github.com/actions/download-artifact/releases/tag/v8.0.1"
+      "version": "9000827ccba6bdab643e8b6fd33ac0654aef8333",
+      "release": "v8.0.2",
+      "releasedAt": "2026-10-07T10:09:51Z",
+      "source": "https://github.com/actions/download-artifact/releases/tag/v8.0.2"
     },
     {
       "name": "actions/dependency-review-action",
@@ -430,34 +430,34 @@
     {
       "name": "github/codeql-action",
       "kind": "github-action",
-      "version": "2892aa5e19bbd11bc0cff5427e3b750a04d9e3c2",
-      "release": "v4.38.2",
-      "releasedAt": "2026-09-24T10:27:53Z",
-      "source": "https://github.com/github/codeql-action/releases/tag/v4.38.2"
+      "version": "9b3254085494b55a0f7c4c2b3d2d52cc712ce370",
+      "release": "v4.39.1",
+      "releasedAt": "2026-10-21T15:48:42Z",
+      "source": "https://github.com/github/codeql-action/releases/tag/v4.39.1"
     },
     {
       "name": "JetBrains/qodana-action",
       "kind": "github-action",
-      "version": "10be11607eb323a180e2b76b26c9c5cdceac3e77",
-      "release": "v2026.2.1",
-      "releasedAt": "2026-09-02T11:44:01Z",
-      "source": "https://github.com/JetBrains/qodana-action/releases/tag/v2026.2.1"
+      "version": "3e8d76ff0e0241618abd808682f426afe84bab3f",
+      "release": "v2026.2.2",
+      "releasedAt": "2026-09-29T13:54:23Z",
+      "source": "https://github.com/JetBrains/qodana-action/releases/tag/v2026.2.2"
     },
     {
       "name": "anchore/sbom-action",
       "kind": "github-action",
-      "version": "3ad7283483fc7af8ff2b4ea19663c2d5ca935e26",
-      "release": "v0.24.2",
-      "releasedAt": "2026-08-28T19:45:05Z",
-      "source": "https://github.com/anchore/sbom-action/releases/tag/v0.24.2"
+      "version": "66cbf4bc1f1c0d2edc94016e65bc221b6bb0ad6c",
+      "release": "v0.24.3",
+      "releasedAt": "2026-10-02T15:35:43Z",
+      "source": "https://github.com/anchore/sbom-action/releases/tag/v0.24.3"
     },
     {
       "name": "ossf/scorecard-action",
       "kind": "github-action",
-      "version": "2d1146689b8cda280b9bc96326124645441f03bc",
-      "release": "v2.4.4",
-      "releasedAt": "2026-07-23T21:12:46Z",
-      "source": "https://github.com/ossf/scorecard-action/releases/tag/v2.4.4"
+      "version": "fa7117db83c52d787ae5a89f350999701505d78e",
+      "release": "v2.5.0",
+      "releasedAt": "2026-10-12T02:54:09Z",
+      "source": "https://github.com/ossf/scorecard-action/releases/tag/v2.5.0"
     },
     {
       "name": "step-security/harden-runner",
@@ -470,10 +470,10 @@
     {
       "name": "google/osv-scanner-action",
       "kind": "github-action",
-      "version": "a345acffa64b0eaede81a3d9aae6141214d9c8fc",
-      "release": "v2.6.0",
-      "releasedAt": "2026-09-14T04:46:33Z",
-      "source": "https://github.com/google/osv-scanner-action/releases/tag/v2.6.0"
+      "version": "b1d267aea5211fa648d9d442fa64b90dbdcbdd36",
+      "release": "v2.7.0",
+      "releasedAt": "2026-10-12T01:39:20Z",
+      "source": "https://github.com/google/osv-scanner-action/releases/tag/v2.7.0"
     },
     {
       "name": "gitleaks/gitleaks-action",
@@ -494,10 +494,10 @@
     {
       "name": "gradle/actions",
       "kind": "github-action",
-      "version": "9c971963bec38e04b3d30dcc455b5382be2fdbfb",
-      "release": "v6.3.0",
-      "releasedAt": "2026-08-02T19:51:42Z",
-      "source": "https://github.com/gradle/actions/releases/tag/v6.3.0"
+      "version": "8da46b539cd8fe6ab27ca75128919a18d757604c",
+      "release": "v6.4.1",
+      "releasedAt": "2026-10-28T12:34:50Z",
+      "source": "https://github.com/gradle/actions/releases/tag/v6.4.1"
     },
     {
       "name": "Qodana JVM Community image",
