@@ -98,8 +98,8 @@
     {
       "name": "IntelliJ IDEA 2025.3",
       "kind": "jetbrains-product",
-      "version": "2025.3.6.1",
-      "releasedAt": "2026-07-29",
+      "version": "2025.3.6.2",
+      "releasedAt": "2026-10-30",
       "source": "https://data.services.jetbrains.com/products/releases?code=IIU&type=release",
       "declaration": "build.gradle.kts#IntelliJ IDEA 2025.3"
     },

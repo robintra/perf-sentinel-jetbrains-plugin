@@ -65,7 +65,7 @@ dependencies {
 
     // IntelliJ Platform Gradle Plugin Dependencies Extension - read more: https://plugins.jetbrains.com/docs/intellij/tools-intellij-platform-gradle-plugin-dependencies-extension.html
     intellijPlatform {
-        intellijIdea("2025.3.6.1")
+        intellijIdea("2025.3.6.2")
         testFramework(TestFrameworkType.Platform)
         testFramework(TestFrameworkType.Plugin.Java)
         bundledPlugin("com.intellij.java")
@@ -335,7 +335,7 @@ intellijPlatform {
     pluginVerification {
         ignoredProblemsFile = file("gradle/verifier-ignored-problems.txt")
         ides {
-            if (verifyTarget("idea-253")) create(IntelliJPlatformType.IntellijIdea, "2025.3.6.1")
+            if (verifyTarget("idea-253")) create(IntelliJPlatformType.IntellijIdea, "2025.3.6.2")
             if (verifyTarget("idea-262")) create(IntelliJPlatformType.IntellijIdea, "2026.2.3")
             if (verifyTarget("rider-253")) create(IntelliJPlatformType.Rider, "2025.3.5.2") { useInstaller = false }
             if (verifyTarget("rider-262")) create(IntelliJPlatformType.Rider, "2026.2.3.1") { useInstaller = false }
