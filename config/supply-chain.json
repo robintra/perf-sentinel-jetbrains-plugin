@@ -1,6 +1,6 @@
 {
   "schemaVersion": 1,
-  "auditedAt": "2026-10-31T12:36:44Z",
+  "auditedAt": "2026-10-31T15:33:22Z",
   "approvedNuGetSources": [
     "https://api.nuget.org/v3/index.json"
   ],
@@ -210,8 +210,8 @@
     {
       "name": "GoLand 2025.3",
       "kind": "jetbrains-product",
-      "version": "2025.3.5.1",
-      "releasedAt": "2026-07-30",
+      "version": "2025.3.5.2",
+      "releasedAt": "2026-10-30",
       "source": "https://data.services.jetbrains.com/products/releases?code=GO&type=release",
       "declaration": "build.gradle.kts#GoLand 2025.3"
     },
