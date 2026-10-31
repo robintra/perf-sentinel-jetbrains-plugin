@@ -539,10 +539,10 @@
       "type": "compatibility",
       "dependency": "RDGen 2026.2.5",
       "owner": "Maintainers",
-      "reason": "The latest stable RDGen task invokes Task.project at execution time; Gradle 9.7 reports that this becomes an error in Gradle 10.",
+      "reason": "The RDGen task, still on 2026.3.2, invokes Task.project at execution time; Gradle reports that this becomes an error in Gradle 10.",
       "evidence": "./gradlew :protocol:rdgen --warning-mode all",
       "upstream": "https://github.com/JetBrains/rd/releases/tag/2026.2.5",
-      "expiresAt": "2026-11-10T07:00:00Z"
+      "expiresAt": "2027-01-27T07:00:00Z"
     },
     {
       "type": "transitive-prerelease",
@@ -551,7 +551,7 @@
       "reason": "JetBrains java-gui-forms-compiler 253.33813.55 requires this exact transitive compiler dependency; it is not selected directly by the plugin.",
       "evidence": "./gradlew dependencyInsight --dependency com.jgoodies:forms --configuration intellijPlatformJavaCompiler",
       "upstream": "https://www.jetbrains.com/intellij-repository/releases/com/jetbrains/intellij/java/java-gui-forms-compiler/253.33813.55/java-gui-forms-compiler-253.33813.55.pom",
-      "expiresAt": "2026-11-10T07:00:00Z",
+      "expiresAt": "2027-01-27T07:00:00Z",
       "lockPaths": [
         "gradle.lockfile",
         "rider-frontend/gradle.lockfile"
@@ -567,7 +567,7 @@
       "reason": "JetBrains test-framework 253.33813.55 and 262.8665.337 require this exact transitive test dependency; it is not selected directly by the plugin.",
       "evidence": "./gradlew dependencyInsight --dependency org.assertj:assertj-core --configuration intellijPlatformTestClasspath && ./gradlew dependencyInsight --dependency org.assertj:assertj-core --configuration intellijPlatformTestClasspath_testRustRover262",
       "upstream": "https://www.jetbrains.com/intellij-repository/releases/com/jetbrains/intellij/platform/test-framework/253.33813.55/test-framework-253.33813.55.pom",
-      "expiresAt": "2026-11-10T07:00:00Z",
+      "expiresAt": "2027-01-27T07:00:00Z",
       "lockPaths": [
         "gradle.lockfile",
         "rider-frontend/gradle.lockfile"
@@ -605,7 +605,7 @@
       "reason": "Kotlin 2.4.20 contributes this exact agent to the composeHotReloadAgent configuration, which Kover report generation resolves; the plugin does not select it directly.",
       "evidence": "./gradlew dependencyInsight --dependency org.jetbrains.compose.hot-reload:hot-reload-agent --configuration composeHotReloadAgent",
       "upstream": "https://repo.maven.apache.org/maven2/org/jetbrains/compose/hot-reload/hot-reload-agent/1.1.0-alpha03/hot-reload-agent-1.1.0-alpha03.pom",
-      "expiresAt": "2026-11-10T07:00:00Z",
+      "expiresAt": "2027-01-27T07:00:00Z",
       "lockPaths": [
         "gradle.lockfile",
         "rider-frontend/gradle.lockfile"
