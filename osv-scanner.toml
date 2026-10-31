@@ -1,4 +1,4 @@
-# Findings this repository cannot act on, reviewed on 2026-08-13.
+# Findings this repository cannot act on, reviewed on 2026-10-31.
 #
 # The published plugin bundles no third-party library: its ZIP holds the plugin jars, the
 # searchable-options jar and the Rider assembly, nothing else. Every package listed below enters
@@ -14,7 +14,7 @@ name = "com.fasterxml.jackson.core:jackson-core"
 version = "2.19.0"
 ecosystem = "Maven"
 vulnerability.ignore = true
-effectiveUntil = 2026-11-13
+effectiveUntil = 2027-02-13
 reason = "Shipped inside the IDE distributions the intellijPlatformTest configurations resolve. The only jackson this repository declares is jackson-bom 2.22.4, already ahead of every fixed version."
 
 [[PackageOverrides]]
@@ -22,7 +22,7 @@ name = "com.fasterxml.jackson.core:jackson-core"
 version = "2.20.2"
 ecosystem = "Maven"
 vulnerability.ignore = true
-effectiveUntil = 2026-11-13
+effectiveUntil = 2027-02-13
 reason = "Recorded in gradle/verification-metadata.xml from an IDE distribution download, absent from every locked configuration."
 
 [[PackageOverrides]]
@@ -30,7 +30,7 @@ name = "com.fasterxml.jackson.core:jackson-databind"
 version = "2.19.0"
 ecosystem = "Maven"
 vulnerability.ignore = true
-effectiveUntil = 2026-11-13
+effectiveUntil = 2027-02-13
 reason = "Shipped inside the IDE distributions the intellijPlatformTest configurations resolve. The only jackson this repository declares is jackson-bom 2.22.4, already ahead of every fixed version."
 
 [[PackageOverrides]]
@@ -38,7 +38,7 @@ name = "com.fasterxml.jackson.core:jackson-databind"
 version = "2.20.2"
 ecosystem = "Maven"
 vulnerability.ignore = true
-effectiveUntil = 2026-11-13
+effectiveUntil = 2027-02-13
 reason = "Recorded in gradle/verification-metadata.xml from an IDE distribution download, absent from every locked configuration."
 
 [[PackageOverrides]]
@@ -46,7 +46,7 @@ name = "tools.jackson.core:jackson-core"
 version = "3.1.4"
 ecosystem = "Maven"
 vulnerability.ignore = true
-effectiveUntil = 2026-11-13
+effectiveUntil = 2027-02-13
 reason = "Bundled in RustRover 2026.2, reachable only through the testRustRover262 configurations."
 
 [[PackageOverrides]]
@@ -54,7 +54,7 @@ name = "io.opentelemetry:opentelemetry-api"
 version = "1.48.0"
 ecosystem = "Maven"
 vulnerability.ignore = true
-effectiveUntil = 2026-11-13
+effectiveUntil = 2027-02-13
 reason = "Bundled in RustRover 2026.2, reachable only through the testRustRover262 configurations."
 
 [[PackageOverrides]]
@@ -62,7 +62,7 @@ name = "tools.jackson.core:jackson-databind"
 version = "3.1.4"
 ecosystem = "Maven"
 vulnerability.ignore = true
-effectiveUntil = 2026-11-13
+effectiveUntil = 2027-02-13
 reason = "Bundled in RustRover 2026.2, reachable only through the testRustRover262 configurations."
 
 [[PackageOverrides]]
@@ -70,7 +70,7 @@ name = "io.undertow:undertow-core"
 version = "2.4.3.Final"
 ecosystem = "Maven"
 vulnerability.ignore = true
-effectiveUntil = 2026-11-13
+effectiveUntil = 2027-02-13
 reason = "Pulled onto the build classpath by the IntelliJ Platform Gradle Plugin 2.19.0, never shipped; the advisory has no fixed release to move to."
 
 # The same three findings, spelled the way the SPDX scan reports them. The
@@ -84,7 +84,7 @@ name = "jackson-core"
 version = "2.19.0"
 ecosystem = "Maven"
 vulnerability.ignore = true
-effectiveUntil = 2026-11-13
+effectiveUntil = 2027-02-13
 reason = "Shipped inside the IDE distributions the intellijPlatformTest configurations resolve. The only jackson this repository declares is jackson-bom 2.22.4, already ahead of every fixed version."
 
 [[PackageOverrides]]
@@ -92,7 +92,7 @@ name = "jackson-databind"
 version = "2.19.0"
 ecosystem = "Maven"
 vulnerability.ignore = true
-effectiveUntil = 2026-11-13
+effectiveUntil = 2027-02-13
 reason = "Shipped inside the IDE distributions the intellijPlatformTest configurations resolve. The only jackson this repository declares is jackson-bom 2.22.4, already ahead of every fixed version."
 
 [[PackageOverrides]]
@@ -100,7 +100,7 @@ name = "jackson-core"
 version = "3.1.4"
 ecosystem = "Maven"
 vulnerability.ignore = true
-effectiveUntil = 2026-11-13
+effectiveUntil = 2027-02-13
 reason = "Bundled in RustRover 2026.2, reachable only through the testRustRover262 configurations."
 
 [[PackageOverrides]]
@@ -108,7 +108,7 @@ name = "opentelemetry-api"
 version = "1.48.0"
 ecosystem = "Maven"
 vulnerability.ignore = true
-effectiveUntil = 2026-11-13
+effectiveUntil = 2027-02-13
 reason = "Bundled in RustRover 2026.2, reachable only through the testRustRover262 configurations."
 
 [[PackageOverrides]]
@@ -116,7 +116,7 @@ name = "jackson-databind"
 version = "3.1.4"
 ecosystem = "Maven"
 vulnerability.ignore = true
-effectiveUntil = 2026-11-13
+effectiveUntil = 2027-02-13
 reason = "Bundled in RustRover 2026.2, reachable only through the testRustRover262 configurations."
 
 [[PackageOverrides]]
@@ -124,7 +124,7 @@ name = "org.jsoup:jsoup"
 version = "1.16.1"
 ecosystem = "Maven"
 vulnerability.ignore = true
-effectiveUntil = 2026-11-13
+effectiveUntil = 2027-02-13
 reason = "Recorded in gradle/verification-metadata.xml from an IDE distribution download, absent from every locked configuration."
 
 [[PackageOverrides]]
@@ -132,7 +132,7 @@ name = "io.undertow:undertow-core"
 version = "2.4.2.Final"
 ecosystem = "Maven"
 vulnerability.ignore = true
-effectiveUntil = 2026-11-13
+effectiveUntil = 2027-02-13
 reason = "Recorded in gradle/verification-metadata.xml from an IDE distribution download, and no fixed version is published."
 
 [[PackageOverrides]]
