@@ -15,7 +15,7 @@ version = "2.19.0"
 ecosystem = "Maven"
 vulnerability.ignore = true
 effectiveUntil = 2026-11-13
-reason = "Shipped inside the IDE distributions the intellijPlatformTest configurations resolve. The only jackson this repository declares is jackson-bom 2.22.3, already ahead of every fixed version."
+reason = "Shipped inside the IDE distributions the intellijPlatformTest configurations resolve. The only jackson this repository declares is jackson-bom 2.22.4, already ahead of every fixed version."
 
 [[PackageOverrides]]
 name = "com.fasterxml.jackson.core:jackson-core"
@@ -31,7 +31,7 @@ version = "2.19.0"
 ecosystem = "Maven"
 vulnerability.ignore = true
 effectiveUntil = 2026-11-13
-reason = "Shipped inside the IDE distributions the intellijPlatformTest configurations resolve. The only jackson this repository declares is jackson-bom 2.22.3, already ahead of every fixed version."
+reason = "Shipped inside the IDE distributions the intellijPlatformTest configurations resolve. The only jackson this repository declares is jackson-bom 2.22.4, already ahead of every fixed version."
 
 [[PackageOverrides]]
 name = "com.fasterxml.jackson.core:jackson-databind"
@@ -85,7 +85,7 @@ version = "2.19.0"
 ecosystem = "Maven"
 vulnerability.ignore = true
 effectiveUntil = 2026-11-13
-reason = "Shipped inside the IDE distributions the intellijPlatformTest configurations resolve. The only jackson this repository declares is jackson-bom 2.22.3, already ahead of every fixed version."
+reason = "Shipped inside the IDE distributions the intellijPlatformTest configurations resolve. The only jackson this repository declares is jackson-bom 2.22.4, already ahead of every fixed version."
 
 [[PackageOverrides]]
 name = "jackson-databind"
@@ -93,7 +93,7 @@ version = "2.19.0"
 ecosystem = "Maven"
 vulnerability.ignore = true
 effectiveUntil = 2026-11-13
-reason = "Shipped inside the IDE distributions the intellijPlatformTest configurations resolve. The only jackson this repository declares is jackson-bom 2.22.3, already ahead of every fixed version."
+reason = "Shipped inside the IDE distributions the intellijPlatformTest configurations resolve. The only jackson this repository declares is jackson-bom 2.22.4, already ahead of every fixed version."
 
 [[PackageOverrides]]
 name = "jackson-core"
