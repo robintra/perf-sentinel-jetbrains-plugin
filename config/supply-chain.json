@@ -1,6 +1,6 @@
 {
   "schemaVersion": 1,
-  "auditedAt": "2026-10-31T15:34:15Z",
+  "auditedAt": "2026-10-31T16:32:37Z",
   "approvedNuGetSources": [
     "https://api.nuget.org/v3/index.json"
   ],
@@ -285,9 +285,9 @@
     {
       "name": "coverlet.collector",
       "kind": "nuget",
-      "version": "6.0.4",
-      "releasedAt": "2025-01-19T23:24:04.97Z",
-      "source": "https://www.nuget.org/packages/coverlet.collector/6.0.4",
+      "version": "10.1.0",
+      "releasedAt": "2026-09-27T21:36:27.42Z",
+      "source": "https://www.nuget.org/packages/coverlet.collector/10.1.0",
       "compatibility": "netstandard2.0",
       "declaration": "src/dotnet/PerfSentinel.Rider.Tests/PerfSentinel.Rider.Tests.csproj#coverlet.collector"
     },
