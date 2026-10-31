@@ -67,7 +67,7 @@
       "name": "Gson",
       "kind": "maven",
       "version": "2.15.0",
-      "releasedAt": "2026-04-23",
+      "releasedAt": "2026-10-24",
       "source": "https://repo.maven.apache.org/maven2/com/google/code/gson/gson/maven-metadata.xml",
       "declaration": "gradle/libs.versions.toml#gson"
     },
@@ -75,7 +75,7 @@
       "name": "Jackson BOM",
       "kind": "maven",
       "version": "2.22.4",
-      "releasedAt": "2026-09-21",
+      "releasedAt": "2026-10-17",
       "source": "https://repo.maven.apache.org/maven2/com/fasterxml/jackson/jackson-bom/maven-metadata.xml",
       "declaration": "gradle/libs.versions.toml#jackson"
     },
@@ -91,7 +91,7 @@
       "name": "RDGen",
       "kind": "maven",
       "version": "2026.3.2",
-      "releasedAt": "2026-09-01",
+      "releasedAt": "2026-10-03",
       "source": "https://repo.maven.apache.org/maven2/com/jetbrains/rd/rd-gen/maven-metadata.xml",
       "declaration": "gradle/libs.versions.toml#rdGen"
     },
