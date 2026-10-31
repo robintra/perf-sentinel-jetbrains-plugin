@@ -115,7 +115,7 @@ EXPECTED_PACKAGE_RULES = [
     {
         "description": "Keep Coverlet compatible with the Rider net472 test host",
         "matchPackageNames": ["coverlet.collector"],
-        "allowedVersions": "<7.0.0",
+        "allowedVersions": "!/^(7|8|9|10\\.0)\\./",
     },
     {
         "description": "Keep Microsoft.Bcl.Memory on the 9.0 line JetBrains 2025.3 pins, moving only to its patched builds",

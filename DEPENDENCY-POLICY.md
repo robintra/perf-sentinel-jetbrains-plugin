@@ -43,8 +43,8 @@ automerge above. Prereleases such as alpha, beta, RC, EAP, preview, nightly, and
 rejected unless a separate compatibility decision changes the declared product matrix.
 
 JetBrains IDE and SDK updates stay within the declared 2025.3 or 2026.2 compatibility line. The
-Rider test collector stays below Coverlet 7 because the project still uses JetBrains' `net472` test
-host; newer stable collectors target modern .NET only and cannot run there. `Microsoft.Bcl.Memory`
+Rider test collector skips Coverlet 8.x and 10.0.x because the project still uses JetBrains' `net472` test
+host: those target modern .NET only and cannot run there. 10.1.0 brought `netstandard2.0` back. `Microsoft.Bcl.Memory`
 stays on the 9.0 line: JetBrains 2025.3 pins the vulnerable 9.0.0 exactly, and the override only
 moves it to a patched 9.0 build rather than away from the line the IDE loads. The jsoup constraint in
 `settings.gradle.kts` is a floor the build classpath keeps above known advisories; Renovate leaves

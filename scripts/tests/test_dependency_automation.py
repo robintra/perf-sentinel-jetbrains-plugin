@@ -283,7 +283,7 @@ class DependencyAutomationTests(unittest.TestCase):
             {
                 "description": "Keep Coverlet compatible with the Rider net472 test host",
                 "matchPackageNames": ["coverlet.collector"],
-                "allowedVersions": "<7.0.0",
+                "allowedVersions": "!/^(7|8|9|10\\.0)\\./",
             },
             config["packageRules"],
         )
