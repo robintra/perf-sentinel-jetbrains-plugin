@@ -2,7 +2,7 @@
 # Manual edits can break the build and are not advised.
 # This file is expected to be part of source control.
 # To regenerate this file, run: ./gradlew :dependencies --write-locks
-bundledModule:intellij-platform-test-runtime:GO-253.33813.70=intellijPlatformTestRuntimeFixClasspath_testGoLand253
+bundledModule:intellij-platform-test-runtime:GO-253.33813.96=intellijPlatformTestRuntimeFixClasspath_testGoLand253
 bundledModule:intellij-platform-test-runtime:IU-253.33813.55=intellijPlatformTestRuntimeFixClasspath
 bundledModule:intellij-platform-test-runtime:PS-253.33813.65=intellijPlatformTestRuntimeFixClasspath_testPhpStorm253
 bundledModule:intellij-platform-test-runtime:PY-253.33813.50=intellijPlatformTestRuntimeFixClasspath_testPyCharm253
@@ -57,7 +57,7 @@ com.google.errorprone:error_prone_annotations:2.50.0=compileClasspath
 com.jetbrains.intellij.codeowners:codeowners-monorepo-resolver:262.8665.337=intellijPlatformTestClasspath_testRustRover262,intellijPlatformTestDependencies_testRustRover262,intellijPlatformTestRuntimeClasspath_testRustRover262
 com.jetbrains.intellij.codeowners:codeowners-runtime-resolver:262.8665.337=intellijPlatformTestClasspath_testRustRover262,intellijPlatformTestDependencies_testRustRover262,intellijPlatformTestRuntimeClasspath_testRustRover262
 com.jetbrains.intellij.codeowners:codeowners:262.8665.337=intellijPlatformTestClasspath_testRustRover262,intellijPlatformTestDependencies_testRustRover262,intellijPlatformTestRuntimeClasspath_testRustRover262
-com.jetbrains.intellij.goland:goland:2025.3.5.1=intellijPlatformClasspath_testGoLand253,intellijPlatformDependencyArchive_testGoLand253,intellijPlatformDependency_testGoLand253,intellijPlatformTestClasspath_testGoLand253
+com.jetbrains.intellij.goland:goland:2025.3.5.2=intellijPlatformClasspath_testGoLand253,intellijPlatformDependencyArchive_testGoLand253,intellijPlatformDependency_testGoLand253,intellijPlatformTestClasspath_testGoLand253
 com.jetbrains.intellij.java:java-compiler-ant-tasks:253.33813.55=intellijPlatformJavaCompiler
 com.jetbrains.intellij.java:java-compiler-instrumentation-util-java8:253.33813.55=intellijPlatformJavaCompiler
 com.jetbrains.intellij.java:java-compiler-instrumentation-util:253.33813.55=intellijPlatformJavaCompiler
