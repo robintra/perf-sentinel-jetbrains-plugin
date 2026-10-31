@@ -168,7 +168,7 @@ intellijPlatformTesting.testIde.register("testPhpStorm253") {
     type = IntelliJPlatformType.PhpStorm
     version = "2025.3.6.1"
     useInstaller = false
-    testFramework(TestFrameworkType.Platform)
+    testFramework(TestFrameworkType.Platform, "253.33813.55")
     task {
         filter {
             includeTestsMatching("*PhpAnchorResolverTest")
@@ -206,7 +206,7 @@ intellijPlatformTesting.testIde.register("testRubyMine253") {
     type = IntelliJPlatformType.RubyMine
     version = "2025.3.6.1"
     useInstaller = false
-    testFramework(TestFrameworkType.Platform)
+    testFramework(TestFrameworkType.Platform, "253.33813.55")
     task {
         classpath += files(ideaTestRuntime)
         filter {
@@ -219,7 +219,7 @@ intellijPlatformTesting.testIde.register("testWebStorm253") {
     type = IntelliJPlatformType.WebStorm
     version = "2025.3.6.1"
     useInstaller = false
-    testFramework(TestFrameworkType.Platform)
+    testFramework(TestFrameworkType.Platform, "253.33813.55")
     plugins {
         // The 2025.3 test fixture misidentifies Vue's lib/modules directory as the plugin lib root.
         disablePlugin("org.jetbrains.plugins.vue")
