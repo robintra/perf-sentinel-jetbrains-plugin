@@ -1,6 +1,6 @@
 {
   "schemaVersion": 1,
-  "auditedAt": "2026-10-30T11:25:20Z",
+  "auditedAt": "2026-10-31T08:59:11Z",
   "approvedNuGetSources": [
     "https://api.nuget.org/v3/index.json"
   ],
@@ -218,8 +218,8 @@
     {
       "name": "GoLand 2026.2",
       "kind": "jetbrains-product",
-      "version": "2026.2.3",
-      "releasedAt": "2026-09-16",
+      "version": "2026.2.4",
+      "releasedAt": "2026-10-30",
       "source": "https://data.services.jetbrains.com/products/releases?code=GO&type=release",
       "declaration": "build.gradle.kts#GoLand 2026.2"
     },
