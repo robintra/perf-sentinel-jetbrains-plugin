@@ -2,6 +2,8 @@
   <PropertyGroup>
     <TargetFramework>net472</TargetFramework>
     <IsPackable>false</IsPackable>
+    <!-- The SDK pins System.Collections.Immutable 8.0.0 and System.Memory 4.6.0 exactly; the test adapter needs newer. Test host only, never shipped. -->
+    <NoWarn>$(NoWarn);NU1608</NoWarn>
     <PathMap>$(MSBuildProjectDirectory)=.</PathMap>
   </PropertyGroup>
 
