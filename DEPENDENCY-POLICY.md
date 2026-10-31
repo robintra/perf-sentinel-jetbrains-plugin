@@ -18,7 +18,9 @@ one does not. Major updates remain separate. The Rider IDE and the Rider and
 ReSharper SDKs move together in one pull request, because the IDE and the SDK must match.
 
 GitHub Actions updates carry the same automerge eligibility as ordinary Gradle and NuGet updates.
-The tests in `scripts/tests` check that each action is pinned to a full commit SHA, never which one:
+Each action is pinned to a full commit SHA followed by a `# vX.Y.Z` comment naming its release: Renovate
+skips a bare SHA, so the comment is what it reads and moves (`zizmorcore/zizmor-action` alone stays
+bare, moved by hand). The tests in `scripts/tests` check the comment against the inventory, never which SHA:
 that is Renovate's to move and `check-supply-chain.py`'s to hold against the inventory, so a matured
 bump merges unattended once `CI / Gate` is green. `step-security/harden-runner` and
 `actions/create-github-app-token` are the exception: they run inside the Renovate job itself,

@@ -139,7 +139,7 @@ class CiWorkflowTests(unittest.TestCase):
         for line in self.text.splitlines():
             if "uses:" in line:
                 reference = line.split("uses:", 1)[1].strip()
-                self.assertRegex(reference, r"^[A-Za-z0-9_.-]+/[A-Za-z0-9_./-]+@[0-9a-f]{40}$")
+                self.assertRegex(reference, r"^[A-Za-z0-9_.-]+/[A-Za-z0-9_./-]+@[0-9a-f]{40}( # v[0-9.]+)?$")
         self.assertNotIn("pull_request_target:", self.text)
 
     def test_trusted_analysis_does_not_expose_secrets_to_forks(self):
@@ -181,7 +181,7 @@ class CiWorkflowTests(unittest.TestCase):
         self.assertIn("name: jvm-analysis-inputs", self.text)
         # Pinned by SHA and checksum; the values themselves are Renovate's and the sync hook's.
         for action in ("actions/upload-artifact", "actions/download-artifact", "zizmorcore/zizmor-action", "gitleaks/gitleaks-action"):
-            self.assertRegex(self.text, rf"{action}@[0-9a-f]{{40}}\n")
+            self.assertRegex(self.text, rf"{action}@[0-9a-f]{{40}}( # v[0-9.]+)?\n")
         self.assertRegex(self.text, r"zizmor-action@[0-9a-f]{40}\n\s+with:\n\s+version: \d+\.\d+\.\d+\n")
         for archive in (r"actionlint_[0-9.]+_linux_amd64\.tar\.gz", r"ruff-x86_64-unknown-linux-gnu\.tar\.gz"):
             self.assertRegex(

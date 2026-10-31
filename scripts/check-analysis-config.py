@@ -388,7 +388,7 @@ def validate_workflow_secrets(root: Path, inventory_names: set[str]) -> None:
             end = references[index + 1].start() if index + 1 < len(references) else len(text)
             segment = text[reference.end():end]
             uploads = list(re.finditer(
-                r"(?m)^(?P<indent>[ \t]*)-[ \t]+uses:[ \t]+github/codeql-action/upload-sarif@[0-9a-f]{40}[ \t]*$",
+                r"(?m)^(?P<indent>[ \t]*)-[ \t]+uses:[ \t]+github/codeql-action/upload-sarif@[0-9a-f]{40}(?:[ \t]+\#[ \t]*v[0-9.]+)?[ \t]*$",
                 segment,
             ))
             if len(uploads) != 1:

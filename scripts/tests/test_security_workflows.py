@@ -270,5 +270,18 @@ class JdkPinTests(unittest.TestCase):
         self.assertRegex(version, r"^21\.\d+\.\d+\+\d+\.\d+\.LTS$")
 
 
+class ActionVersionCommentTests(unittest.TestCase):
+    def test_every_action_names_the_release_its_sha_is(self):
+        # Renovate skips an action pinned to a bare SHA; the comment is what it reads and moves.
+        # zizmor-action alone stays bare: a custom manager reads its version input instead.
+        inventory = json.loads((REPOSITORY / "config/supply-chain.json").read_text(encoding="utf-8"))
+        releases = {item["version"]: item["release"] for item in inventory["dependencies"] if item["kind"] == "github-action"}
+        for path in sorted(WORKFLOWS.glob("*.yml")):
+            for match in re.finditer(r"uses: (\S+)@([0-9a-f]{40})(?: # (\S+))?$", path.read_text(encoding="utf-8"), re.M):
+                with self.subTest(path=path.name, action=match[1]):
+                    expected = None if match[1] == "zizmorcore/zizmor-action" else releases.get(match[2])
+                    self.assertEqual(expected, match[3])
+
+
 if __name__ == "__main__":
     unittest.main()

@@ -28,7 +28,7 @@ jobs:
     outputs:
       drift: ${{ steps.audit.outputs.drift }}
     steps:
-      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with: {persist-credentials: false}
       - id: audit
         name: Audit pinned versions against upstream
@@ -61,7 +61,7 @@ jobs:
       contents: read
       issues: write  # opens, updates and closes the single drift tracking issue
     steps:
-      - uses: actions/github-script@3a2844b7e9c422d3c10d287c895573f7108da1b3
+      - uses: actions/github-script@3a2844b7e9c422d3c10d287c895573f7108da1b3 # v9.0.0
         env:
           DRIFT: ${{ needs.freshness.outputs.drift }}
         with:
