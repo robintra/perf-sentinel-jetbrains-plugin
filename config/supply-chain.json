@@ -1,6 +1,6 @@
 {
   "schemaVersion": 1,
-  "auditedAt": "2026-10-31T16:32:37Z",
+  "auditedAt": "2026-11-01T11:51:40Z",
   "approvedNuGetSources": [
     "https://api.nuget.org/v3/index.json"
   ],
@@ -106,8 +106,8 @@
     {
       "name": "IntelliJ IDEA 2026.2",
       "kind": "jetbrains-product",
-      "version": "2026.2.3",
-      "releasedAt": "2026-09-16",
+      "version": "2026.2.4",
+      "releasedAt": "2026-10-30",
       "source": "https://data.services.jetbrains.com/products/releases?code=IIU&type=release",
       "declaration": "build.gradle.kts#IntelliJ IDEA 2026.2"
     },
