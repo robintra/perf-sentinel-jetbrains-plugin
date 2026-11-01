@@ -65,7 +65,7 @@ jobs:
         with:
           ref: ${{ needs.changes.outputs.target-sha }}
           persist-credentials: false
-      - uses: actions/setup-java@de7274f081f381c8f8158605e0321c36c376e2e6 # v6.0.1
+      - uses: actions/setup-java@b843ebf9b913146b38da2eaa7aeddf76074ae1ad # v6.1.0
         with:
           distribution: temurin
           java-version-file: .java-version
@@ -82,13 +82,13 @@ jobs:
           # Nothing here touches Node, Rust or Homebrew.
           sudo rm -rf /usr/local/lib/node_modules /home/linuxbrew /usr/share/rust
           df -h /
-      - uses: gradle/actions/setup-gradle@9c971963bec38e04b3d30dcc455b5382be2fdbfb # v6.3.0
+      - uses: gradle/actions/setup-gradle@8da46b539cd8fe6ab27ca75128919a18d757604c # v6.4.1
         with:
           gradle-version: "9.8.2"
           # Restoring the Gradle cache lands after the cleanup steps above and refills the disk.
           cache-disabled: true
       - run: scripts/ci/gradle-retry.sh test koverXmlReport
-      - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+      - uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
         with:
           name: jvm-analysis-inputs
           if-no-files-found: error
@@ -99,12 +99,12 @@ jobs:
             protocol/build/classes
             rider-frontend/build/classes
             rider-frontend/build/test-results
-      - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+      - uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
         with:
           name: rider-protocol-model
           if-no-files-found: error
           path: rider-frontend/build/generated/rd/kotlin
-      - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+      - uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
         with:
           name: root-plugin-jar
           if-no-files-found: error
@@ -121,13 +121,13 @@ jobs:
         with:
           ref: ${{ needs.changes.outputs.target-sha }}
           persist-credentials: false
-      - uses: actions/setup-java@de7274f081f381c8f8158605e0321c36c376e2e6 # v6.0.1
+      - uses: actions/setup-java@b843ebf9b913146b38da2eaa7aeddf76074ae1ad # v6.1.0
         with: {distribution: temurin, java-version-file: .java-version}
       - uses: actions/setup-dotnet@a98b56852c35b8e3190ac28c8c2271da59106c68 # v6.0.0
         with:
           global-json-file: global.json
       - run: scripts/free-hosted-runner-space.sh
-      - uses: gradle/actions/setup-gradle@9c971963bec38e04b3d30dcc455b5382be2fdbfb # v6.3.0
+      - uses: gradle/actions/setup-gradle@8da46b539cd8fe6ab27ca75128919a18d757604c # v6.4.1
         with:
           gradle-version: "9.8.2"
           cache-read-only: ${{ github.event_name == 'pull_request' }}
@@ -144,13 +144,13 @@ jobs:
         with:
           ref: ${{ needs.changes.outputs.target-sha }}
           persist-credentials: false
-      - uses: actions/setup-java@de7274f081f381c8f8158605e0321c36c376e2e6 # v6.0.1
+      - uses: actions/setup-java@b843ebf9b913146b38da2eaa7aeddf76074ae1ad # v6.1.0
         with: {distribution: temurin, java-version-file: .java-version}
       - uses: actions/setup-dotnet@a98b56852c35b8e3190ac28c8c2271da59106c68 # v6.0.0
         with:
           global-json-file: global.json
       - run: scripts/free-hosted-runner-space.sh
-      - uses: gradle/actions/setup-gradle@9c971963bec38e04b3d30dcc455b5382be2fdbfb # v6.3.0
+      - uses: gradle/actions/setup-gradle@8da46b539cd8fe6ab27ca75128919a18d757604c # v6.4.1
         with:
           gradle-version: "9.8.2"
           cache-read-only: ${{ github.event_name == 'pull_request' }}
@@ -167,13 +167,13 @@ jobs:
         with:
           ref: ${{ needs.changes.outputs.target-sha }}
           persist-credentials: false
-      - uses: actions/setup-java@de7274f081f381c8f8158605e0321c36c376e2e6 # v6.0.1
+      - uses: actions/setup-java@b843ebf9b913146b38da2eaa7aeddf76074ae1ad # v6.1.0
         with: {distribution: temurin, java-version-file: .java-version}
       - uses: actions/setup-dotnet@a98b56852c35b8e3190ac28c8c2271da59106c68 # v6.0.0
         with:
           global-json-file: global.json
       - run: scripts/free-hosted-runner-space.sh
-      - uses: gradle/actions/setup-gradle@9c971963bec38e04b3d30dcc455b5382be2fdbfb # v6.3.0
+      - uses: gradle/actions/setup-gradle@8da46b539cd8fe6ab27ca75128919a18d757604c # v6.4.1
         with:
           gradle-version: "9.8.2"
           cache-read-only: ${{ github.event_name == 'pull_request' }}
@@ -190,13 +190,13 @@ jobs:
         with:
           ref: ${{ needs.changes.outputs.target-sha }}
           persist-credentials: false
-      - uses: actions/setup-java@de7274f081f381c8f8158605e0321c36c376e2e6 # v6.0.1
+      - uses: actions/setup-java@b843ebf9b913146b38da2eaa7aeddf76074ae1ad # v6.1.0
         with: {distribution: temurin, java-version-file: .java-version}
       - uses: actions/setup-dotnet@a98b56852c35b8e3190ac28c8c2271da59106c68 # v6.0.0
         with:
           global-json-file: global.json
       - run: scripts/free-hosted-runner-space.sh
-      - uses: gradle/actions/setup-gradle@9c971963bec38e04b3d30dcc455b5382be2fdbfb # v6.3.0
+      - uses: gradle/actions/setup-gradle@8da46b539cd8fe6ab27ca75128919a18d757604c # v6.4.1
         with:
           gradle-version: "9.8.2"
           cache-read-only: ${{ github.event_name == 'pull_request' }}
@@ -213,13 +213,13 @@ jobs:
         with:
           ref: ${{ needs.changes.outputs.target-sha }}
           persist-credentials: false
-      - uses: actions/setup-java@de7274f081f381c8f8158605e0321c36c376e2e6 # v6.0.1
+      - uses: actions/setup-java@b843ebf9b913146b38da2eaa7aeddf76074ae1ad # v6.1.0
         with: {distribution: temurin, java-version-file: .java-version}
       - uses: actions/setup-dotnet@a98b56852c35b8e3190ac28c8c2271da59106c68 # v6.0.0
         with:
           global-json-file: global.json
       - run: scripts/free-hosted-runner-space.sh
-      - uses: gradle/actions/setup-gradle@9c971963bec38e04b3d30dcc455b5382be2fdbfb # v6.3.0
+      - uses: gradle/actions/setup-gradle@8da46b539cd8fe6ab27ca75128919a18d757604c # v6.4.1
         with:
           gradle-version: "9.8.2"
           cache-read-only: ${{ github.event_name == 'pull_request' }}
@@ -236,13 +236,13 @@ jobs:
         with:
           ref: ${{ needs.changes.outputs.target-sha }}
           persist-credentials: false
-      - uses: actions/setup-java@de7274f081f381c8f8158605e0321c36c376e2e6 # v6.0.1
+      - uses: actions/setup-java@b843ebf9b913146b38da2eaa7aeddf76074ae1ad # v6.1.0
         with: {distribution: temurin, java-version-file: .java-version}
       - uses: actions/setup-dotnet@a98b56852c35b8e3190ac28c8c2271da59106c68 # v6.0.0
         with:
           global-json-file: global.json
       - run: scripts/free-hosted-runner-space.sh
-      - uses: gradle/actions/setup-gradle@9c971963bec38e04b3d30dcc455b5382be2fdbfb # v6.3.0
+      - uses: gradle/actions/setup-gradle@8da46b539cd8fe6ab27ca75128919a18d757604c # v6.4.1
         with:
           gradle-version: "9.8.2"
           cache-read-only: ${{ github.event_name == 'pull_request' }}
@@ -259,10 +259,10 @@ jobs:
         with:
           ref: ${{ needs.changes.outputs.target-sha }}
           persist-credentials: false
-      - uses: actions/setup-java@de7274f081f381c8f8158605e0321c36c376e2e6 # v6.0.1
+      - uses: actions/setup-java@b843ebf9b913146b38da2eaa7aeddf76074ae1ad # v6.1.0
         with: {distribution: temurin, java-version-file: .java-version}
       - run: scripts/free-hosted-runner-space.sh
-      - uses: gradle/actions/setup-gradle@9c971963bec38e04b3d30dcc455b5382be2fdbfb # v6.3.0
+      - uses: gradle/actions/setup-gradle@8da46b539cd8fe6ab27ca75128919a18d757604c # v6.4.1
         with:
           gradle-version: "9.8.2"
           cache-read-only: ${{ github.event_name == 'pull_request' }}
@@ -299,13 +299,13 @@ jobs:
         with:
           ref: ${{ needs.changes.outputs.target-sha }}
           persist-credentials: false
-      - uses: actions/setup-java@de7274f081f381c8f8158605e0321c36c376e2e6 # v6.0.1
+      - uses: actions/setup-java@b843ebf9b913146b38da2eaa7aeddf76074ae1ad # v6.1.0
         with: {distribution: temurin, java-version-file: .java-version}
       - uses: actions/setup-dotnet@a98b56852c35b8e3190ac28c8c2271da59106c68 # v6.0.0
         with:
           global-json-file: global.json
       - run: scripts/free-hosted-runner-space.sh
-      - uses: gradle/actions/setup-gradle@9c971963bec38e04b3d30dcc455b5382be2fdbfb # v6.3.0
+      - uses: gradle/actions/setup-gradle@8da46b539cd8fe6ab27ca75128919a18d757604c # v6.4.1
         with:
           gradle-version: "9.8.2"
           cache-disabled: true
@@ -322,13 +322,13 @@ jobs:
         with:
           ref: ${{ needs.changes.outputs.target-sha }}
           persist-credentials: false
-      - uses: actions/setup-java@de7274f081f381c8f8158605e0321c36c376e2e6 # v6.0.1
+      - uses: actions/setup-java@b843ebf9b913146b38da2eaa7aeddf76074ae1ad # v6.1.0
         with: {distribution: temurin, java-version-file: .java-version}
       - uses: actions/setup-dotnet@a98b56852c35b8e3190ac28c8c2271da59106c68 # v6.0.0
         with:
           global-json-file: global.json
       - run: scripts/free-hosted-runner-space.sh
-      - uses: gradle/actions/setup-gradle@9c971963bec38e04b3d30dcc455b5382be2fdbfb # v6.3.0
+      - uses: gradle/actions/setup-gradle@8da46b539cd8fe6ab27ca75128919a18d757604c # v6.4.1
         with:
           gradle-version: "9.8.2"
           cache-read-only: ${{ github.event_name == 'pull_request' }}
@@ -421,7 +421,7 @@ jobs:
       # Qodana imports the build but never runs :protocol:rdgen, which leaves the Kotlin RD model
       # that rider-frontend imports unresolved. Generating it needs the Rider SDK the jvm job
       # already holds, so that job ships the generated sources rather than this one fetching it.
-      - uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8.0.1
+      - uses: actions/download-artifact@9000827ccba6bdab643e8b6fd33ac0654aef8333 # v8.0.2
         with:
           name: rider-protocol-model
           path: rider-frontend/build/generated/rd/kotlin
@@ -429,7 +429,7 @@ jobs:
         run: test -f rider-frontend/build/generated/rd/kotlin/PerfSentinelModel.Generated.kt
       # rider-frontend's test runtime resolves the root project as its composed jar, which the IDE
       # import maps to that file rather than to the module, so Qodana needs the file to exist.
-      - uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8.0.1
+      - uses: actions/download-artifact@9000827ccba6bdab643e8b6fd33ac0654aef8333 # v8.0.2
         with:
           name: root-plugin-jar
           path: build/libs
@@ -442,7 +442,7 @@ jobs:
       - name: Qodana
         id: qodana-1
         continue-on-error: true
-        uses: JetBrains/qodana-action@10be11607eb323a180e2b76b26c9c5cdceac3e77 # v2026.2.1
+        uses: JetBrains/qodana-action@3e8d76ff0e0241618abd808682f426afe84bab3f # v2026.2.2
         with:
           args: --config qodana.yml
           results-dir: build/qodana-jvm/results
@@ -455,7 +455,7 @@ jobs:
         id: qodana-2
         if: steps.qodana-1.outcome == 'failure'
         continue-on-error: true
-        uses: JetBrains/qodana-action@10be11607eb323a180e2b76b26c9c5cdceac3e77 # v2026.2.1
+        uses: JetBrains/qodana-action@3e8d76ff0e0241618abd808682f426afe84bab3f # v2026.2.2
         with:
           args: --config qodana.yml
           results-dir: build/qodana-jvm/results
@@ -466,7 +466,7 @@ jobs:
           push-fixes: none
       - name: Qodana (retry 3/3)
         if: steps.qodana-1.outcome == 'failure' && steps.qodana-2.outcome == 'failure'
-        uses: JetBrains/qodana-action@10be11607eb323a180e2b76b26c9c5cdceac3e77 # v2026.2.1
+        uses: JetBrains/qodana-action@3e8d76ff0e0241618abd808682f426afe84bab3f # v2026.2.2
         with:
           args: --config qodana.yml
           results-dir: build/qodana-jvm/results
@@ -475,7 +475,7 @@ jobs:
           use-annotations: false
           post-pr-comment: false
           push-fixes: none
-      - uses: github/codeql-action/upload-sarif@2892aa5e19bbd11bc0cff5427e3b750a04d9e3c2 # v4.38.2
+      - uses: github/codeql-action/upload-sarif@9b3254085494b55a0f7c4c2b3d2d52cc712ce370 # v4.39.1
         with:
           sarif_file: build/qodana-jvm/results/qodana.sarif.json
           category: qodana-jvm
@@ -503,14 +503,14 @@ jobs:
         with:
           ref: ${{ needs.changes.outputs.target-sha }}
           persist-credentials: false
-      - uses: actions/setup-java@de7274f081f381c8f8158605e0321c36c376e2e6 # v6.0.1
+      - uses: actions/setup-java@b843ebf9b913146b38da2eaa7aeddf76074ae1ad # v6.1.0
         with: {distribution: temurin, java-version-file: .java-version}
       - uses: actions/setup-dotnet@a98b56852c35b8e3190ac28c8c2271da59106c68 # v6.0.0
         with:
           global-json-file: global.json
           cache: true
           cache-dependency-path: src/dotnet/**/packages.lock.json
-      - uses: gradle/actions/setup-gradle@9c971963bec38e04b3d30dcc455b5382be2fdbfb # v6.3.0
+      - uses: gradle/actions/setup-gradle@8da46b539cd8fe6ab27ca75128919a18d757604c # v6.4.1
         with:
           gradle-version: "9.8.2"
           cache-disabled: true
@@ -567,7 +567,7 @@ jobs:
           Copy-Item config/coverage-baseline.json "$evidence/rider-baseline.json"
           python scripts/inspect-plugin-zip.py "$evidence/perf-sentinel.zip" --manifest "$evidence/plugin.manifest.json"
           python scripts/check-coverage.py --surface rider --current-report "$evidence/rider-coverage.xml" --establish-baseline --baseline-file "$evidence/rider-baseline.json"
-      - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+      - uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
         with:
           name: windows-rider-${{ matrix.build }}
           if-no-files-found: error
@@ -585,11 +585,11 @@ jobs:
         with:
           ref: ${{ needs.changes.outputs.target-sha }}
           persist-credentials: false
-      - uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8.0.1
+      - uses: actions/download-artifact@9000827ccba6bdab643e8b6fd33ac0654aef8333 # v8.0.2
         with:
           name: windows-rider-a
           path: build/windows/a
-      - uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8.0.1
+      - uses: actions/download-artifact@9000827ccba6bdab643e8b6fd33ac0654aef8333 # v8.0.2
         with:
           name: windows-rider-b
           path: build/windows/b
