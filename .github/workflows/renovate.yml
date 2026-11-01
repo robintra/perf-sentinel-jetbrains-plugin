@@ -62,4 +62,4 @@ jobs:
           configurationFile: .github/renovate-global.json
           token: ${{ steps.app-token.outputs.token }}
           renovate-image: renovate/renovate
-          renovate-version: 44.190.2@sha256:a1fa316d623c6a48a366ad84a8513777706ba5b471f27b531a547bffa13e424b
+          renovate-version: 44.199.0@sha256:76e0fb8c982004f8f9a6dd041a777f9c8aee6b4b852da862a1217c5ec550e6d9
