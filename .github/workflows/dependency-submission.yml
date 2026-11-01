@@ -18,14 +18,14 @@ jobs:
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with: {persist-credentials: false}
-      - uses: actions/setup-java@de7274f081f381c8f8158605e0321c36c376e2e6 # v6.0.1
+      - uses: actions/setup-java@b843ebf9b913146b38da2eaa7aeddf76074ae1ad # v6.1.0
         with: {distribution: temurin, java-version-file: .java-version}
       # The action restores and then re-saves a Gradle cache of about 31 GB, which ran the runner
       # out of disk mid-restore and killed the worker before any log was kept.
       - run: scripts/free-hosted-runner-space.sh
       # Bumping this action can change the plugin it injects on the Gradle classpath, which then
       # needs its checksum in gradle/verification-metadata.xml or strict verification rejects it.
-      - uses: gradle/actions/dependency-submission@9c971963bec38e04b3d30dcc455b5382be2fdbfb # v6.3.0
+      - uses: gradle/actions/dependency-submission@8da46b539cd8fe6ab27ca75128919a18d757604c # v6.4.1
         with:
           dependency-graph: generate-and-submit
           dependency-resolution-task: dependencies :protocol:dependencies :rider-frontend:dependencies

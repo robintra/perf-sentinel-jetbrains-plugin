@@ -69,10 +69,10 @@ jobs:
         with:
           ref: ${{ steps.pr.outputs.sha }}
           persist-credentials: false
-      - uses: actions/setup-java@de7274f081f381c8f8158605e0321c36c376e2e6 # v6.0.1
+      - uses: actions/setup-java@b843ebf9b913146b38da2eaa7aeddf76074ae1ad # v6.1.0
         with: {distribution: temurin, java-version-file: .java-version}
       - run: scripts/free-hosted-runner-space.sh
-      - uses: gradle/actions/setup-gradle@9c971963bec38e04b3d30dcc455b5382be2fdbfb # v6.3.0
+      - uses: gradle/actions/setup-gradle@8da46b539cd8fe6ab27ca75128919a18d757604c # v6.4.1
         with:
           gradle-version: "9.8.2"
           cache-disabled: true
@@ -92,7 +92,7 @@ jobs:
           python3 tooling/scripts/ci/relock.py --modules "$MODULES" --gradle-home "$RUNNER_TEMP/gradle-home"
           git diff --binary -- gradle.lockfile '*/gradle.lockfile' gradle/verification-metadata.xml > relock.patch
           git diff --stat -- gradle.lockfile '*/gradle.lockfile' gradle/verification-metadata.xml
-      - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+      - uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
         with:
           name: relock-patch
           path: relock.patch
@@ -113,7 +113,7 @@ jobs:
         with:
           ref: ${{ needs.relock.outputs.sha }}
           persist-credentials: false
-      - uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8.0.1
+      - uses: actions/download-artifact@9000827ccba6bdab643e8b6fd33ac0654aef8333 # v8.0.2
         with:
           name: relock-patch
           path: ${{ runner.temp }}/relock
