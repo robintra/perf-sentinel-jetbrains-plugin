@@ -11335,12 +11335,12 @@
             <sha256 value="6b88fe0a4f4f4f724897fef55bd5fa7b7248bf43cd8a74baae18c26411bf823b" origin="Verified from JetBrains checksum"/>
          </artifact>
       </component>
-      <component group="idea" name="idea" version="2026.2.3">
-         <artifact name="idea-2026.2.3-aarch64.dmg">
-            <sha256 value="aac3cdc6d8441b94052473fee37a9679242a36f49f60fdce6cceaa3e7ad46e33" origin="Verified from JetBrains checksum"/>
+      <component group="idea" name="idea" version="2026.2.4">
+         <artifact name="idea-2026.2.4-aarch64.dmg">
+            <sha256 value="77e42a344df816926ecbe76e7c4e0674f63fd71e7ea0596801a53c93294589d8" origin="Verified from JetBrains checksum"/>
          </artifact>
-         <artifact name="idea-2026.2.3.tar.gz">
-            <sha256 value="68751c8ae4d49407251cd197df795fbed91b6fdc85d10c73c4649a99e496ab37" origin="Verified from JetBrains checksum"/>
+         <artifact name="idea-2026.2.4.tar.gz">
+            <sha256 value="cc6b29ddb82c7dcc656d5c728cefb2c917ac767eb4b8368f1208732846fbb5bd" origin="Verified from JetBrains checksum"/>
          </artifact>
       </component>
       <component group="io.github.pdvrieze.xmlutil" name="core-jvm" version="1.0.1">
