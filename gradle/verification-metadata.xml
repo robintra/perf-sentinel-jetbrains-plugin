@@ -14543,12 +14543,12 @@
             <sha256 value="fc68b5a8a5fc00f8d1c7185aea59ab973b5a00d519734134fa4a625bdf127343" origin="Verified from JetBrains checksum"/>
          </artifact>
       </component>
-      <component group="webstorm" name="WebStorm" version="2026.2.3">
-         <artifact name="WebStorm-2026.2.3-aarch64.dmg">
-            <sha256 value="2184881ad41343887f7ce9a35607db4b1cc99c3d925614f5427287e24f56fa72" origin="Verified from JetBrains checksum"/>
+      <component group="webstorm" name="WebStorm" version="2026.2.4">
+         <artifact name="WebStorm-2026.2.4-aarch64.dmg">
+            <sha256 value="353d7f2331be697867dc39e61eef817d24804f3fddd0034894df16282c36fb85" origin="Verified from JetBrains checksum"/>
          </artifact>
-         <artifact name="WebStorm-2026.2.3.tar.gz">
-            <sha256 value="3e29741c06799d6609c6d1ff7df720cad73cdb47825879091a577ed496cd00b0" origin="Verified from JetBrains checksum"/>
+         <artifact name="WebStorm-2026.2.4.tar.gz">
+            <sha256 value="72df652f6cf00f11f1be1582268d385a4d8c1499e61421db8839f563e20800b0" origin="Verified from JetBrains checksum"/>
          </artifact>
       </component>
    </components>
