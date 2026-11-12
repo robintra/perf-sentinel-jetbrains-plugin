@@ -223,7 +223,7 @@ class SupplyChainCheckerTest(unittest.TestCase):
             "exceptions": [],
         }
         required_actions = (
-            "actions/checkout", "actions/setup-java", "actions/setup-dotnet", "actions/setup-python",
+            "actions/checkout", "actions/setup-java", "actions/setup-dotnet",
             "actions/upload-artifact", "actions/github-script", "actions/download-artifact",
             "actions/dependency-review-action", "github/codeql-action",
             "JetBrains/qodana-action", "anchore/sbom-action",
