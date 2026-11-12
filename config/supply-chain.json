@@ -1,6 +1,6 @@
 {
   "schemaVersion": 1,
-  "auditedAt": "2026-11-12T19:55:10Z",
+  "auditedAt": "2026-11-12T21:02:56Z",
   "approvedNuGetSources": [
     "https://api.nuget.org/v3/index.json"
   ],
@@ -318,10 +318,10 @@
     {
       "name": "Zizmor",
       "kind": "audited-tool",
-      "version": "1.31.1",
-      "releasedAt": "2026-10-15T23:16:39Z",
-      "source": "https://github.com/zizmorcore/zizmor/releases/tag/v1.31.1",
-      "release": "v1.31.1"
+      "version": "1.32.0",
+      "releasedAt": "2026-11-02T23:57:55Z",
+      "source": "https://github.com/zizmorcore/zizmor/releases/tag/v1.32.0",
+      "release": "v1.32.0"
     },
     {
       "name": "Syft",
