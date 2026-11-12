@@ -1,6 +1,7 @@
 package io.github.robintra.perfsentinel.core
 
 import com.intellij.openapi.diagnostic.Logger
+import com.intellij.openapi.diagnostic.awaitLogQueueProcessed
 import com.intellij.testFramework.LoggedErrorProcessor
 import com.intellij.testFramework.TestLoggerFactory
 import com.sun.net.httpserver.HttpServer
@@ -239,6 +240,8 @@ class DaemonClientTest {
         try {
             return LoggedErrorProcessor.executeWith(errors).use { block() } to logged
         } finally {
+            // The IDE logger hands records to JUL from a background queue; drain it, or a late line escapes the capture.
+            awaitLogQueueProcessed()
             root.removeHandler(records)
             previous.forEach { (logger, level) -> logger.level = level }
         }
