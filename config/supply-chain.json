@@ -388,14 +388,6 @@
       "source": "https://github.com/actions/setup-dotnet/releases/tag/v6.1.0"
     },
     {
-      "name": "actions/setup-python",
-      "kind": "github-action",
-      "version": "5fda3b95a4ea91299a34e894583c3862153e4b97",
-      "release": "v7.0.0",
-      "releasedAt": "2026-07-20T03:15:01Z",
-      "source": "https://github.com/actions/setup-python/releases/tag/v7.0.0"
-    },
-    {
       "name": "actions/upload-artifact",
       "kind": "github-action",
       "version": "cf430e030ddbb5b0abf93d22962f4752f3646cd9",
