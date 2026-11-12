@@ -219,6 +219,22 @@ class SyncSupplyChainTest(unittest.TestCase):
         self.assertEqual({"releasedAt": "2026-09-09T23:48:34Z"}, metadata)
         self.assertEqual(["https://api.github.com/repos/renovatebot/renovate/releases/tags/44.74.1"], client.urls)
 
+    def test_a_docker_hub_image_release_date_is_the_push_of_the_pinned_digest(self):
+        module = load_sync()
+        digest = "sha256:" + "d" * 64
+        dependency = {
+            "name": "Qodana JVM Community image", "kind": "container", "version": digest,
+            "release": "2026.2", "source": "https://hub.docker.com/r/jetbrains/qodana-jvm-community",
+        }
+        client = FeedClient({"digest": digest, "last_updated": "2026-11-09T19:27:20.130076Z"})
+
+        metadata = module.online_metadata(client, module.load_checker(), dependency)
+
+        self.assertEqual({"releasedAt": "2026-11-09T19:27:20.130076Z"}, metadata)
+        self.assertEqual(["https://hub.docker.com/v2/repositories/jetbrains/qodana-jvm-community/tags/2026.2"], client.urls)
+        repushed = FeedClient({"digest": "sha256:" + "e" * 64, "last_updated": "2026-11-20T00:00:00Z"})
+        self.assertEqual({}, module.online_metadata(repushed, module.load_checker(), dependency))
+
     def test_an_audited_tool_release_follows_the_version_renovate_moved(self):
         module = load_sync()
         for name, release, version, tag in (

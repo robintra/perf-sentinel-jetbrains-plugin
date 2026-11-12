@@ -222,6 +222,14 @@ def online_metadata(client, checker, dependency, gradle_version=None) -> dict[st
             f"https://api.github.com/repos/{checker.CONTAINER_RELEASE_REPOS[name]}/releases/tags/{dependency['release']}"
         )
         return {"releasedAt": instant(release["published_at"])}
+    if kind == "container" and name in checker.CONTAINER_REPOSITORIES:
+        # JetBrains re-pushes its tag in place, so the tag's push time dates the pinned
+        # digest, the same instant check-supply-chain.py validates, but only while the
+        # tag still serves that digest; past that, the pin is drift the checker reports.
+        tag = client.json(
+            f"https://hub.docker.com/v2/repositories/{checker.CONTAINER_REPOSITORIES[name]}/tags/{dependency['release']}"
+        )
+        return {"releasedAt": tag["last_updated"]} if tag.get("digest") == dependency["version"] else {}
     repo = name if kind == "github-action" else checker.GITHUB_REPOS.get(name)
     if kind == "audited-tool" and repo:
         # A tool's version is its own declaration, moved by Renovate; the tag keeps
