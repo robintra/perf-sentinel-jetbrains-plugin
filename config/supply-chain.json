@@ -1,6 +1,6 @@
 {
   "schemaVersion": 1,
-  "auditedAt": "2026-11-12T19:55:10Z",
+  "auditedAt": "2026-11-12T20:57:57Z",
   "approvedNuGetSources": [
     "https://api.nuget.org/v3/index.json"
   ],
@@ -162,8 +162,8 @@
     {
       "name": "RustRover 2025.3",
       "kind": "jetbrains-product",
-      "version": "2025.3.7",
-      "releasedAt": "2026-07-29",
+      "version": "2025.3.7.1",
+      "releasedAt": "2026-10-30",
       "source": "https://data.services.jetbrains.com/products/releases?code=RR&type=release",
       "declaration": "build.gradle.kts#RustRover 2025.3"
     },
