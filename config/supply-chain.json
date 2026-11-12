@@ -1,6 +1,6 @@
 {
   "schemaVersion": 1,
-  "auditedAt": "2026-11-12T19:55:10Z",
+  "auditedAt": "2026-11-12T21:01:48Z",
   "approvedNuGetSources": [
     "https://api.nuget.org/v3/index.json"
   ],
@@ -114,16 +114,16 @@
     {
       "name": "Rider 2025.3",
       "kind": "jetbrains-product",
-      "version": "2025.3.5.2",
-      "releasedAt": "2026-09-10",
+      "version": "2025.3.5.3",
+      "releasedAt": "2026-10-30",
       "source": "https://data.services.jetbrains.com/products/releases?code=RD&type=release",
       "declaration": "build.gradle.kts#Rider 2025.3"
     },
     {
       "name": "Rider 2026.2",
       "kind": "jetbrains-product",
-      "version": "2026.2.3.1",
-      "releasedAt": "2026-10-01",
+      "version": "2026.2.4.1",
+      "releasedAt": "2026-11-03",
       "source": "https://data.services.jetbrains.com/products/releases?code=RD&type=release",
       "declaration": "build.gradle.kts#Rider 2026.2"
     },
