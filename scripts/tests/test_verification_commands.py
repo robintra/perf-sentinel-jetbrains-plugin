@@ -17,7 +17,6 @@ REPOSITORY = Path(__file__).resolve().parents[2]
 # runtime its checksums must cover, and a bump red here until both have moved.
 TEST_IDE_RUNTIMES = {
     "2025.3.5.2": "jbr_jcef-21.0.11-{platform}-b1163.125",
-    "2025.3.6.1": "jbr_jcef-21.0.11-{platform}-b1163.116",
     "2025.3.6.2": "jbr_jcef-21.0.11-{platform}-b1163.125",
     "2025.3.7.1": "jbr_jcef-21.0.11-{platform}-b1163.125",
     "2026.2.4": "jbr_jcef-25.0.4-{platform}-b508.27",
