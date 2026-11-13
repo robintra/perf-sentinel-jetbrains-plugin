@@ -142,3 +142,75 @@ ecosystem = "Maven"
 vulnerability.ignore = true
 effectiveUntil = 2026-12-24
 reason = "Build tooling, never packaged: Kover's HTML reporter pulls it through coverage-report, whose latest release 1.0.27 still pins 2.3.32. Revisit once Kover ships a reporter on 2.3.35 or later."
+
+[[PackageOverrides]]
+name = "com.google.guava:guava"
+version = "33.4.8-jre"
+ecosystem = "Maven"
+vulnerability.ignore = true
+effectiveUntil = 2027-02-13
+reason = "Recorded in gradle/verification-metadata.xml for the Starter UI testUi classpaths the IntelliJ Platform Gradle Plugin 2.20.0 adds. build.gradle.kts keeps them unlocked and no test task runs them; only dependency submission resolves them."
+
+[[PackageOverrides]]
+name = "com.google.protobuf:protobuf-java"
+version = "3.24.4-jb.2"
+ecosystem = "Maven"
+vulnerability.ignore = true
+effectiveUntil = 2027-02-13
+reason = "Recorded in gradle/verification-metadata.xml for the Starter UI testUi classpaths the IntelliJ Platform Gradle Plugin 2.20.0 adds. build.gradle.kts keeps them unlocked and no test task runs them; only dependency submission resolves them."
+
+[[PackageOverrides]]
+name = "io.netty:netty-codec-http"
+version = "4.2.0.RC2"
+ecosystem = "Maven"
+vulnerability.ignore = true
+effectiveUntil = 2027-02-13
+reason = "Recorded in gradle/verification-metadata.xml for the Starter UI testUi classpaths the IntelliJ Platform Gradle Plugin 2.20.0 adds. build.gradle.kts keeps them unlocked and no test task runs them; only dependency submission resolves them."
+
+[[PackageOverrides]]
+name = "io.netty:netty-codec-http2"
+version = "4.2.0.RC2"
+ecosystem = "Maven"
+vulnerability.ignore = true
+effectiveUntil = 2027-02-13
+reason = "Recorded in gradle/verification-metadata.xml for the Starter UI testUi classpaths the IntelliJ Platform Gradle Plugin 2.20.0 adds. build.gradle.kts keeps them unlocked and no test task runs them; only dependency submission resolves them."
+
+[[PackageOverrides]]
+name = "io.undertow:undertow-core"
+version = "2.4.4.Final"
+ecosystem = "Maven"
+vulnerability.ignore = true
+effectiveUntil = 2027-02-13
+reason = "Recorded in gradle/verification-metadata.xml for the Starter UI testUi classpaths the IntelliJ Platform Gradle Plugin 2.20.0 adds. build.gradle.kts keeps them unlocked and no test task runs them; only dependency submission resolves them."
+
+[[PackageOverrides]]
+name = "org.bouncycastle:bcpkix-jdk18on"
+version = "1.81"
+ecosystem = "Maven"
+vulnerability.ignore = true
+effectiveUntil = 2027-02-13
+reason = "Recorded in gradle/verification-metadata.xml for the Starter UI testUi classpaths the IntelliJ Platform Gradle Plugin 2.20.0 adds. build.gradle.kts keeps them unlocked and no test task runs them; only dependency submission resolves them."
+
+[[PackageOverrides]]
+name = "org.bouncycastle:bcprov-jdk18on"
+version = "1.81.1"
+ecosystem = "Maven"
+vulnerability.ignore = true
+effectiveUntil = 2027-02-13
+reason = "Recorded in gradle/verification-metadata.xml for the Starter UI testUi classpaths the IntelliJ Platform Gradle Plugin 2.20.0 adds. build.gradle.kts keeps them unlocked and no test task runs them; only dependency submission resolves them."
+
+[[PackageOverrides]]
+name = "org.jsoup:jsoup"
+version = "1.21.2"
+ecosystem = "Maven"
+vulnerability.ignore = true
+effectiveUntil = 2027-02-13
+reason = "Recorded in gradle/verification-metadata.xml for the Starter UI testUi classpaths the IntelliJ Platform Gradle Plugin 2.20.0 adds. build.gradle.kts keeps them unlocked and no test task runs them; only dependency submission resolves them."
+
+[[PackageOverrides]]
+name = "org.lz4:lz4-java"
+version = "1.8.0"
+ecosystem = "Maven"
+vulnerability.ignore = true
+effectiveUntil = 2027-02-13
+reason = "Recorded in gradle/verification-metadata.xml for the Starter UI testUi classpaths the IntelliJ Platform Gradle Plugin 2.20.0 adds. build.gradle.kts keeps them unlocked and no test task runs them; only dependency submission resolves them."
