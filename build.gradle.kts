@@ -183,7 +183,7 @@ intellijPlatformTesting.testIde.register("testPhpStorm253") {
 
 intellijPlatformTesting.testIde.register("testRustRover253") {
     type = IntelliJPlatformType.RustRover
-    version = "2025.3.7"
+    version = "2025.3.7.1"
     useInstaller = false
     testFramework(TestFrameworkType.Platform, "253.33813.55")
     task {
@@ -351,7 +351,7 @@ intellijPlatform {
             if (verifyTarget("python-262")) create(IntelliJPlatformType.PyCharm, "2026.2.4")
             if (verifyTarget("php-253")) create(IntelliJPlatformType.PhpStorm, "2025.3.6.2")
             if (verifyTarget("php-262")) create(IntelliJPlatformType.PhpStorm, "2026.2.4")
-            if (verifyTarget("rust-253")) create(IntelliJPlatformType.RustRover, "2025.3.7")
+            if (verifyTarget("rust-253")) create(IntelliJPlatformType.RustRover, "2025.3.7.1")
             if (verifyTarget("rust-262")) create(IntelliJPlatformType.RustRover, "2026.2.4")
             if (verifyTarget("ruby-253")) create(IntelliJPlatformType.RubyMine, "2025.3.6.2")
             if (verifyTarget("ruby-262")) create(IntelliJPlatformType.RubyMine, "2026.2.4")
