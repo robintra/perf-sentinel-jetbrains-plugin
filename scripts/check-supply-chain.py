@@ -708,7 +708,8 @@ def check_build_files(root, errors):
     suffixes = {".gradle", ".kts", ".toml", ".csproj", ".props"}
     ignored = {".git", ".gradle", ".idea", ".intellijPlatform", "build", "graphify-out"}
     for path in root.rglob("*"):
-        if not path.is_file() or path.suffix not in suffixes or ignored.intersection(path.parts):
+        # osv-scanner.toml pins no dependency: it names the exact affected versions an exception covers.
+        if not path.is_file() or path.suffix not in suffixes or ignored.intersection(path.parts) or path.name == "osv-scanner.toml":
             continue
         text = path.read_text(encoding="utf-8", errors="replace")
         if DYNAMIC.search(text):
