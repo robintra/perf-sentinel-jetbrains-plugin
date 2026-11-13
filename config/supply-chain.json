@@ -1,6 +1,6 @@
 {
   "schemaVersion": 1,
-  "auditedAt": "2026-11-13T10:29:22Z",
+  "auditedAt": "2026-11-13T10:49:25Z",
   "approvedNuGetSources": [
     "https://api.nuget.org/v3/index.json"
   ],
@@ -294,10 +294,10 @@
     {
       "name": "OSV-Scanner",
       "kind": "audited-tool",
-      "version": "2.7.0",
-      "releasedAt": "2026-10-12T01:32:07Z",
-      "source": "https://github.com/google/osv-scanner/releases/tag/v2.7.0",
-      "release": "v2.7.0"
+      "version": "2.7.1",
+      "releasedAt": "2026-11-09T04:15:04Z",
+      "source": "https://github.com/google/osv-scanner/releases/tag/v2.7.1",
+      "release": "v2.7.1"
     },
     {
       "name": "Gitleaks",
@@ -310,10 +310,10 @@
     {
       "name": "TruffleHog",
       "kind": "audited-tool",
-      "version": "3.99.7",
-      "releasedAt": "2026-10-24T06:04:25Z",
-      "source": "https://github.com/trufflesecurity/trufflehog/releases/tag/v3.99.7",
-      "release": "v3.99.7"
+      "version": "3.99.9",
+      "releasedAt": "2026-11-12T21:05:01Z",
+      "source": "https://github.com/trufflesecurity/trufflehog/releases/tag/v3.99.9",
+      "release": "v3.99.9"
     },
     {
       "name": "Zizmor",
@@ -326,18 +326,18 @@
     {
       "name": "Syft",
       "kind": "audited-tool",
-      "version": "1.55.0",
-      "releasedAt": "2026-10-19T19:01:26Z",
-      "source": "https://github.com/anchore/syft/releases/tag/v1.55.0",
-      "release": "v1.55.0"
+      "version": "1.57.1",
+      "releasedAt": "2026-11-09T14:39:42Z",
+      "source": "https://github.com/anchore/syft/releases/tag/v1.57.1",
+      "release": "v1.57.1"
     },
     {
       "name": "Ruff",
       "kind": "audited-tool",
-      "version": "0.17.3",
-      "releasedAt": "2026-10-27T00:35:07Z",
-      "source": "https://github.com/astral-sh/ruff/releases/tag/0.17.3",
-      "release": "0.17.3"
+      "version": "0.17.5",
+      "releasedAt": "2026-11-12T17:55:55Z",
+      "source": "https://github.com/astral-sh/ruff/releases/tag/0.17.5",
+      "release": "0.17.5"
     },
     {
       "name": "actionlint",
