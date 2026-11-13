@@ -1,6 +1,6 @@
 {
   "schemaVersion": 1,
-  "auditedAt": "2026-11-13T11:03:35Z",
+  "auditedAt": "2026-11-13T13:05:51Z",
   "approvedNuGetSources": [
     "https://api.nuget.org/v3/index.json"
   ],
@@ -202,8 +202,8 @@
     {
       "name": "WebStorm 2026.2",
       "kind": "jetbrains-product",
-      "version": "2026.2.4",
-      "releasedAt": "2026-10-30",
+      "version": "2026.2.5",
+      "releasedAt": "2026-11-13",
       "source": "https://data.services.jetbrains.com/products/releases?code=WS&type=release",
       "declaration": "build.gradle.kts#WebStorm 2026.2"
     },
