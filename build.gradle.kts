@@ -56,6 +56,11 @@ if (pluginVerifierTarget != null) {
         resolutionStrategy.deactivateDependencyLocking()
     }
 }
+// Plugin 2.20 adds a Starter UI testUi source set this project holds no test in. Its classpaths pull
+// prerelease Netty the lock policy refuses; unlocked, they stay under strict verification metadata.
+configurations.matching { it.name.startsWith("testUi") || it.name.endsWith("TestUi") }.configureEach {
+    resolutionStrategy.deactivateDependencyLocking()
+}
 // IntelliJ Platform Gradle Plugin documentation: https://plugins.jetbrains.com/docs/intellij/tools-intellij-platform-gradle-plugin.html
 dependencies {
     compileOnly(libs.gson)
@@ -108,14 +113,14 @@ idea {
 
 val runRider = intellijPlatformTesting.runIde.register("runRider") {
     type = IntelliJPlatformType.Rider
-    version = "2025.3.5.2"
+    version = "2025.3.5.3"
     useInstaller = false
     splitMode = false
 }
 
 val runRider262 = intellijPlatformTesting.runIde.register("runRider262") {
     type = IntelliJPlatformType.Rider
-    version = "2026.2.3.1"
+    version = "2026.2.4.1"
     useInstaller = false
     splitMode = false
 }
@@ -166,7 +171,7 @@ intellijPlatformTesting.testIde.register("testPyCharm253") {
 
 intellijPlatformTesting.testIde.register("testPhpStorm253") {
     type = IntelliJPlatformType.PhpStorm
-    version = "2025.3.6.1"
+    version = "2025.3.6.2"
     useInstaller = false
     testFramework(TestFrameworkType.Platform, "253.33813.55")
     task {
@@ -178,7 +183,7 @@ intellijPlatformTesting.testIde.register("testPhpStorm253") {
 
 intellijPlatformTesting.testIde.register("testRustRover253") {
     type = IntelliJPlatformType.RustRover
-    version = "2025.3.7"
+    version = "2025.3.7.1"
     useInstaller = false
     testFramework(TestFrameworkType.Platform, "253.33813.55")
     task {
@@ -204,7 +209,7 @@ intellijPlatformTesting.testIde.register("testRustRover262") {
 
 intellijPlatformTesting.testIde.register("testRubyMine253") {
     type = IntelliJPlatformType.RubyMine
-    version = "2025.3.6.1"
+    version = "2025.3.6.2"
     useInstaller = false
     testFramework(TestFrameworkType.Platform, "253.33813.55")
     task {
@@ -217,7 +222,7 @@ intellijPlatformTesting.testIde.register("testRubyMine253") {
 
 intellijPlatformTesting.testIde.register("testWebStorm253") {
     type = IntelliJPlatformType.WebStorm
-    version = "2025.3.6.1"
+    version = "2025.3.6.2"
     useInstaller = false
     testFramework(TestFrameworkType.Platform, "253.33813.55")
     plugins {
@@ -253,6 +258,9 @@ tasks.test {
         "idea.load.plugins.id",
         "com.intellij.java,org.jetbrains.kotlin,io.github.robintra.perfsentinel",
     )
+    // The IDE logger otherwise hands records to JUL from a background queue, so a log capture
+    // in DaemonClientTest could end before a line reaches it.
+    systemProperty("intellij.platform.log.sync", "true")
     filter {
         excludeTestsMatching("io.github.robintra.perfsentinel.python.*")
         excludeTestsMatching("io.github.robintra.perfsentinel.php.*")
@@ -337,18 +345,18 @@ intellijPlatform {
         ides {
             if (verifyTarget("idea-253")) create(IntelliJPlatformType.IntellijIdea, "2025.3.6.2")
             if (verifyTarget("idea-262")) create(IntelliJPlatformType.IntellijIdea, "2026.2.4")
-            if (verifyTarget("rider-253")) create(IntelliJPlatformType.Rider, "2025.3.5.2") { useInstaller = false }
-            if (verifyTarget("rider-262")) create(IntelliJPlatformType.Rider, "2026.2.3.1") { useInstaller = false }
+            if (verifyTarget("rider-253")) create(IntelliJPlatformType.Rider, "2025.3.5.3") { useInstaller = false }
+            if (verifyTarget("rider-262")) create(IntelliJPlatformType.Rider, "2026.2.4.1") { useInstaller = false }
             if (verifyTarget("python-253")) create(IntelliJPlatformType.PyCharmProfessional, "2025.3.6.2")
-            if (verifyTarget("python-262")) create(IntelliJPlatformType.PyCharm, "2026.2.3")
-            if (verifyTarget("php-253")) create(IntelliJPlatformType.PhpStorm, "2025.3.6.1")
-            if (verifyTarget("php-262")) create(IntelliJPlatformType.PhpStorm, "2026.2.3")
-            if (verifyTarget("rust-253")) create(IntelliJPlatformType.RustRover, "2025.3.7")
+            if (verifyTarget("python-262")) create(IntelliJPlatformType.PyCharm, "2026.2.4")
+            if (verifyTarget("php-253")) create(IntelliJPlatformType.PhpStorm, "2025.3.6.2")
+            if (verifyTarget("php-262")) create(IntelliJPlatformType.PhpStorm, "2026.2.4")
+            if (verifyTarget("rust-253")) create(IntelliJPlatformType.RustRover, "2025.3.7.1")
             if (verifyTarget("rust-262")) create(IntelliJPlatformType.RustRover, "2026.2.5")
-            if (verifyTarget("ruby-253")) create(IntelliJPlatformType.RubyMine, "2025.3.6.1")
-            if (verifyTarget("ruby-262")) create(IntelliJPlatformType.RubyMine, "2026.2.3")
-            if (verifyTarget("web-253")) create(IntelliJPlatformType.WebStorm, "2025.3.6.1")
-            if (verifyTarget("web-262")) create(IntelliJPlatformType.WebStorm, "2026.2.3")
+            if (verifyTarget("ruby-253")) create(IntelliJPlatformType.RubyMine, "2025.3.6.2")
+            if (verifyTarget("ruby-262")) create(IntelliJPlatformType.RubyMine, "2026.2.4")
+            if (verifyTarget("web-253")) create(IntelliJPlatformType.WebStorm, "2025.3.6.2")
+            if (verifyTarget("web-262")) create(IntelliJPlatformType.WebStorm, "2026.2.4")
             if (verifyTarget("go-253")) create(IntelliJPlatformType.GoLand, "2025.3.5.2")
             if (verifyTarget("go-262")) create(IntelliJPlatformType.GoLand, "2026.2.4")
         }
