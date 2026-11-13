@@ -1,6 +1,6 @@
 {
   "schemaVersion": 1,
-  "auditedAt": "2026-11-13T09:38:35Z",
+  "auditedAt": "2026-11-13T09:39:50Z",
   "approvedNuGetSources": [
     "https://api.nuget.org/v3/index.json"
   ],
@@ -252,18 +252,18 @@
     {
       "name": "Microsoft.Bcl.Memory",
       "kind": "nuget",
-      "version": "9.0.22",
+      "version": "9.0.23",
       "release": "9.0",
-      "releasedAt": "2026-10-25T17:08:46.743Z",
-      "source": "https://www.nuget.org/packages/Microsoft.Bcl.Memory/9.0.22",
+      "releasedAt": "2026-11-10T13:11:22.18Z",
+      "source": "https://www.nuget.org/packages/Microsoft.Bcl.Memory/9.0.23",
       "declaration": "src/dotnet/Directory.Build.props#Microsoft.Bcl.Memory"
     },
     {
       "name": "Microsoft.NET.Test.Sdk",
       "kind": "nuget",
-      "version": "18.11.0",
-      "releasedAt": "2026-10-13T13:47:48.83Z",
-      "source": "https://www.nuget.org/packages/Microsoft.NET.Test.Sdk/18.11.0",
+      "version": "18.12.0",
+      "releasedAt": "2026-11-11T14:28:37.977Z",
+      "source": "https://www.nuget.org/packages/Microsoft.NET.Test.Sdk/18.12.0",
       "declaration": "src/dotnet/PerfSentinel.Rider.Tests/PerfSentinel.Rider.Tests.csproj#Microsoft.NET.Test.Sdk"
     },
     {
