@@ -17,7 +17,7 @@ dependencies {
     testImplementation(libs.junit)
 
     intellijPlatform {
-        rider("2025.3.5.2") { useInstaller = false }
+        rider("2025.3.5.3") { useInstaller = false }
         testFramework(TestFrameworkType.Platform)
     }
 }
@@ -27,7 +27,7 @@ dependencies {
 intellijPlatform {
     pluginVerification {
         ides {
-            create(IntelliJPlatformType.Rider, "2025.3.5.2") { useInstaller = false }
+            create(IntelliJPlatformType.Rider, "2025.3.5.3") { useInstaller = false }
         }
     }
 }
