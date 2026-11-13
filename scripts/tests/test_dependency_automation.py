@@ -1,5 +1,6 @@
 import importlib.util
 import json
+import re
 import subprocess
 import tempfile
 import unittest
@@ -286,6 +287,20 @@ class DependencyAutomationTests(unittest.TestCase):
                 "allowedVersions": "!/^(7|8|9|10\\.0)\\./",
             },
             config["packageRules"],
+        )
+
+    def test_the_dotnet_sdk_moves_only_between_lts_lines(self):
+        config = json.loads(RENOVATE.read_text(encoding="utf-8"))
+        rule = next(
+            (rule for rule in config["packageRules"] if rule.get("matchPackageNames") == ["dotnet-sdk"]),
+            None,
+        )
+        if rule is None:
+            self.fail("expected a packageRule holding dotnet-sdk to LTS lines")
+        allowed = re.compile(rule["allowedVersions"].strip("/"))
+        self.assertEqual(
+            ["10.0.404", "12.0.100"],
+            [v for v in ("10.0.404", "11.0.100", "12.0.100", "13.0.100", "9.0.300") if allowed.match(v)],
         )
 
     def test_rdgen_plugin_marker_lookup_is_disabled_without_disturbing_automerge(self):
