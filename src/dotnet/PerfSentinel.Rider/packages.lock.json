@@ -15,9 +15,9 @@
       },
       "Microsoft.Bcl.Memory": {
         "type": "Direct",
-        "requested": "[9.0.22, )",
-        "resolved": "9.0.22",
-        "contentHash": "OcY7g0OuzYZ/0hV33BETKsSdi3vNtyrQEtJML0jzFabv22FT31WRMophUYJlokVvhLS2OaI+gZgZRzFy5WF6lg==",
+        "requested": "[9.0.23, )",
+        "resolved": "9.0.23",
+        "contentHash": "mtNPUH/7snVQy0MsbUzRMj9eZApSESAyFFnJnLspU4qAQf0H0Y+CmYCYYCvwkazAmRORpmnnAaYI2B8JTexhAQ==",
         "dependencies": {
           "System.Memory": "4.5.5",
           "System.Runtime.CompilerServices.Unsafe": "6.0.0",

@@ -253,6 +253,9 @@ tasks.test {
         "idea.load.plugins.id",
         "com.intellij.java,org.jetbrains.kotlin,io.github.robintra.perfsentinel",
     )
+    // The IDE logger otherwise hands records to JUL from a background queue, so a log capture
+    // in DaemonClientTest could end before a line reaches it.
+    systemProperty("intellij.platform.log.sync", "true")
     filter {
         excludeTestsMatching("io.github.robintra.perfsentinel.python.*")
         excludeTestsMatching("io.github.robintra.perfsentinel.php.*")
@@ -340,15 +343,15 @@ intellijPlatform {
             if (verifyTarget("rider-253")) create(IntelliJPlatformType.Rider, "2025.3.5.3") { useInstaller = false }
             if (verifyTarget("rider-262")) create(IntelliJPlatformType.Rider, "2026.2.4.1") { useInstaller = false }
             if (verifyTarget("python-253")) create(IntelliJPlatformType.PyCharmProfessional, "2025.3.6.2")
-            if (verifyTarget("python-262")) create(IntelliJPlatformType.PyCharm, "2026.2.3")
+            if (verifyTarget("python-262")) create(IntelliJPlatformType.PyCharm, "2026.2.4")
             if (verifyTarget("php-253")) create(IntelliJPlatformType.PhpStorm, "2025.3.6.1")
-            if (verifyTarget("php-262")) create(IntelliJPlatformType.PhpStorm, "2026.2.3")
+            if (verifyTarget("php-262")) create(IntelliJPlatformType.PhpStorm, "2026.2.4")
             if (verifyTarget("rust-253")) create(IntelliJPlatformType.RustRover, "2025.3.7")
             if (verifyTarget("rust-262")) create(IntelliJPlatformType.RustRover, "2026.2.4")
             if (verifyTarget("ruby-253")) create(IntelliJPlatformType.RubyMine, "2025.3.6.1")
-            if (verifyTarget("ruby-262")) create(IntelliJPlatformType.RubyMine, "2026.2.3")
+            if (verifyTarget("ruby-262")) create(IntelliJPlatformType.RubyMine, "2026.2.4")
             if (verifyTarget("web-253")) create(IntelliJPlatformType.WebStorm, "2025.3.6.1")
-            if (verifyTarget("web-262")) create(IntelliJPlatformType.WebStorm, "2026.2.3")
+            if (verifyTarget("web-262")) create(IntelliJPlatformType.WebStorm, "2026.2.4")
             if (verifyTarget("go-253")) create(IntelliJPlatformType.GoLand, "2025.3.5.2")
             if (verifyTarget("go-262")) create(IntelliJPlatformType.GoLand, "2026.2.4")
         }
