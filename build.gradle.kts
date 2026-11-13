@@ -351,7 +351,7 @@ intellijPlatform {
             if (verifyTarget("ruby-253")) create(IntelliJPlatformType.RubyMine, "2025.3.6.1")
             if (verifyTarget("ruby-262")) create(IntelliJPlatformType.RubyMine, "2026.2.4")
             if (verifyTarget("web-253")) create(IntelliJPlatformType.WebStorm, "2025.3.6.1")
-            if (verifyTarget("web-262")) create(IntelliJPlatformType.WebStorm, "2026.2.3")
+            if (verifyTarget("web-262")) create(IntelliJPlatformType.WebStorm, "2026.2.4")
             if (verifyTarget("go-253")) create(IntelliJPlatformType.GoLand, "2025.3.5.2")
             if (verifyTarget("go-262")) create(IntelliJPlatformType.GoLand, "2026.2.4")
         }
