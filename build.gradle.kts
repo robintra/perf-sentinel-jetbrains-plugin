@@ -253,6 +253,9 @@ tasks.test {
         "idea.load.plugins.id",
         "com.intellij.java,org.jetbrains.kotlin,io.github.robintra.perfsentinel",
     )
+    // The IDE logger otherwise hands records to JUL from a background queue, so a log capture
+    // in DaemonClientTest could end before a line reaches it.
+    systemProperty("intellij.platform.log.sync", "true")
     filter {
         excludeTestsMatching("io.github.robintra.perfsentinel.python.*")
         excludeTestsMatching("io.github.robintra.perfsentinel.php.*")
