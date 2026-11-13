@@ -56,6 +56,11 @@ if (pluginVerifierTarget != null) {
         resolutionStrategy.deactivateDependencyLocking()
     }
 }
+// Plugin 2.20 adds a Starter UI testUi source set this project holds no test in. Its classpaths pull
+// prerelease Netty the lock policy refuses; unlocked, they stay under strict verification metadata.
+configurations.matching { it.name.startsWith("testUi") || it.name.endsWith("TestUi") }.configureEach {
+    resolutionStrategy.deactivateDependencyLocking()
+}
 // IntelliJ Platform Gradle Plugin documentation: https://plugins.jetbrains.com/docs/intellij/tools-intellij-platform-gradle-plugin.html
 dependencies {
     compileOnly(libs.gson)
