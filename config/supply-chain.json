@@ -1,6 +1,6 @@
 {
   "schemaVersion": 1,
-  "auditedAt": "2026-11-12T20:57:25Z",
+  "auditedAt": "2026-11-13T09:32:17Z",
   "approvedNuGetSources": [
     "https://api.nuget.org/v3/index.json"
   ],
@@ -138,8 +138,8 @@
     {
       "name": "PyCharm 2026.2",
       "kind": "jetbrains-product",
-      "version": "2026.2.3",
-      "releasedAt": "2026-09-18",
+      "version": "2026.2.4",
+      "releasedAt": "2026-10-30",
       "source": "https://data.services.jetbrains.com/products/releases?code=PCP&type=release",
       "declaration": "build.gradle.kts#PyCharm 2026.2"
     },
@@ -154,8 +154,8 @@
     {
       "name": "PhpStorm 2026.2",
       "kind": "jetbrains-product",
-      "version": "2026.2.3",
-      "releasedAt": "2026-09-17",
+      "version": "2026.2.4",
+      "releasedAt": "2026-10-30",
       "source": "https://data.services.jetbrains.com/products/releases?code=PS&type=release",
       "declaration": "build.gradle.kts#PhpStorm 2026.2"
     },
