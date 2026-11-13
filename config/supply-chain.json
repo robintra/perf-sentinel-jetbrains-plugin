@@ -1,6 +1,6 @@
 {
   "schemaVersion": 1,
-  "auditedAt": "2026-11-13T10:11:37Z",
+  "auditedAt": "2026-11-13T10:15:17Z",
   "approvedNuGetSources": [
     "https://api.nuget.org/v3/index.json"
   ],
@@ -194,8 +194,8 @@
     {
       "name": "WebStorm 2025.3",
       "kind": "jetbrains-product",
-      "version": "2025.3.6.1",
-      "releasedAt": "2026-07-28",
+      "version": "2025.3.6.2",
+      "releasedAt": "2026-10-30",
       "source": "https://data.services.jetbrains.com/products/releases?code=WS&type=release",
       "declaration": "build.gradle.kts#WebStorm 2025.3"
     },
