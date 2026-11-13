@@ -1,6 +1,6 @@
 {
   "schemaVersion": 1,
-  "auditedAt": "2026-11-13T09:37:19Z",
+  "auditedAt": "2026-11-13T09:38:35Z",
   "approvedNuGetSources": [
     "https://api.nuget.org/v3/index.json"
   ],
@@ -478,10 +478,10 @@
     {
       "name": "zizmorcore/zizmor-action",
       "kind": "github-action",
-      "version": "85b2b9fb8e3325e7a23d7d0a9d7ba5ae0f999e3e",
-      "release": "v0.7.1",
-      "releasedAt": "2026-10-15T23:23:14Z",
-      "source": "https://github.com/zizmorcore/zizmor-action/releases/tag/v0.7.1"
+      "version": "45d7276c9ca790aabd705e31ca99c6185c3e76dd",
+      "release": "v0.8.1",
+      "releasedAt": "2026-11-03T00:03:32Z",
+      "source": "https://github.com/zizmorcore/zizmor-action/releases/tag/v0.8.1"
     },
     {
       "name": "gradle/actions",
