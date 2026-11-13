@@ -14463,12 +14463,12 @@
             <sha256 value="438cfd13945986c438a79d649c766faeb155fd5907abdbfae58a2f86b062cceb" origin="Verified from JetBrains checksum"/>
          </artifact>
       </component>
-      <component group="ruby" name="RubyMine" version="2026.2.3">
-         <artifact name="RubyMine-2026.2.3-aarch64.dmg">
-            <sha256 value="e4f301ae01c2c6ae8df05dc1617fb795b037827efcd4868a3a8c2c3b85d8e232" origin="Verified from JetBrains checksum"/>
+      <component group="ruby" name="RubyMine" version="2026.2.4">
+         <artifact name="RubyMine-2026.2.4-aarch64.dmg">
+            <sha256 value="39c9b99e7b67e0aabec5f7c8a6ffdab0db845d1f7d998d47f9813fec034369f7" origin="Verified from JetBrains checksum"/>
          </artifact>
-         <artifact name="RubyMine-2026.2.3.tar.gz">
-            <sha256 value="c0e7eb6f6b1a53e91ba26ca5be01f663104dfa2f436d4cc2abec46bea24431cc" origin="Verified from JetBrains checksum"/>
+         <artifact name="RubyMine-2026.2.4.tar.gz">
+            <sha256 value="664f742cfd301a055c3bbc4ffc7de22ef132ddf559259ba8171d929fdc460f4a" origin="Verified from JetBrains checksum"/>
          </artifact>
       </component>
       <component group="rustrover" name="RustRover" version="2025.3.7">
