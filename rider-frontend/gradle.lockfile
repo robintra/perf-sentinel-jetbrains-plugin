@@ -2,17 +2,17 @@
 # Manual edits can break the build and are not advised.
 # This file is expected to be part of source control.
 # To regenerate this file, run: ./gradlew :rider-frontend:dependencies --write-locks
-bundledModule:intellij-platform-test-runtime:RD-253.33813.82=intellijPlatformTestRuntimeFixClasspath
+bundledModule:intellij-platform-test-runtime:RD-253.33813.107=intellijPlatformTestRuntimeFixClasspath
 com.fasterxml.jackson.core:jackson-annotations:2.19.0=intellijPlatformTestClasspath,intellijPlatformTestDependencies
-com.fasterxml.jackson.core:jackson-annotations:2.22=testCompileClasspath
+com.fasterxml.jackson.core:jackson-annotations:2.23=testCompileClasspath
 com.fasterxml.jackson.core:jackson-core:2.19.0=intellijPlatformTestClasspath,intellijPlatformTestDependencies
-com.fasterxml.jackson.core:jackson-core:2.22.4=testCompileClasspath
+com.fasterxml.jackson.core:jackson-core:2.23.0=testCompileClasspath
 com.fasterxml.jackson.core:jackson-databind:2.19.0=intellijPlatformTestClasspath,intellijPlatformTestDependencies
-com.fasterxml.jackson.core:jackson-databind:2.22.4=testCompileClasspath
+com.fasterxml.jackson.core:jackson-databind:2.23.0=testCompileClasspath
 com.fasterxml.jackson.module:jackson-module-kotlin:2.19.0=intellijPlatformTestClasspath,intellijPlatformTestDependencies
-com.fasterxml.jackson.module:jackson-module-kotlin:2.22.4=testCompileClasspath
+com.fasterxml.jackson.module:jackson-module-kotlin:2.23.0=testCompileClasspath
 com.fasterxml.jackson:jackson-bom:2.19.0=intellijPlatformTestClasspath,intellijPlatformTestDependencies
-com.fasterxml.jackson:jackson-bom:2.22.4=intellijPlatformTestRuntimeClasspath,intellijPlatformTestSandboxRuntimeClasspath,testCompileClasspath,testRuntimeClasspath
+com.fasterxml.jackson:jackson-bom:2.23.0=intellijPlatformTestRuntimeClasspath,intellijPlatformTestSandboxRuntimeClasspath,testCompileClasspath,testRuntimeClasspath
 com.jetbrains.intellij.java:java-compiler-ant-tasks:253.33813.82=intellijPlatformJavaCompiler
 com.jetbrains.intellij.java:java-compiler-instrumentation-util-java8:253.33813.82=intellijPlatformJavaCompiler
 com.jetbrains.intellij.java:java-compiler-instrumentation-util:253.33813.82=intellijPlatformJavaCompiler
@@ -27,7 +27,7 @@ com.jetbrains.intellij.platform:test-framework-core:253.33813.82=intellijPlatfor
 com.jetbrains.intellij.platform:test-framework-team-city:253.33813.82=intellijPlatformTestClasspath,intellijPlatformTestDependencies
 com.jetbrains.intellij.platform:test-framework:253.33813.82=intellijPlatformTestClasspath,intellijPlatformTestDependencies,testCompileClasspath
 com.jetbrains.intellij.platform:util-jdom:253.33813.82=intellijPlatformJavaCompiler
-com.jetbrains.intellij.rider:riderRD:2025.3.5.2=compileClasspath,intellijPlatformClasspath,intellijPlatformDependency,intellijPlatformDependencyArchive,intellijPlatformTestClasspath,intellijPluginVerifierIdesDependency,testCompileClasspath
+com.jetbrains.intellij.rider:riderRD:2025.3.5.3=compileClasspath,intellijPlatformClasspath,intellijPlatformDependency,intellijPlatformDependencyArchive,intellijPlatformTestClasspath,intellijPluginVerifierIdesDependency,testCompileClasspath
 com.jetbrains.intellij.tools:tests-bootstrap:253.33813.82=intellijPlatformTestClasspath,intellijPlatformTestDependencies
 com.jgoodies:forms:1.1-preview=intellijPlatformJavaCompiler
 jaxen:jaxen:1.2.0=intellijPlatformJavaCompiler
