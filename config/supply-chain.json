@@ -1,6 +1,6 @@
 {
   "schemaVersion": 1,
-  "auditedAt": "2026-11-13T09:39:50Z",
+  "auditedAt": "2026-11-13T09:41:52Z",
   "approvedNuGetSources": [
     "https://api.nuget.org/v3/index.json"
   ],
@@ -114,16 +114,16 @@
     {
       "name": "Rider 2025.3",
       "kind": "jetbrains-product",
-      "version": "2025.3.5.2",
-      "releasedAt": "2026-09-10",
+      "version": "2025.3.5.3",
+      "releasedAt": "2026-10-30",
       "source": "https://data.services.jetbrains.com/products/releases?code=RD&type=release",
       "declaration": "build.gradle.kts#Rider 2025.3"
     },
     {
       "name": "Rider 2026.2",
       "kind": "jetbrains-product",
-      "version": "2026.2.3.1",
-      "releasedAt": "2026-10-01",
+      "version": "2026.2.4.1",
+      "releasedAt": "2026-11-03",
       "source": "https://data.services.jetbrains.com/products/releases?code=RD&type=release",
       "declaration": "build.gradle.kts#Rider 2026.2"
     },
@@ -226,19 +226,19 @@
     {
       "name": "JetBrains Rider SDK",
       "kind": "nuget",
-      "version": "2025.3.5.2",
+      "version": "2025.3.5.3",
       "release": "2025.3",
-      "releasedAt": "2026-09-10T10:46:35.387Z",
-      "source": "https://www.nuget.org/packages/JetBrains.Rider.SDK/2025.3.5.2",
+      "releasedAt": "2026-10-30T11:21:31.617Z",
+      "source": "https://www.nuget.org/packages/JetBrains.Rider.SDK/2025.3.5.3",
       "declaration": "src/dotnet/Plugin.props#SdkVersion:JetBrains.Rider.SDK"
     },
     {
       "name": "JetBrains ReSharper SDK Tests",
       "kind": "nuget",
-      "version": "2025.3.5.2",
+      "version": "2025.3.5.3",
       "release": "2025.3",
-      "releasedAt": "2026-09-10T11:00:57.223Z",
-      "source": "https://www.nuget.org/packages/JetBrains.ReSharper.SDK.Tests/2025.3.5.2",
+      "releasedAt": "2026-10-30T12:02:14.25Z",
+      "source": "https://www.nuget.org/packages/JetBrains.ReSharper.SDK.Tests/2025.3.5.3",
       "declaration": "src/dotnet/Plugin.props#SdkVersion:JetBrains.ReSharper.SDK.Tests"
     },
     {

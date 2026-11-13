@@ -108,14 +108,14 @@ idea {
 
 val runRider = intellijPlatformTesting.runIde.register("runRider") {
     type = IntelliJPlatformType.Rider
-    version = "2025.3.5.2"
+    version = "2025.3.5.3"
     useInstaller = false
     splitMode = false
 }
 
 val runRider262 = intellijPlatformTesting.runIde.register("runRider262") {
     type = IntelliJPlatformType.Rider
-    version = "2026.2.3.1"
+    version = "2026.2.4.1"
     useInstaller = false
     splitMode = false
 }
@@ -340,8 +340,8 @@ intellijPlatform {
         ides {
             if (verifyTarget("idea-253")) create(IntelliJPlatformType.IntellijIdea, "2025.3.6.2")
             if (verifyTarget("idea-262")) create(IntelliJPlatformType.IntellijIdea, "2026.2.4")
-            if (verifyTarget("rider-253")) create(IntelliJPlatformType.Rider, "2025.3.5.2") { useInstaller = false }
-            if (verifyTarget("rider-262")) create(IntelliJPlatformType.Rider, "2026.2.3.1") { useInstaller = false }
+            if (verifyTarget("rider-253")) create(IntelliJPlatformType.Rider, "2025.3.5.3") { useInstaller = false }
+            if (verifyTarget("rider-262")) create(IntelliJPlatformType.Rider, "2026.2.4.1") { useInstaller = false }
             if (verifyTarget("python-253")) create(IntelliJPlatformType.PyCharmProfessional, "2025.3.6.2")
             if (verifyTarget("python-262")) create(IntelliJPlatformType.PyCharm, "2026.2.4")
             if (verifyTarget("php-253")) create(IntelliJPlatformType.PhpStorm, "2025.3.6.1")
