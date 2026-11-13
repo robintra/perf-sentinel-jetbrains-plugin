@@ -219,9 +219,8 @@ def parse_kover_container(container: ElementTree.Element) -> CoverageReport:
         if set(container.attrib) != {"name"}:
             raise CoverageError("Kover package structure is invalid")
         package = normalize_component(container.get("name"), allow_empty=True)
-    elif container.tag == "group":
-        if set(container.attrib) != {"name"} or not container.get("name"):
-            raise CoverageError("Kover group structure is invalid")
+    elif container.tag == "group" and (set(container.attrib) != {"name"} or not container.get("name")):
+        raise CoverageError("Kover group structure is invalid")
     for session in (child for child in container if child.tag == "sessioninfo"):
         if set(session.attrib) != {"id", "start", "dump"} or list(session) or not session.get("id"):
             raise CoverageError("Kover session structure is invalid")
