@@ -173,6 +173,13 @@
       "allowedVersions": "!/^(7|8|9|10\\.0)\\./"
     },
     {
+      "description": "Move the .NET SDK only between LTS lines, which Microsoft gives the even majors",
+      "matchPackageNames": [
+        "dotnet-sdk"
+      ],
+      "allowedVersions": "/^\\d*[02468]\\./"
+    },
+    {
       "description": "Keep Microsoft.Bcl.Memory on the 9.0 line JetBrains 2025.3 pins, moving only to its patched builds",
       "matchPackageNames": [
         "Microsoft.Bcl.Memory"
