@@ -1,6 +1,6 @@
 {
   "schemaVersion": 1,
-  "auditedAt": "2026-11-13T11:03:35Z",
+  "auditedAt": "2026-11-14T12:10:42Z",
   "approvedNuGetSources": [
     "https://api.nuget.org/v3/index.json"
   ],
@@ -494,9 +494,9 @@
     {
       "name": "Qodana JVM Community image",
       "kind": "container",
-      "version": "sha256:d3d891e194c363cfc2fe254b1549af812ddf81a53813ef801a9a064811b0e42b",
+      "version": "sha256:c02357f477503428a607022ecb3dba9e09bb9550536700f27429fe0ca41537f9",
       "release": "2026.2",
-      "releasedAt": "2026-11-09T19:27:20.130076Z",
+      "releasedAt": "2026-11-13T15:29:12.219499Z",
       "source": "https://hub.docker.com/r/jetbrains/qodana-jvm-community",
       "declaration": "qodana.yml#linter"
     },
