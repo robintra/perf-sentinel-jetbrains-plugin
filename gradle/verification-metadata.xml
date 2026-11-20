@@ -11775,12 +11775,12 @@
             <sha256 value="3396d53b98831b3f45623cc76402fcbddfb580bc7e207aceaf5a44279fd62349" origin="Verified from JetBrains checksum"/>
          </artifact>
       </component>
-      <component group="go" name="goland" version="2026.2.4">
-         <artifact name="goland-2026.2.4-aarch64.dmg">
-            <sha256 value="ba37c61e4637f767ad01d7f88eca9f8f878138e2015b4d2f178640651964ab33" origin="Verified from JetBrains checksum"/>
+      <component group="go" name="goland" version="2026.2.5">
+         <artifact name="goland-2026.2.5-aarch64.dmg">
+            <sha256 value="481f7e31006ddee00eecefeeb41c7021e82fa76ede02648af577e8943d127a4f" origin="Verified from JetBrains checksum"/>
          </artifact>
-         <artifact name="goland-2026.2.4.tar.gz">
-            <sha256 value="2d9ed966b630c464046209f057172d2c8dbad0f188738a0d465c960daeab814d" origin="Verified from JetBrains checksum"/>
+         <artifact name="goland-2026.2.5.tar.gz">
+            <sha256 value="77c0d294b17982ae756062267bd2f1222ed1b71368fd313d4571e4e6d2751ab2" origin="Verified from JetBrains checksum"/>
          </artifact>
       </component>
       <component group="gradle" name="gradle" version="9.9.1">
