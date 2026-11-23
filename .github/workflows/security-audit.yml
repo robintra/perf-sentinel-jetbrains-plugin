@@ -44,7 +44,7 @@ jobs:
         with:
           fetch-depth: 0
           persist-credentials: false
-      - uses: actions/setup-java@77dd5b2ce225ea11469928ac317850245a74ae78 # v6.2.0
+      - uses: actions/setup-java@d1374f8ac74474200d16ef8ecee22c7ae7a51880 # v6.3.0
         with: {distribution: temurin, java-version-file: .java-version}
       - uses: actions/setup-dotnet@0f4a354dd5547a28c70b7853dbd95d5b67886e73 # v6.1.0
         with: {global-json-file: global.json}
@@ -125,13 +125,13 @@ jobs:
         with:
           persist-credentials: false
       - run: mkdir -p build/security
-      - uses: ossf/scorecard-action@fa7117db83c52d787ae5a89f350999701505d78e # v2.5.0
+      - uses: ossf/scorecard-action@23f22cd43608bae7a1f1fa2603d7314dee9538a5 # v2.6.0
         with:
           results_file: build/security/scorecard.sarif
           results_format: sarif
           repo_token: ${{ github.token }}
           publish_results: true
-      - uses: github/codeql-action/upload-sarif@33d7b85da1a04171e211befe2c739303b9a4c066 # v4.39.3
+      - uses: github/codeql-action/upload-sarif@1bd86f2fdb4b86187fa4059f16f31a3202acc9ea # v4.39.4
         with:
           sarif_file: build/security/scorecard.sarif
           category: security-audit/scorecard
@@ -160,7 +160,7 @@ jobs:
         with: {name: root-plugin-jar, path: build/libs}
       - name: Require the composed plugin jar
         run: test -f "build/libs/perf-sentinel-jetbrains-plugin-$(sed -n 's/^version=//p' gradle.properties).jar"
-      - uses: JetBrains/qodana-action@3e8d76ff0e0241618abd808682f426afe84bab3f # v2026.2.2
+      - uses: JetBrains/qodana-action@aa698739cd4b8204ad53291bea7e16cd75da3c9f # v2026.3.1
         with:
           args: --config qodana.yml
           results-dir: build/security/qodana-jvm
@@ -169,7 +169,7 @@ jobs:
           use-annotations: false
           post-pr-comment: false
           push-fixes: none
-      - uses: github/codeql-action/upload-sarif@33d7b85da1a04171e211befe2c739303b9a4c066 # v4.39.3
+      - uses: github/codeql-action/upload-sarif@1bd86f2fdb4b86187fa4059f16f31a3202acc9ea # v4.39.4
         with:
           sarif_file: build/security/qodana-jvm/qodana.sarif.json
           category: qodana-jvm
