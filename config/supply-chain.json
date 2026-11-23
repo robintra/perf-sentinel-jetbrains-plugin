@@ -374,10 +374,10 @@
     {
       "name": "actions/setup-java",
       "kind": "github-action",
-      "version": "77dd5b2ce225ea11469928ac317850245a74ae78",
-      "release": "v6.2.0",
-      "releasedAt": "2026-11-04T22:12:26Z",
-      "source": "https://github.com/actions/setup-java/releases/tag/v6.2.0"
+      "version": "d1374f8ac74474200d16ef8ecee22c7ae7a51880",
+      "release": "v6.3.0",
+      "releasedAt": "2026-11-14T04:53:09Z",
+      "source": "https://github.com/actions/setup-java/releases/tag/v6.3.0"
     },
     {
       "name": "actions/setup-dotnet",
@@ -414,26 +414,26 @@
     {
       "name": "actions/dependency-review-action",
       "kind": "github-action",
-      "version": "a1d282b36b6f3519aa1f3fc636f609c47dddb294",
-      "release": "v5.0.0",
-      "releasedAt": "2026-05-08T20:23:50Z",
-      "source": "https://github.com/actions/dependency-review-action/releases/tag/v5.0.0"
+      "version": "bbc44d14a204704ccc493733616cd1e93a0321ec",
+      "release": "v5.0.1",
+      "releasedAt": "2026-11-17T22:04:02Z",
+      "source": "https://github.com/actions/dependency-review-action/releases/tag/v5.0.1"
     },
     {
       "name": "github/codeql-action",
       "kind": "github-action",
-      "version": "33d7b85da1a04171e211befe2c739303b9a4c066",
-      "release": "v4.39.3",
-      "releasedAt": "2026-11-04T16:49:20Z",
-      "source": "https://github.com/github/codeql-action/releases/tag/v4.39.3"
+      "version": "1bd86f2fdb4b86187fa4059f16f31a3202acc9ea",
+      "release": "v4.39.4",
+      "releasedAt": "2026-11-20T10:06:18Z",
+      "source": "https://github.com/github/codeql-action/releases/tag/v4.39.4"
     },
     {
       "name": "JetBrains/qodana-action",
       "kind": "github-action",
-      "version": "3e8d76ff0e0241618abd808682f426afe84bab3f",
-      "release": "v2026.2.2",
-      "releasedAt": "2026-09-29T13:54:23Z",
-      "source": "https://github.com/JetBrains/qodana-action/releases/tag/v2026.2.2"
+      "version": "aa698739cd4b8204ad53291bea7e16cd75da3c9f",
+      "release": "v2026.3.1",
+      "releasedAt": "2026-11-19T18:25:56Z",
+      "source": "https://github.com/JetBrains/qodana-action/releases/tag/v2026.3.1"
     },
     {
       "name": "anchore/sbom-action",
@@ -446,10 +446,10 @@
     {
       "name": "ossf/scorecard-action",
       "kind": "github-action",
-      "version": "fa7117db83c52d787ae5a89f350999701505d78e",
-      "release": "v2.5.0",
-      "releasedAt": "2026-10-12T02:54:09Z",
-      "source": "https://github.com/ossf/scorecard-action/releases/tag/v2.5.0"
+      "version": "23f22cd43608bae7a1f1fa2603d7314dee9538a5",
+      "release": "v2.6.0",
+      "releasedAt": "2026-11-19T05:31:48Z",
+      "source": "https://github.com/ossf/scorecard-action/releases/tag/v2.6.0"
     },
     {
       "name": "step-security/harden-runner",
@@ -494,9 +494,9 @@
     {
       "name": "Qodana JVM Community image",
       "kind": "container",
-      "version": "sha256:d3d891e194c363cfc2fe254b1549af812ddf81a53813ef801a9a064811b0e42b",
+      "version": "sha256:c02357f477503428a607022ecb3dba9e09bb9550536700f27429fe0ca41537f9",
       "release": "2026.2",
-      "releasedAt": "2026-11-09T19:27:20.130076Z",
+      "releasedAt": "2026-11-13T15:29:12.219499Z",
       "source": "https://hub.docker.com/r/jetbrains/qodana-jvm-community",
       "declaration": "qodana.yml#linter"
     },
