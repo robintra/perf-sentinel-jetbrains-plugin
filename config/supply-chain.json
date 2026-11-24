@@ -8,17 +8,17 @@
     {
       "name": "Gradle",
       "kind": "build-tool",
-      "version": "9.9.1",
-      "releasedAt": "2026-11-10T16:22:15Z",
+      "version": "9.9.2",
+      "releasedAt": "2026-11-19T19:52:07Z",
       "source": "https://services.gradle.org/versions/current",
-      "sha256": "d8a18a7a841dd5df825d35a685fad6f2d7f12ac0c280e57b67c27b4a520ba228",
+      "sha256": "971fcd7150ca4ba04852c0b2ca0d2d0ab9468e14b03473eab19528809914c76b",
       "declaration": "gradle/wrapper/gradle-wrapper.properties#distributionUrl"
     },
     {
       "name": "Gradle wrapper JAR",
       "kind": "build-tool",
-      "version": "9.9.1",
-      "releasedAt": "2026-11-10T16:22:15Z",
+      "version": "9.9.2",
+      "releasedAt": "2026-11-19T19:52:07Z",
       "source": "https://services.gradle.org/versions/current",
       "sha256": "621008afc4f5d59357fcf06ffa644dd5aade5e091bdc363742710445f73cdaf8",
       "declaration": "gradle/wrapper/gradle-wrapper.jar#sha256"
@@ -50,9 +50,9 @@
     {
       "name": "JetBrains Qodana Gradle plugin",
       "kind": "gradle-plugin",
-      "version": "2026.2.2",
-      "releasedAt": "2026-09-29",
-      "source": "https://plugins.gradle.org/plugin/org.jetbrains.qodana/2026.2.2",
+      "version": "2026.3.1",
+      "releasedAt": "2026-11-19",
+      "source": "https://plugins.gradle.org/plugin/org.jetbrains.qodana/2026.3.1",
       "declaration": "settings.gradle.kts#org.jetbrains.qodana"
     },
     {

@@ -20,7 +20,7 @@ pluginManagement {
         id("org.jetbrains.kotlin.jvm") version "2.4.21"
         id("org.jetbrains.intellij.platform.module") version "2.20.1"
         id("org.jetbrains.changelog") version "2.5.0"
-        id("org.jetbrains.qodana") version "2026.2.2"
+        id("org.jetbrains.qodana") version "2026.3.1"
     }
 }
 
