@@ -3,7 +3,7 @@
 
 version: "1.0"
 
-linter: jetbrains/qodana-jvm-community:2026.2@sha256:c02357f477503428a607022ecb3dba9e09bb9550536700f27429fe0ca41537f9
+linter: jetbrains/qodana-jvm-community:2026.3@sha256:5420d961a4f3a850adc47fc6565916eb6fe558f3205f511ac7bc75b98812c37e
 
 profile:
   path: .qodana/profiles/plugin.yaml

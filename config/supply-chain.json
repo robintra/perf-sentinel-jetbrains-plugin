@@ -285,19 +285,19 @@
     {
       "name": "coverlet.collector",
       "kind": "nuget",
-      "version": "10.1.0",
-      "releasedAt": "2026-09-27T21:36:27.42Z",
-      "source": "https://www.nuget.org/packages/coverlet.collector/10.1.0",
+      "version": "10.1.1",
+      "releasedAt": "2026-11-15T22:33:29.26Z",
+      "source": "https://www.nuget.org/packages/coverlet.collector/10.1.1",
       "compatibility": "netstandard2.0",
       "declaration": "src/dotnet/PerfSentinel.Rider.Tests/PerfSentinel.Rider.Tests.csproj#coverlet.collector"
     },
     {
       "name": "OSV-Scanner",
       "kind": "audited-tool",
-      "version": "2.7.0",
-      "releasedAt": "2026-10-12T01:32:07Z",
-      "source": "https://github.com/google/osv-scanner/releases/tag/v2.7.0",
-      "release": "v2.7.0"
+      "version": "2.7.1",
+      "releasedAt": "2026-11-09T04:15:04Z",
+      "source": "https://github.com/google/osv-scanner/releases/tag/v2.7.1",
+      "release": "v2.7.1"
     },
     {
       "name": "Gitleaks",
@@ -310,10 +310,10 @@
     {
       "name": "TruffleHog",
       "kind": "audited-tool",
-      "version": "3.99.7",
-      "releasedAt": "2026-10-24T06:04:25Z",
-      "source": "https://github.com/trufflesecurity/trufflehog/releases/tag/v3.99.7",
-      "release": "v3.99.7"
+      "version": "3.100.1",
+      "releasedAt": "2026-11-23T18:17:54Z",
+      "source": "https://github.com/trufflesecurity/trufflehog/releases/tag/v3.100.1",
+      "release": "v3.100.1"
     },
     {
       "name": "Zizmor",
@@ -326,18 +326,18 @@
     {
       "name": "Syft",
       "kind": "audited-tool",
-      "version": "1.55.0",
-      "releasedAt": "2026-10-19T19:01:26Z",
-      "source": "https://github.com/anchore/syft/releases/tag/v1.55.0",
-      "release": "v1.55.0"
+      "version": "1.57.2",
+      "releasedAt": "2026-11-16T20:05:41Z",
+      "source": "https://github.com/anchore/syft/releases/tag/v1.57.2",
+      "release": "v1.57.2"
     },
     {
       "name": "Ruff",
       "kind": "audited-tool",
-      "version": "0.17.3",
-      "releasedAt": "2026-10-27T00:35:07Z",
-      "source": "https://github.com/astral-sh/ruff/releases/tag/0.17.3",
-      "release": "0.17.3"
+      "version": "0.17.6",
+      "releasedAt": "2026-11-19T15:57:37Z",
+      "source": "https://github.com/astral-sh/ruff/releases/tag/0.17.6",
+      "release": "0.17.6"
     },
     {
       "name": "actionlint",
@@ -358,10 +358,10 @@
     {
       "name": "Qodana CLI",
       "kind": "audited-tool",
-      "version": "2026.2.3",
-      "releasedAt": "2026-10-29T16:36:22Z",
-      "source": "https://github.com/JetBrains/qodana-cli/releases/tag/v2026.2.3",
-      "release": "v2026.2.3"
+      "version": "2026.3.1",
+      "releasedAt": "2026-11-19T17:54:36Z",
+      "source": "https://github.com/JetBrains/qodana-cli/releases/tag/v2026.3.1",
+      "release": "v2026.3.1"
     },
     {
       "name": "actions/checkout",
@@ -494,9 +494,9 @@
     {
       "name": "Qodana JVM Community image",
       "kind": "container",
-      "version": "sha256:c02357f477503428a607022ecb3dba9e09bb9550536700f27429fe0ca41537f9",
-      "release": "2026.2",
-      "releasedAt": "2026-11-13T15:29:12.219499Z",
+      "version": "sha256:5420d961a4f3a850adc47fc6565916eb6fe558f3205f511ac7bc75b98812c37e",
+      "release": "2026.3",
+      "releasedAt": "2026-11-19T13:10:52.374004Z",
       "source": "https://hub.docker.com/r/jetbrains/qodana-jvm-community",
       "declaration": "qodana.yml#linter"
     },
