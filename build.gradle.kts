@@ -239,7 +239,7 @@ intellijPlatformTesting.testIde.register("testWebStorm253") {
 
 intellijPlatformTesting.testIde.register("testGoLand253") {
     type = IntelliJPlatformType.GoLand
-    version = "2025.3.5.2"
+    version = "2025.3.5.3"
     useInstaller = false
     testFramework(TestFrameworkType.Platform)
     task {
@@ -357,7 +357,7 @@ intellijPlatform {
             if (verifyTarget("ruby-262")) create(IntelliJPlatformType.RubyMine, "2026.2.4")
             if (verifyTarget("web-253")) create(IntelliJPlatformType.WebStorm, "2025.3.6.2")
             if (verifyTarget("web-262")) create(IntelliJPlatformType.WebStorm, "2026.2.5")
-            if (verifyTarget("go-253")) create(IntelliJPlatformType.GoLand, "2025.3.5.2")
+            if (verifyTarget("go-253")) create(IntelliJPlatformType.GoLand, "2025.3.5.3")
             if (verifyTarget("go-262")) create(IntelliJPlatformType.GoLand, "2026.2.5")
         }
     }
